@@ -1,4 +1,4 @@
-Deployment notes
+### Deployment notes
 - use Fedora 19
 - disk size >= 16GB
 - feed fedora_pulp.sh as user data
