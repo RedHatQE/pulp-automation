@@ -1,4 +1,5 @@
 import requests
+from . import (normalize_url, path as pulp_path)
 
 
 class Pulp(object):
@@ -20,3 +21,27 @@ class Pulp(object):
         if self.last_result is None:
             return True
         return self.last_result.status_code >= 200 and self.last_result.status_code < 400
+
+
+class Request(object):
+    '''a callable request compatible with Pulp.send''' 
+    def __init__(self, method, path, data=None, headers=None):
+        self.method = method
+        self.path = path
+        self.data = data
+        self.headers = headers
+
+    def __call__(self, url, auth):
+        return requests.Request(
+            self.method,
+            normalize_url(url + "/" + pulp_path + "/" + self.path),
+            auth=auth,
+            data=self.data,
+            headers=self.headers
+        ).prepare()
+
+
+    def __repr__(self):
+        return self.__class__.__name__ + "(%r, %r, data=%r, headers=%r)" % (self.method, self.path, self.data, self.headers)
+
+
