@@ -25,15 +25,16 @@ class SimpleRepoTest(RepoTest):
         self.repo.reload(self.pulp)
         self.assertEqual(self.repo, repo)
 
-
     def test_03_list_repos(self):
         repos = Repo.list(self.pulp)
         self.assertIn(self.repo, repos)
 
     def test_04_update_repo(self):
-        self.repo.data.update({'display_name': 'A %s repo' % self.__class__.__name__})
+        display_name = 'A %s repo' % self.__class__.__name__
+        self.repo.data.update({'display_name': display_name})
         self.repo.update(self.pulp)
-        self.assertIn(self.repo, Repo.list(self.pulp))
+        self.assertPulpOK()
+        self.assertEqual(Repo.get(self.pulp, self.repo.data['id']).data['display_name'], display_name)
 
     def test_05_delete_repo(self):
         self.repo.delete(self.pulp)
