@@ -30,6 +30,11 @@ class SimpleRepoTest(RepoTest):
         repos = Repo.list(self.pulp)
         self.assertIn(self.repo, repos)
 
-    def test_04_delete_repo(self):
+    def test_04_update_repo(self):
+        self.repo.data.update({'display_name': 'A %s repo' % self.__class__.__name__})
+        self.repo.update(self.pulp)
+        self.assertIn(self.repo, Repo.list(self.pulp))
+
+    def test_05_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()
