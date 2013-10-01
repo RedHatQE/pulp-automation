@@ -22,6 +22,15 @@ class Pulp(object):
             return True
         return self.last_result.status_code >= 200 and self.last_result.status_code < 400
 
+    def __lshift__(self, other):
+        '''call to perform return self.send(other.create(self))'''
+        return self.send(other.create(self))
+
+    def __ilshift__(self, other):
+        '''call to perform self.send(other.create(self)) , return self'''
+        self.send(other.create(self))
+        return self
+
 
 class Request(object):
     '''a callable request compatible with Pulp.send''' 
@@ -44,4 +53,6 @@ class Request(object):
     def __repr__(self):
         return self.__class__.__name__ + "(%r, %r, data=%r, headers=%r)" % (self.method, self.path, self.data, self.headers)
 
-
+def format_response(response):
+    '''format some response attributes'''
+    return '>response:\n>c %s\n>u %s\n>t %s\n' % (response.status_code, response.url, response.text)

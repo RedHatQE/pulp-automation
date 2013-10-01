@@ -10,7 +10,10 @@ class PulpTest(unittest.TestCase):
         cls.pulp = Pulp(ROLES.pulp.url, tuple(ROLES.pulp.auth))
 
     def assertPulpOK(self):
-       self.assertTrue(self.pulp.is_ok, "pulp was not OK: %s" % pprint.pformat(self.pulp.last_result.text))
+        self.assertTrue(
+            self.pulp.is_ok,
+            "pulp was not OK: %s\n\turl: %s" % (pprint.pformat(self.pulp.last_result.text), self.pulp.last_result.url)
+        )
 
     def assertEqual(self, a, b, msg=None):
         if msg is None:
