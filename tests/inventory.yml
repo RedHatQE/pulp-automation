@@ -1,0 +1,4 @@
+ROLES:
+  pulp:
+    auth: [admin, admin]
+    url: 'https://pulp.example.com'
