@@ -23,12 +23,39 @@ class Pulp(object):
         return self.last_result.status_code >= 200 and self.last_result.status_code < 400
 
     def __lshift__(self, other):
-        '''call to perform return self.send(other.create(self))'''
-        return self.send(other.create(self))
+        '''call to perform return other.create(self)'''
+        return other.create(self)
 
     def __ilshift__(self, other):
         '''call to perform self.send(other.create(self)) , return self'''
-        self.send(other.create(self))
+        other.create(self)
+        return self
+
+    def __rshift__(self, other):
+        '''call to perform other.delete(self)'''
+        return other.delete(self)
+
+    def __irshift__(self, other):
+        '''call to perform other.delete(self), return self'''
+        other.delete(self)
+        return self
+
+    def __lt__(self, other):
+        '''call to perform other.update(self)'''
+        return other.update(self)
+
+    def __le__(self, other):
+        '''call to perform other.update(self), return self'''
+        other.update(self)
+        return self
+
+    def __gt__(self, other):
+        '''call to perform other.reload(self)'''
+        return other.reload(self)
+
+    def __ge__(self, other):
+        '''call to perform other.reload(self), return self'''
+        other.reload(self)
         return self
 
 

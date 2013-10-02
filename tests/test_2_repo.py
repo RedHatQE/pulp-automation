@@ -37,7 +37,21 @@ class SimpleRepoTest(RepoTest):
         self.assertPulpOK()
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
-    def test_05_update_with_importer(self):
+    def test_05_associate_importer(self):
+        importer = YumImporter()
+        importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
+        # associate importer with repo and "create" the association in pulp
+        self.pulp << self.repo * importer
+        self.assertEqual(importer, (self.repo * importer).get(self.pulp))
+        self.assertIn(importer, importer.list(self.pulp))
+
+    def test_06_disassociate_importer(self):
+        importer = YumImporter()
+        importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
+        self.pulp << self.repo / importer 
+        self.assertEqual([], (self.repo * importer).list(self.pulp))
+
+    def test_07_update_with_importer(self):
         importer = YumImporter()
         importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
         self.repo |= importer
@@ -55,7 +69,6 @@ class SimpleRepoTest(RepoTest):
         self.repo.disassociate(self.pulp, importer) 
         self.assertPulpOK()
 
-
-    def test_06_delete_repo(self):
+    def test_08_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()
