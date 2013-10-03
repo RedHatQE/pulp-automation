@@ -1,7 +1,7 @@
 import pulp_test
-from pulp.repo import Repo, YumImporter
+from pulp.repo import Repo
+from pulp.importer import Importer, ImporterType, YUM, YUM_TYPE
 from pulp.item import ItemAssociation
-from pulp.namespace import load_ns
  
 def setUpModule():
     pass
@@ -11,7 +11,8 @@ class RepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(RepoTest, cls).setUpClass()
-        cls.repo = Repo(data=load_ns({'id': cls.__name__ + "_repo"}))
+        cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
+        cls.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
 
 
 class SimpleRepoTest(RepoTest):
@@ -38,37 +39,18 @@ class SimpleRepoTest(RepoTest):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
     def test_05_associate_importer(self):
-        importer = YumImporter()
-        importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
         # associate importer with repo and "create" the association in pulp
-        self.pulp << self.repo * importer
-        self.assertEqual(importer, (self.repo * importer).get(self.pulp))
-        self.assertIn(importer, importer.list(self.pulp))
+        self.pulp << self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})
+        # assert what was created in pulp equals to what was associated
+        self.assertEqual(
+            Importer(YUM) | {'repo_id': self.repo.id, 'config': {'feed': self.feed}},
+            (self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})).get(self.pulp)
+        )
 
     def test_06_disassociate_importer(self):
-        importer = YumImporter()
-        importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
-        self.pulp << self.repo / importer 
-        self.assertEqual([], (self.repo * importer).list(self.pulp))
+        self.pulp << self.repo / ImporterType(YUM_TYPE)
+        self.assertEqual([], (self.repo * ImporterType(YUM_TYPE)).list(self.pulp))
 
-    def test_07_update_with_importer(self):
-        importer = YumImporter()
-        importer.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
-        self.repo |= importer
-        self.repo.update(self.pulp)
-        self.assertPulpOK()
-        # assert repo update propagates the importer
-        ia = ItemAssociation(self.repo, importer)
-        # GET method doesn't work with importer.id; falling-back to importer in importer.list() assert
-        self.assertIn(importer, ia.list(self.pulp))
-        ia.delete(self.pulp)
-        self.assertPulpOK()
-        # assert associating is ok with pulp
-        self.repo.associate(self.pulp, importer)
-        self.assertPulpOK()
-        self.repo.disassociate(self.pulp, importer) 
-        self.assertPulpOK()
-
-    def test_08_delete_repo(self):
+    def test_07_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()

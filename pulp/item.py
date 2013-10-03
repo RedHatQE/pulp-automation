@@ -15,14 +15,14 @@ class Item(HasData):
     def get(cls, pulp, id):
         '''create an instance from pulp id'''
         response = pulp.send(Request('GET', cls.path + "/" + id + "/"))
-        assert pulp.is_ok, "non-ok response: %s" % response.text
+        assert pulp.is_ok, "non-ok response:\n %s" % format_response(response)
         return cls(response.json())
 
     @classmethod
     def list(cls, pulp):
         '''create a list of instances from pulp'''
         response = pulp.send(Request('GET', cls.path))
-        assert pulp.is_ok, "non-ok response: %s" % response.text
+        assert pulp.is_ok, "non-ok response:\n%s" % format_response(response)
         return map (lambda x: cls(data=x), response.json())
 
     @property
@@ -81,6 +81,18 @@ class ItemType(HasData):
     path = pulp_path
     relevant_data_keys = []
     required_data_keys = []
+    headers = {'Content-Type': 'application/json'}
+
+    @property
+    def id(self):
+        raise NotImplementedError
+
+    @id.setter
+    def id(self, other):
+        raise NotImplementedError
+
+    def instantiate(self, data):
+        return Item()
 
     
 
@@ -97,8 +109,8 @@ class ItemAssociation(HasData):
 
     def create(self, pulp):
         '''send the creating POST request'''
-        headers = self.right.headers.copy()
-        data = self.right.data.copy()
+        headers = self.right.headers
+        data = self.right.data
         return pulp.send(Request('POST', path=self.path, headers=headers, data=json.dumps(data)))
 
     def delete(self, pulp):
@@ -107,13 +119,13 @@ class ItemAssociation(HasData):
 
     def list(self, pulp):
         '''return list of type(self.right) items based on the pulp data'''
-        return map(lambda element: type(self.right)(data=element), pulp.send(Request('GET', self.path)).json())
+        return map(lambda element: self.right.instantiate(element), pulp.send(Request('GET', self.path)).json())
 
     def get(self, pulp):
         '''return new instance of type(self.right) item based on the pulp data'''
         result = pulp.send(Request('GET', self.path + '/' + self.id + '/')) 
         assert pulp.is_ok, "get request not passed for: %r\n%s" % (self, format_response(result))
-        return type(self.right)(data=result.json())
+        return self.right.instantiate(result.json())
 
     def reload(self, pulp):
         '''reload the pulp data into self.right.data'''
@@ -149,20 +161,20 @@ class ItemAssociation(HasData):
         return self.right.id
 
     def associate(self, pulp, other):
-        '''stack-associate other to the self.right item'''
-        return self.right.associate(pulp, other)
+        '''stack-associate other to the self.left item'''
+        return self.left.associate(pulp, other)
     
     def disassociate(self, pulp, other):
-        '''stack-disassociate other from self.right item'''
-        return self.right.disassociate(pulp, other)
+        '''stack-disassociate other from self.left item'''
+        return self.left.disassociate(pulp, other)
 
     def __mul__(self, other):
-        '''stack-associate other to self.right item'''
-        return self.right * other
+        '''stack-associate other to self.left item'''
+        return self.left * other
 
     def __div__(self, other):
-        '''stack-disassociate other from self.right item'''
-        return self.right / other
+        '''stack-disassociate other from self.left item'''
+        return self.left / other
 
 
 class ItemDisAssociation(ItemAssociation):

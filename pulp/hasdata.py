@@ -1,15 +1,14 @@
 import json
 
 class HasData(object):
-    required_data_keys = []
-    relevant_data_keys = []
+    required_data_keys = [] # keys that are asserted and not touched by data update
+    relevant_data_keys = [] # keys relevant for comparison of values
 
     def assert_data(self, data):
         for key in self.required_data_keys:
             assert key in data and data[key] is not None, "no %s key in data %s" % (key, data)
 
     def __init__(self, data={}):
-        self.assert_data(data)
         self.data = data
 
     def __str__(self):

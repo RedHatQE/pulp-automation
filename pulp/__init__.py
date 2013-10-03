@@ -9,4 +9,4 @@ def normalize_url(url):
 
 
 from pulp import (Pulp, Request)
-import item, repo, namespace
+import item, repo, namespace, importer
