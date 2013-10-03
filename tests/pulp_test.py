@@ -1,7 +1,7 @@
 # basic pulp test class
 import unittest, pprint
 from . import ROLES
-from pulp import Pulp
+from pulp import Pulp, format_response
 
 
 class PulpTest(unittest.TestCase):
@@ -12,7 +12,13 @@ class PulpTest(unittest.TestCase):
     def assertPulpOK(self):
         self.assertTrue(
             self.pulp.is_ok,
-            "pulp was not OK: %s\n\turl: %s" % (pprint.pformat(self.pulp.last_result.text), self.pulp.last_result.url)
+            "pulp was not OK:\n%s" % format_response(self.pulp.last_response)
+        )
+
+    def assertPulpStatusCode(code=200):
+        self.assertEqual(
+            self.pulp.last_response.status_code,
+            code
         )
 
     def assertEqual(self, a, b, msg=None):

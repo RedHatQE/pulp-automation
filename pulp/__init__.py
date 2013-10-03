@@ -8,5 +8,5 @@ def normalize_url(url):
     return re.sub('([^:])///*', r'\1/', url)
 
 
-from pulp import (Pulp, Request)
-import item, repo, namespace, importer
+from pulp import (Pulp, Request, format_response)
+import item, repo, namespace, importer, hasdata

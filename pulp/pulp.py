@@ -9,18 +9,18 @@ class Pulp(object):
         self.url = url
         self.auth = auth
         self.verify = verify
-        self.last_result = None
+        self.last_response = None
 
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
-        self.last_result = self.session.send(request(self.url, self.auth), verify=self.verify)
-        return self.last_result
+        self.last_response = self.session.send(request(self.url, self.auth), verify=self.verify)
+        return self.last_response
 
     @property
     def is_ok(self):
-        if self.last_result is None:
+        if self.last_response is None:
             return True
-        return self.last_result.status_code >= 200 and self.last_result.status_code < 400
+        return self.last_response.status_code >= 200 and self.last_response.status_code < 400
 
     def __lshift__(self, other):
         '''call to perform return other.create(self)'''
