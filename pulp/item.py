@@ -74,6 +74,9 @@ class Item(HasData):
         '''handle item disassociation'''
         return (self / other).create(pulp)
 
+    def instantiate(self, data):
+        return type(self)(data)
+
 class ItemType(HasData):
     '''A type-instance that doesn't live on its own unless associated with an Item instance
     An example: YumImporterType; one can't query /pulp/api/v2/importers/yum_importer
@@ -92,9 +95,8 @@ class ItemType(HasData):
         raise NotImplementedError
 
     def instantiate(self, data):
-        return Item()
+        return Item(data)
 
-    
 
 class ItemAssociation(HasData):
     '''right-associate left-item with right-item; uses right-item.data, right-item.headers'''
