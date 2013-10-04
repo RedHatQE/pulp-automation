@@ -22,40 +22,49 @@ class Pulp(object):
             return True
         return self.last_response.status_code >= 200 and self.last_response.status_code < 400
 
+    def call_item_method(self, item, method_name):
+        '''call: item.<method_name>(self)'''
+        if isinstance(item, tuple):
+            # item seems to be an expression -> map method to item elements
+            return tuple(map(lambda element: getattr(element, method_name)(self), item))
+
+        return getattr(item, method_name)(self)
+ 
+
     def __lshift__(self, other):
         '''call to perform return other.create(self)'''
-        return other.create(self)
+        return self.call_item_method(other, 'create')
 
     def __ilshift__(self, other):
         '''call to perform self.send(other.create(self)) , return self'''
-        other.create(self)
+        self.call_item_method(other, 'create')
         return self
 
     def __rshift__(self, other):
         '''call to perform other.delete(self)'''
-        return other.delete(self)
+        return self.call_item_method(other, 'delete')
 
     def __irshift__(self, other):
         '''call to perform other.delete(self), return self'''
-        other.delete(self)
+        self.call_item_method(other, 'delete')
         return self
 
     def __lt__(self, other):
         '''call to perform other.update(self)'''
-        return other.update(self)
+        return self.call_item_method(other, 'update')
 
     def __le__(self, other):
         '''call to perform other.update(self), return self'''
-        other.update(self)
+        self.call_item_method(other, 'update')
         return self
 
     def __gt__(self, other):
         '''call to perform other.reload(self)'''
-        return other.reload(self)
+        return self.call_item_method(other, 'reload')
 
     def __ge__(self, other):
         '''call to perform other.reload(self), return self'''
-        other.reload(self)
+        self.call_item_method(other, 'reload')
         return self
 
 
