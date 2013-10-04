@@ -18,18 +18,16 @@ class HasData(object):
         return self.__class__.__name__ + "(%r)" % self.data
 
     def __eq__(self, other):
-        '''compare items based on relevant keys in data'''
+        '''compare items based on self.relevant_data_keys in data'''
+        if hasattr(other, 'data'):
+            data = other.data
         try:
-            # assert same relevant keys
-            if self.relevant_data_keys != other.relevant_data_keys:
-                return False
-
             return reduce(
                 lambda x, y: x and (y[0] == y[1]), \
-                    [(self.data[key], other.data[key]) for key in self.relevant_data_keys],
+                    [(self.data[key], data[key]) for key in self.relevant_data_keys],
                     True
             )
-        except KeyError, AttributeError:
+        except KeyError:
             return False
 
     def data_add(self, other_data):
