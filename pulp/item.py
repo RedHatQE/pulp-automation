@@ -190,6 +190,9 @@ class ItemAssociation(object):
     def __ior__(self, other):
         self.right |= other
 
+    def __eq__(self, other):
+        return self.right == other
+
     def instantiate(self, data):
         return self.right.instantiate(data)
 
