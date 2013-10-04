@@ -1,5 +1,5 @@
 import namespace, json, requests
-from . import (path as pulp_path, normalize_url)
+from . import (path as pulp_path, normalize_url, path_join)
 from pulp import Request, format_response
 from hasdata import HasData
 
@@ -12,16 +12,16 @@ class Item(HasData):
     required_data_keys = ['id']
 
     @classmethod
-    def get(cls, pulp, id):
+    def get(cls, pulp, id, path_prefix=''):
         '''create an instance from pulp id'''
-        response = pulp.send(Request('GET', cls.path + "/" + id + "/"))
+        response = pulp.send(Request('GET', path_prefix + "/" + cls.path + "/" + id + "/"))
         assert pulp.is_ok, "non-ok response:\n %s" % format_response(response)
         return cls(response.json())
 
     @classmethod
-    def list(cls, pulp):
+    def list(cls, pulp, path_prefix=''):
         '''create a list of instances from pulp'''
-        response = pulp.send(Request('GET', cls.path))
+        response = pulp.send(Request('GET', path_prefix + "/" + cls.path))
         assert pulp.is_ok, "non-ok response:\n%s" % format_response(response)
         return map (lambda x: cls(data=x), response.json())
 
@@ -34,19 +34,19 @@ class Item(HasData):
     def id(self, other):
         self.data['id'] = other
 
-    def reload(self, pulp):
+    def reload(self, pulp, path_prefix=''):
         '''reload self.data from pulp'''
-        self.data = self.get(pulp, self.id).data
+        self.data = self.get(pulp, self.id, path_prefix=path_prefix).data
 
-    def create(self, pulp):
+    def create(self, pulp, path_prefix=''):
         '''create self in pulp'''
-        return pulp.send(Request('POST', self.path, data=self.json_data, headers=self.headers))
+        return pulp.send(Request('POST', path_prefix + "/" + self.path, data=self.json_data, headers=self.headers))
 
-    def delete(self, pulp):
+    def delete(self, pulp, path_prefix=''):
         '''remove self from pulp'''
-        return pulp.send(Request('DELETE', self.path + "/" + self.id + "/"))
+        return pulp.send(Request('DELETE', path_prefix + "/" + self.path + "/" + self.id + "/"))
 
-    def update(self, pulp):
+    def update(self, pulp, path_prefix=''):
         '''update pulp with self.data'''
         item = self.get(pulp, self.id)
         # update call requires a delta-data dict; computing one based on data differences
@@ -55,7 +55,7 @@ class Item(HasData):
             'delta': self.delta(item)
         })
         return pulp.send(
-            Request('PUT', self.path + "/" + self.id + "/", data=delta, headers=self.headers)
+            Request('PUT', path_prefix + "/" + self.path + "/" + self.id + "/", data=delta, headers=self.headers)
         )
 
     def __mul__(self, other):
@@ -74,9 +74,6 @@ class Item(HasData):
         '''handle item disassociation'''
         return (self / other).create(pulp)
 
-    def instantiate(self, data):
-        return type(self)(data)
-
 class ItemType(HasData):
     '''A type-instance that doesn't live on its own unless associated with an Item instance
     An example: YumImporterType; one can't query /pulp/api/v2/importers/yum_importer
@@ -85,6 +82,22 @@ class ItemType(HasData):
     relevant_data_keys = []
     required_data_keys = []
     headers = {'Content-Type': 'application/json'}
+
+    def create(self, pulp, path_prefix):
+        return pulp.send(Request('POST', path_prefix + '/' + self.path, data=json.dumps(self.data), headers=self.headers))
+
+    def list(self, pulp, path_prefix=''):
+        '''return list of type(self.right) items based on the pulp data'''
+        return map(lambda element: self.instantiate(element), pulp.send(Request('GET', path_prefix + '/' + self.path)).json())
+
+    def get(self, pulp, path_prefix=''):
+        '''return new instance of type(self.right) item based on the pulp data'''
+        result = pulp.send(Request('GET', path_prefix + '/' + self.path + '/' + self.id + '/')) 
+        assert pulp.is_ok, "get request not passed for: %r\n%s" % (self, format_response(result))
+        return self.instantiate(result.json())
+
+    def delete(self, pulp, path_prefix=''):
+        raise TypeError("A %s instance cannot be deleted" % self.__class__.__name__)
 
     @property
     def id(self):
@@ -98,51 +111,38 @@ class ItemType(HasData):
         return Item(data)
 
 
-class ItemAssociation(HasData):
+class ItemAssociation(object):
     '''right-associate left-item with right-item; uses right-item.data, right-item.headers'''
     def __init__(self, left, right):
         self.left = left
         self.right = right
-        self.required_data_keys = self.right.required_data_keys
-        self.relevant_data_keys = self.right.relevant_data_keys
 
     def __repr__(self):
         return self.__class__.__name__ + "(%r, %r)" % (self.left, self.right)
 
-    def create(self, pulp):
+    def create(self, pulp, path_prefix=''):
         '''send the creating POST request'''
-        headers = self.right.headers
-        data = self.right.data
-        return pulp.send(Request('POST', path=self.path, headers=headers, data=json.dumps(data)))
+        return self.right.create(pulp, path_prefix=path_join(path_prefix, self.path))
 
-    def delete(self, pulp):
+    def delete(self, pulp, path_prefix=''):
         '''send the DELETE request'''
-        return pulp.send(Request('DELETE', self.path + '/' + self.id + '/'))
+        return self.right.delete(pulp, path_prefix=path_join(path_prefix, self.path))
 
-    def list(self, pulp):
+    def list(self, pulp, path_prefix=''):
         '''return list of type(self.right) items based on the pulp data'''
-        return map(lambda element: self.right.instantiate(element), pulp.send(Request('GET', self.path)).json())
+        return self.right.list(pulp, path_prefix=path_join(path_prefix, self.path))
 
-    def get(self, pulp):
+    def get(self, pulp, path_prefix=''):
         '''return new instance of type(self.right) item based on the pulp data'''
-        result = pulp.send(Request('GET', self.path + '/' + self.id + '/')) 
-        assert pulp.is_ok, "get request not passed for: %r\n%s" % (self, format_response(result))
-        return self.right.instantiate(result.json())
+        return self.right.get(pulp, path_prefix=path_join(path_prefix, self.path))
 
-    def reload(self, pulp):
+    def reload(self, pulp, path_prefix=''):
         '''reload the pulp data into self.right.data'''
-        right = self.get(pulp)
-        self.right.data = right.data
+        return self.right.reload(pulp, path_prefix=path_join(path_prefix, self.path))
 
-    def update(self, pulp):
+    def update(self, pulp, path_prefix=''):
         '''update pulp with self.right.data'''
-        right = self.get(pulp)
-        delta = json.dumps({
-            'delta': self.delta(right)
-        })
-        return pulp.send(
-            Request('PUT', self.path + "/" + self.id + "/", data=delta, headers=self.headers)
-        )
+        return self.right.update(pulp, path_prefix=path_join(path_prefix, self.path))
 
     @property
     def data(self):
@@ -154,8 +154,8 @@ class ItemAssociation(HasData):
 
     @property
     def path(self):
-        '''path == self.left.path + self.left.id + self.right.path'''
-        return self.left.path + '/' + self.left.id + '/' + self.right.path + '/'
+        '''path == self.left.path + self.left.id'''
+        return path_join(self.left.path, self.left.id)
 
     @property
     def id(self):
@@ -177,6 +177,21 @@ class ItemAssociation(HasData):
     def __div__(self, other):
         '''stack-disassociate other from self.left item'''
         return self.left / other
+
+    def __xor__(self, other):
+        return self.right ^ other
+
+    def __ixor__(self, other):
+        self.righ ^= other
+
+    def __or__(self, other):
+        return self.right | other
+
+    def __ior__(self, other):
+        self.right |= other
+
+    def instantiate(self, data):
+        return self.right.instantiate(data)
 
 
 class ItemDisAssociation(ItemAssociation):

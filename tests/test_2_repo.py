@@ -43,12 +43,12 @@ class SimpleRepoTest(RepoTest):
         self.pulp << self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})
         # assert what was created in pulp equals to what was associated
         self.assertEqual(
-            Importer(YUM) | {'repo_id': self.repo.id, 'config': {'feed': self.feed}},
+            Importer(YUM) | {'config': {'feed': self.feed}, 'repo_id': self.repo.id},
             (self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})).get(self.pulp)
         )
 
     def test_06_disassociate_importer(self):
-        self.pulp << self.repo / ImporterType(YUM_TYPE)
+        self.pulp << self.repo / Importer(YUM)
         self.assertEqual([], (self.repo * ImporterType(YUM_TYPE)).list(self.pulp))
 
     def test_07_delete_repo(self):
