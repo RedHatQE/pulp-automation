@@ -15,11 +15,15 @@ class PulpTest(unittest.TestCase):
             "pulp was not OK:\n%s" % format_response(self.pulp.last_response)
         )
 
-    def assertPulpStatusCode(code=200):
+    def assertPulp(self, code=200, data={}):
         self.assertEqual(
             self.pulp.last_response.status_code,
             code
         )
+        response_data = self.pulp.last_response.json()
+        for k, v in data:
+            self.assertIn(k, response_data)
+            self.assertEqual(v, response_data[k])
 
     def assertEqual(self, a, b, msg=None):
         if msg is None:

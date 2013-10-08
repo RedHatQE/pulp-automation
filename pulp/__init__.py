@@ -11,5 +11,8 @@ def path_join(*args):
     '''combine args into a path with a trailing /'''
     return '/'.join(args) + '/'
 
+def path_split(path):
+    return normalize_url(path).split('/')
+
 from pulp import (Pulp, Request, format_response)
-import item, repo, namespace, importer, hasdata
+import item, repo, namespace, hasdata
