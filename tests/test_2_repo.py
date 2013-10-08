@@ -1,7 +1,5 @@
-import pulp_test
+import pulp_test, json
 from pulp.repo import Repo
-from pulp.importer import Importer, ImporterType, YUM, YUM_TYPE
-from pulp.item import ItemAssociation
  
 def setUpModule():
     pass
@@ -12,7 +10,7 @@ class RepoTest(pulp_test.PulpTest):
     def setUpClass(cls):
         super(RepoTest, cls).setUpClass()
         cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
-        cls.feed = 'http://ftp.linux.cz/pub/linux/fedora/linux/updates/19/x86_64/'
+        cls.feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
 
 
 class SimpleRepoTest(RepoTest):
@@ -35,21 +33,24 @@ class SimpleRepoTest(RepoTest):
         display_name = 'A %s repo' % self.__class__.__name__
         self.repo |= {'display_name': display_name}
         self.repo.update(self.pulp)
-        self.assertPulpOK()
+        self.assertPulp(code=200)
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
     def test_05_associate_importer(self):
-        # associate importer with repo and "create" the association in pulp
-        self.pulp << self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})
-        # assert what was created in pulp equals to what was associated
-        self.assertEqual(
-            Importer(YUM) | {'config': {'feed': self.feed}, 'repo_id': self.repo.id},
-            (self.repo * (ImporterType(YUM_TYPE) | {'importer_config': {'feed': self.feed}})).get(self.pulp)
+        self.repo.associate_importer(
+            self.pulp,
+            data={
+                'importer_type_id': 'yum_importer',
+                'importer_config': {
+                    'feed': self.feed
+                }
+            }
         )
+        self.assertPulpOK()
 
-    def test_06_disassociate_importer(self):
-        self.pulp << self.repo / Importer(YUM)
-        self.assertEqual([], (self.repo * ImporterType(YUM_TYPE)).list(self.pulp))
+    def test_06_sync_repo(self):
+        response = self.repo.sync(self.pulp)
+        self.assertPulpOK()
 
     def test_07_delete_repo(self):
         self.repo.delete(self.pulp)
