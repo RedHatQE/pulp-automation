@@ -21,6 +21,8 @@ class HasData(object):
         '''compare items based on self.relevant_data_keys in data'''
         if hasattr(other, 'data'):
             data = other.data
+        else:
+            data = other
         try:
             return reduce(
                 lambda x, y: x and (y[0] == y[1]), \
