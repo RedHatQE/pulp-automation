@@ -14,7 +14,7 @@ class Item(HasData):
     def from_response(cls, response):
         '''create an instance out of a response'''
         data = response.json()
-        item = cls(data)
+        item = cls(data=data)
         # set path; strip id part
         item.path = path_join(*path_split(strip_url(response.url))[:-1])
         return item
@@ -44,7 +44,7 @@ class Item(HasData):
 
     def reload(self, pulp):
         '''reload self.data from pulp'''
-        self.data = self.get(pulp, self.id).data
+        self.data = type(self).get(pulp, self.id).data
 
     def create(self, pulp):
         '''create self in pulp'''
@@ -68,3 +68,22 @@ class Item(HasData):
 
     def request(self, method, path='', data={}):
         return Request(method, data=data, path=path_join(self.path, self.id, path))
+
+
+class AssociatedItem(Item):
+    '''an Item that can't exist without previous association to another Item'''
+    def __init__(self, path_prefix='/', data={}):
+        super(AssociatedItem, self).__init__(data=data)
+        self.path = path_join(path_prefix, type(self).path)
+
+    @classmethod
+    def get(cls, pulp, id):
+        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+
+    @classmethod
+    def list(cls, pulp):
+        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+
+    def reload(self, pulp):
+        with pulp.asserting(True):
+            self.data = type(self).from_response(pulp.send(self.request('GET'))).data
