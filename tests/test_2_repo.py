@@ -1,5 +1,5 @@
 import pulp_test, json
-from pulp.repo import Repo
+from pulp.repo import Repo, Importer
  
 def setUpModule():
     pass
@@ -37,7 +37,7 @@ class SimpleRepoTest(RepoTest):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
     def test_05_associate_importer(self):
-        self.repo.associate_importer(
+        response = self.repo.associate_importer(
             self.pulp,
             data={
                 'importer_type_id': 'yum_importer',
@@ -46,7 +46,21 @@ class SimpleRepoTest(RepoTest):
                 }
             }
         )
-        self.assertPulpOK()
+        self.assertPulp(code=201)
+        importer = Importer.from_response(response)
+        importer.reload(self.pulp)
+        self.assertEqual(
+            importer,
+            {
+                'id': 'yum_importer',
+                'importer_type_id': 'yum_importer',
+                'repo_id': self.repo.id,
+                'config': {
+                    'feed': self.feed
+                },
+                'last_sync': None
+            }
+        )
 
     def test_06_sync_repo(self):
         response = self.repo.sync(self.pulp)
