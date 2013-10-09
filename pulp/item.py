@@ -22,15 +22,15 @@ class Item(HasData):
     @classmethod
     def get(cls, pulp, id):
         '''create an instance from pulp id'''
-        response = pulp.send(Request('GET', path_join(cls.path, id)))
-        assert pulp.is_ok, "non-ok response:\n %s" % format_response(response)
+        with pulp.asserting(True):
+            response = pulp.send(Request('GET', path_join(cls.path, id)))
         return cls.from_response(response)
 
     @classmethod
     def list(cls, pulp):
         '''create a list of instances from pulp'''
-        response = pulp.send(Request('GET', cls.path))
-        assert pulp.is_ok, "non-ok response:\n%s" % format_response(response)
+        with pulp.asserting(True):
+            response = pulp.send(Request('GET', cls.path))
         return map (lambda x: cls(data=x), response.json())
 
     @property
