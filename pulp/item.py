@@ -16,7 +16,13 @@ class Item(HasData):
         data = response.json()
         item = cls(data=data)
         # set path; strip id part
-        item.path = path_join(*path_split(strip_url(response.url))[:-1])
+        if '_href' in data:
+            # in case a response body contains a href
+            path = path_join(*path_split(data['_href'])[:-1])
+        else:
+            # else use the response.url
+            path = path_join(*path_split(strip_url(response.url))[:-1])
+        item.path = path
         return item
 
     @classmethod
