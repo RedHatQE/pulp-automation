@@ -7,9 +7,14 @@ def normalize_url(url):
     import re
     return re.sub('([^:])///*', r'\1/', url)
 
+def strip_url(url):
+    '''remove the url host and path prefix'''
+    import urllib
+    return normalize_url('/' + urllib.splithost(urllib.splittype(url)[1])[1].lstrip(path) + '/')
+
 def path_join(*args):
     '''combine args into a path with a trailing /'''
-    return '/'.join(args) + '/'
+    return normalize_url('/'.join(args) + '/')
 
 def path_split(path):
     return normalize_url(path).split('/')

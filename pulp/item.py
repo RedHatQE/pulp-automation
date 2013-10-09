@@ -1,5 +1,5 @@
 import namespace, json, requests
-from . import (normalize_url, path_join, path_split)
+from . import (normalize_url, path_join, path_split, strip_url)
 from pulp import (Request, format_response)
 from hasdata import HasData
 
@@ -16,7 +16,7 @@ class Item(HasData):
         data = response.json()
         item = cls(data)
         # set path; strip id part
-        item.path = path_join(*path_split(data['_href'])[:-1])
+        item.path = path_join(*path_split(strip_url(response.url))[:-1])
         return item
 
     @classmethod
