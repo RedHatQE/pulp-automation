@@ -14,16 +14,32 @@ class Item(HasData):
     def from_response(cls, response):
         '''create an instance out of a response'''
         data = response.json()
-        item = cls(data=data)
         # set path; strip id part
-        if '_href' in data:
-            # in case a response body contains a href
-            path = path_join(*path_split(data['_href'])[:-1])
+        response_path = path_join(*path_split(strip_url(response.url))[:-1])
+        if isinstance (data, list):
+            # response is list of items
+            ret = []
+            for x in data:
+                if '_href' in x:
+                    # in case a response body contains a href
+                    path = path_join(*path_split(x['_href'])[:-1])
+                else:
+                    # else use the response.url
+                    path = response_path
+                item = cls(data=x)
+                item.path = path
+                ret.append(item)
         else:
-            # else use the response.url
-            path = path_join(*path_split(strip_url(response.url))[:-1])
-        item.path = path
-        return item
+            # response is a single item
+            if '_href' in data:
+                # in case a response body contains a href
+                path = path_join(*path_split(data['_href'])[:-1])
+            else:
+                path = response_path
+            ret = cls(data=data)
+            ret.path = path
+            
+        return ret
 
     @classmethod
     def get(cls, pulp, id):
@@ -109,13 +125,6 @@ class GroupItem(Item):
             self._path = type(self).path
         else:
             self._path = path
-
-    @classmethod
-    def from_response(cls, response):
-        '''different path handling'''
-        data = response.json()
-        item = cls(data)
-        return item
 
     @classmethod
     def get(cls, pulp, id):
