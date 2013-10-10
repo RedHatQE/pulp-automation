@@ -1,5 +1,6 @@
 import pulp_test, json
 from pulp.repo import Repo, Importer
+from pulp.task import Task, GroupTask
  
 def setUpModule():
     pass
@@ -64,7 +65,10 @@ class SimpleRepoTest(RepoTest):
 
     def test_06_sync_repo(self):
         response = self.repo.sync(self.pulp)
-        self.assertPulpOK()
+        self.assertPulp(code=202)
+        task = Task.from_response(response)[0]
+        task.wait(self.pulp)
+        
 
     def test_07_delete_repo(self):
         self.repo.delete(self.pulp)
