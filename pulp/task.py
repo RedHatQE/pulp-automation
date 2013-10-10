@@ -38,7 +38,7 @@ class TaskDetails(hasdata.HasData):
         "tags"
     ]
     required_data_keys = ['task_id', 'state']
-    active_states = ['running', 'pending']
+    active_states = ['running', 'waiting']
     end_states = ['finished']
 
     @property
