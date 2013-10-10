@@ -1,4 +1,5 @@
 import item, time, hasdata
+from item import (Item, GroupItem)
 
 class AbstractTask(object):
     state = None
@@ -9,16 +10,22 @@ class AbstractTask(object):
         '''an abstract update does nothing'''
         pass
 
-    def wait(self, pulp):
-        '''wait while both of these conditions hold:
+    def wait(self, pulp, timeout=60, frequency=0.5):
+        '''wait while all of these conditions hold:
              - self.state in self.active_states
              - self.state not in self.end_states
+             - timeout not elapsed yet
         '''
-        self.update(pulp)
-        while self.state not in self.end_states and self.state in self.active_states:
-            time.sleep(1)
-            self.update(pulp)
-
+        delta = time.time() + timeout
+        while self.state not in self.end_states and self.state in self.active_states and time.time() <= delta:
+            time.sleep(frequency)
+            try:
+                self.reload(pulp)
+            except AssertionError as e:
+                # task gone --- no need to wait anymore
+                # FIXME: doesn't work with group-tasks, dunno why they can't be accessed via
+                # /tasks_group/<task.group_id>/<task.task_id>/
+                break
 
 
 class TaskDetails(hasdata.HasData):
@@ -45,15 +52,33 @@ class TaskDetails(hasdata.HasData):
     def state(self):
         return self.data['state']
 
+    @property
+    def id(self):
+        return self.data['task_id']
+
+    @id.setter
+    def id(self, other):
+        self.data['task_id'] = other
 
 
-class Task(item.Item, TaskDetails, AbstractTask):
+
+class Task(TaskDetails, AbstractTask, Item):
     '''an item-view task'''
     path = '/tasks/'
 
+    @classmethod
+    def from_response(cls, response):
+        '''create an instance out of a response; path not to be fetched from response'''
+        data = response.json()
+        if isinstance(data, list):
+            ret = []
+            for x in data:
+                ret.append(cls(data=x))
+            return ret
+        return cls(data=data)
 
 
-class GroupTask(item.GroupItem, TaskDetails, AbstractTask):
+class GroupTask(TaskDetails, AbstractTask, GroupItem):
     '''task view from a task_group'''
     path = '/task_groups/'
     required_data_keys = TaskDetails.required_data_keys + ['task_group_id']
@@ -85,4 +110,3 @@ TASK_DATA_EXAMPLE = {
     "finish_time": None,
     "tags": ["pulp:repository:test-repo"],
 }
-    
