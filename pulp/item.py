@@ -66,7 +66,8 @@ class Item(HasData):
 
     def reload(self, pulp):
         '''reload self.data from pulp'''
-        self.data = type(self).get(pulp, self.id).data
+        with pulp.asserting(True):
+            self.data = type(self).from_response(pulp.send(self.request('GET'))).data
 
     def create(self, pulp):
         '''create self in pulp'''
@@ -105,10 +106,6 @@ class AssociatedItem(Item):
     @classmethod
     def list(cls, pulp):
         raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
-
-    def reload(self, pulp):
-        with pulp.asserting(True):
-            self.data = type(self).from_response(pulp.send(self.request('GET'))).data
 
 
 class GroupItem(Item):
