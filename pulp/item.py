@@ -93,3 +93,55 @@ class AssociatedItem(Item):
     def reload(self, pulp):
         with pulp.asserting(True):
             self.data = type(self).from_response(pulp.send(self.request('GET'))).data
+
+
+class GroupItem(Item):
+    '''an Item that is bound to a Group'''
+    required_data_keys = ['id', 'group_id']
+    relevant_data_keys = ['id', 'group_id']
+
+    path = '/'
+
+    def __init__(self, data={}, group_id='', path=''):
+        super(GroupItem, self).__init__(data=data)
+        self.group_id = group_id
+        if not path:
+            self._path = type(self).path
+        else:
+            self._path = path
+
+    @classmethod
+    def from_response(cls, response):
+        '''different path handling'''
+        data = response.json()
+        item = cls(data)
+        return item
+
+    @classmethod
+    def get(cls, pulp, id):
+        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+
+    @classmethod
+    def list(cls, pulp):
+        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+
+    @property
+    def group_id(self):
+        return self.data['group_id']
+
+    @group_id.setter
+    def group_id(self, other):
+        self.data['group_id'] = other
+
+    @property
+    def path(self):
+        '''concatenate type(self).path with self.group_id'''
+        return path_join(self._path, self.group_id)
+
+    @path.setter
+    def path(self, other):
+        '''store the last two path items as self.group_id and self._path'''
+        path_items = path_split(other)
+        self._path = path_join(*path_items[:-2])
+        self.group_id = path_join(*path_items[-2:])
+        
