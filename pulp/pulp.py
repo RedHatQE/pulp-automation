@@ -61,7 +61,12 @@ class Request(object):
 
 def format_response(response):
     '''format some response attributes'''
-    return '>response:\n>c %s\n>u %s\n>t %s\n' % (response.status_code, response.url, response.text)
+    import pprint
+    try:
+        text = pprint.pformat(response.json())
+    except TypeError, ValueError:
+        text = response.text
+    return '>response:\n>c %s\n>u %s\n>t\n%s\n' % (response.status_code, response.url, text)
 
 def format_preprequest(preprequest):
     '''format some prepared request attributes'''
