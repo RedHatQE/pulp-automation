@@ -10,12 +10,13 @@ class Pulp(object):
         self.auth = auth
         self.verify = verify
         self.last_response = None
+        self.last_request = None
         self._asserting = asserting
 
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
-        preprequest = request(self.url, self.auth)
-        self.last_response = self.session.send(preprequest, verify=self.verify)
+        self.last_request = request(self.url, self.auth)
+        self.last_response = self.session.send(self.last_request, verify=self.verify)
         if self._asserting:
             assert self.is_ok, 'pulp was not OK:\n' + \
                 format_preprequest(preprequest) + format_response(self.last_response)
