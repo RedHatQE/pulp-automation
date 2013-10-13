@@ -88,6 +88,21 @@ class Request(object):
     def __repr__(self):
         return self.__class__.__name__ + "(%r, %r, data=%r, headers=%r)" % (self.method, self.path, self.data, self.headers)
 
+
+class ResponseLike(object):
+    '''provide comparison between requests.Result and a code/text/data container'''
+    def __init__(self, status_code=200, text=None):
+        self.status_code = status_code
+        self.text = text
+
+    def __eq__(self, other):
+        if self.text is not None:
+            return self.status_code, self.text == other.status_code, other.text
+        return self.status_code == other.status_code
+
+    def __repr__(self):
+        return  type(self).__name__ + '(status_code=%(status_code)s, text=%(text)s)' % self.__dict__
+
 def format_response(response):
     '''format some response attributes'''
     import pprint
