@@ -12,21 +12,30 @@ class Pulp(object):
         self.last_response = None
         self.last_request = None
         self._asserting = asserting
+        self._async = False
 
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
+        if self._async:
+            # when in async mode, just "queue" requests
+            self.last_request += (request(self.url, self.auth), )
+            return
         self.last_request = request(self.url, self.auth)
         self.last_response = self.session.send(self.last_request, verify=self.verify)
         if self._asserting:
             assert self.is_ok, 'pulp was not OK:\n' + \
-                format_preprequest(preprequest) + format_response(self.last_response)
+                format_preprequest(self.last_request) + format_response(self.last_response)
+            pass
         return self.last_response
 
     @property
     def is_ok(self):
         if self.last_response is None:
             return True
-        return self.last_response.status_code >= 200 and self.last_response.status_code < 400
+        check = lambda x: x.status_code >= 200 and x.status_code < 400
+        if isinstance(self.last_response, tuple):
+            return reduce(lambda x, y : x and check(y), self.last_response, True)
+        return check(self.last_response)
 
     @contextlib.contextmanager
     def asserting(self, value=True):
@@ -37,6 +46,26 @@ class Pulp(object):
             yield
         finally:
             self._asserting = old_value
+
+    @contextlib.contextmanager
+    def async(self, timeout=None):
+        '''enter a async/concurent--send context; pending requests will be processed at context exit'''
+        self.last_request = ()
+        self._async = True
+        try:
+            yield # gather send requests here
+            # process pending requests
+            import gevent
+            from gevent import monkey
+            monkey.patch_all(thread=False, select=False)
+            jobs = [gevent.spawn(self.session.send, request) for request in self.last_request]
+            gevent.joinall(jobs, timeout=timeout)
+            self.last_response = tuple([job.value for job in jobs])
+            if self._asserting:
+                assert self.is_ok, 'pulp was not OK:\n' + \
+                    format_preprequest(preprequest) + format_response(self.last_response)
+        finally:
+            self._async = False
 
 
 class Request(object):
@@ -64,7 +93,7 @@ def format_response(response):
     import pprint
     try:
         text = pprint.pformat(response.json())
-    except TypeError, ValueError:
+    except Exception:
         text = response.text
     return '>response:\n>c %s\n>u %s\n>t\n%s\n' % (response.status_code, response.url, text)
 

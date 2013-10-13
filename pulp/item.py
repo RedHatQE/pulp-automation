@@ -37,7 +37,7 @@ class Item(HasData):
             else:
                 path = response_path
             ret = cls(data=data)
-            ret.path = path
+            #ret.path = path
             
         return ret
 
