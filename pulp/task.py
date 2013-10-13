@@ -66,17 +66,6 @@ class Task(TaskDetails, AbstractTask, Item):
     '''an item-view task'''
     path = '/tasks/'
 
-    @classmethod
-    def from_response(cls, response):
-        '''create an instance out of a response; path not to be fetched from response'''
-        data = response.json()
-        if isinstance(data, list):
-            ret = []
-            for x in data:
-                ret.append(cls(data=x))
-            return ret
-        return cls(data=data)
-
 
 class GroupTask(TaskDetails, AbstractTask, GroupItem):
     '''task view from a task_group'''
