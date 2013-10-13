@@ -10,36 +10,21 @@ class Item(HasData):
     relevant_data_keys = ['id']
     required_data_keys = ['id']
 
+    @staticmethod
+    def strip_path(path):
+        '''remove id and url+pulp path parts from a path'''
+        return path_join(*path_split(strip_url(path))[:-1])
+
     @classmethod
     def from_response(cls, response):
-        '''create an instance out of a response'''
+        '''basic response to Item instance conversion'''
         data = response.json()
-        # set path; strip id part
-        response_path = path_join(*path_split(strip_url(response.url))[:-1])
-        if isinstance (data, list):
-            # response is list of items
+        if isinstance(data, list):
             ret = []
             for x in data:
-                if '_href' in x:
-                    # in case a response body contains a href
-                    path = path_join(*path_split(x['_href'])[:-1])
-                else:
-                    # else use the response.url
-                    path = response_path
-                item = cls(data=x)
-                item.path = path
-                ret.append(item)
-        else:
-            # response is a single item
-            if '_href' in data:
-                # in case a response body contains a href
-                path = path_join(*path_split(data['_href'])[:-1])
-            else:
-                path = response_path
-            ret = cls(data=data)
-            #ret.path = path
-            
-        return ret
+                ret.append(cls(data=x))
+            return ret
+        return cls(data=data)
 
     @classmethod
     def get(cls, pulp, id):
@@ -95,9 +80,27 @@ class Item(HasData):
 
 class AssociatedItem(Item):
     '''an Item that can't exist without previous association to another Item'''
-    def __init__(self, path_prefix='/', data={}):
+    def __init__(self, path='/', data={}):
         super(AssociatedItem, self).__init__(data=data)
-        self.path = path_join(path_prefix, type(self).path)
+        # adjust path
+        if '_href' in self.data:
+            self.path = self.strip_path(self.data['_href'])
+        else:
+            # make sure there is exactly one type(self).path in the path
+            self.path = path_join("/".join(path.rsplit(type(self).path)[:-1]), type(self).path)
+
+    @classmethod
+    def from_response(cls, response):
+        '''paht of an associated item has to be adjusted'''
+        response_path = cls.strip_path(response.url)
+        data = response.json()
+        if isinstance(data, list):
+            ret = []
+            for x in data:
+                ret.append(cls(data=x, path=response_path))
+            return ret
+        return cls(data=response.json(), path=response_path)
+            
 
     @classmethod
     def get(cls, pulp, id):
@@ -123,6 +126,9 @@ class GroupItem(Item):
         else:
             self._path = path
 
+    # same path adjusting
+    from_response = AssociatedItem.from_response
+ 
     @classmethod
     def get(cls, pulp, id):
         raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
