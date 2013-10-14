@@ -110,7 +110,18 @@ class SimpleRepoTest(RepoTest):
         task = Task.from_response(response)[0]
         task.wait(self.pulp)
         
+    def test_08_publish_repo(self):
+        response = self.repo.publish(
+            self.pulp,
+            data={
+                'id': 'dist_1',
+                'override_config': None
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
 
-    def test_08_delete_repo(self):
+    def test_09_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()

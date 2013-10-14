@@ -32,6 +32,14 @@ class Repo(item.Item):
         path='/actions/sync/'
     ):
         return pulp.send(self.request('POST', path=path, data=data))
+        
+    def publish(
+        self,
+        pulp,
+        data,
+        path='/actions/publish/'
+    ):
+        return pulp.send(self.request('POST', path=path, data=data))
 
     def list_importers(
         self,
