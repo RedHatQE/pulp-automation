@@ -4,6 +4,8 @@ from . import (normalize_url, path_join, path as pulp_path)
 
 class Pulp(object):
     '''Pulp handle'''
+    check_function = staticmethod(lambda x: x.status_code >= 200 and x.status_code < 400)
+
     def __init__(self, url, auth=None, verify=False, asserting=False):
         self.session = requests.Session()
         self.url = url
@@ -32,20 +34,24 @@ class Pulp(object):
     def is_ok(self):
         if self.last_response is None:
             return True
-        check = lambda x: x.status_code >= 200 and x.status_code < 400
         if isinstance(self.last_response, tuple):
-            return reduce(lambda x, y : x and check(y), self.last_response, True)
-        return check(self.last_response)
+            return reduce(lambda x, y : x and self.check_function(y), self.last_response, True)
+        return self.check_function(self.last_response)
 
     @contextlib.contextmanager
-    def asserting(self, value=True):
+    def asserting(self, value=True, check_function=None):
         '''turn on/off asserting responses in self.send()'''
         old_value = self._asserting
         self._asserting = value
+        old_check_function = self.check_function
+        if check_function is not None:
+            self.check_function = check_function
+        
         try:
             yield
         finally:
             self._asserting = old_value
+            self.check_function = old_check_function
 
     @contextlib.contextmanager
     def async(self, timeout=None):
