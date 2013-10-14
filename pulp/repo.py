@@ -79,3 +79,61 @@ class Distributor(item.AssociatedItem):
     path = '/distributors/'
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']
 
+
+SAMPLE_YUM_DISTRIBUTOR_CONFIG_DATA = {
+    "distributor_id": "yum_distributor",
+    "auto_publish": True,
+    "distributor_type": "yum_distributor",
+    "distributor_config": {
+        "http": False,
+        "https": True,
+        "relative_url": "/repos/pulp/pulp/demo_repos/zoo/"
+    }
+}
+
+SAMPLE_EXPORT_DISTRIBUTOR_CONFIG_DATA = {
+    "distributor_id": "export_distributor",
+    "auto_publish": False,
+    "distributor_type": "export_distributor",
+    "distributor_config":{
+        "http": False,
+        "https": True
+    }
+}
+
+SAMPLE_YUM_DISTRIBUTOR_DATA = {
+        "_id": {
+            "$oid": "5257ef5cc805d066faef1d2f"
+        },
+        "_ns": "repo_distributors",
+        "auto_publish": True,
+        "config": {
+            "http": False,
+            "https": True,
+            "relative_url": "/repos/pulp/pulp/demo_repos/zoo/"
+        },
+        "distributor_type_id": "yum_distributor",
+        "id": "yum_distributor",
+        "last_publish": "2013-10-11T13:06:32Z",
+        "repo_id": "test_rpm_repo",
+        "scheduled_publishes": [],
+        "scratchpad": {}
+}
+
+SAMPLE_EXPORT_DISTRIBUTOR_DATA = {
+        "_id": {
+            "$oid": "5257ef5cc805d066faef1d30"
+        },
+        "_ns": "repo_distributors",
+        "auto_publish": False,
+        "config": {
+            "http": False,
+            "https": True
+        },
+        "distributor_type_id": "export_distributor",
+        "id": "export_distributor",
+        "last_publish": None,
+        "repo_id": "test_rpm_repo",
+        "scheduled_publishes": [],
+        "scratchpad": None
+}
