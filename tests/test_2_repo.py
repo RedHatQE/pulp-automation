@@ -1,5 +1,5 @@
 import pulp_test, json
-from pulp.repo import Repo, Importer
+from pulp.repo import Repo, Importer, Distributor
 from pulp.task import Task, GroupTask
  
 def setUpModule():
@@ -71,13 +71,46 @@ class SimpleRepoTest(RepoTest):
             }
         )
 
-    def test_06_sync_repo(self):
+    def test_06_associate_distributor(self):
+        response = self.repo.associate_distributor(
+            self.pulp,
+            data={
+                'distributor_type_id': 'yum_distributor',
+                'distributor_config': {
+                    'http': False,
+                    'https': False,
+                    'relative_url': '/zoo/'
+                },
+                'distributor_id': 'dist_1',
+                'auto_publish': False
+            }
+        )
+        self.assertPulp(code=201)
+        distributor = Distributor.from_response(response)
+        distributor.reload(self.pulp)
+        self.assertEqual(
+            distributor,
+            {
+                'id': 'dist_1',
+                'distributor_type_id': 'yum_distributor',
+                'repo_id': self.repo.id,
+                'config': {
+                    'http': False,
+                    'https': False,
+                    'relative_url': '/zoo/'
+                },
+                'last_publish': None,
+                'auto_publish': False
+            }
+        )
+
+    def test_07_sync_repo(self):
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
         task = Task.from_response(response)[0]
         task.wait(self.pulp)
         
 
-    def test_07_delete_repo(self):
+    def test_08_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()
