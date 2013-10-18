@@ -14,6 +14,10 @@ class Namespace(dict):
 def load_ns(d, leaf_processor=lambda x: x):
     '''a recursive dict-to-Namespace loader'''
     if not isinstance(d, dict):
+        if isinstance(d, list):
+            return [load_ns(item) for item in d]
+        if isinstance(d, tuple):
+            return tuple([load_ns(item) for item in d])
         return leaf_processor(d)
     ns = Namespace()
     for k, v in d.items():
