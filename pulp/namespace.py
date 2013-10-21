@@ -24,6 +24,18 @@ def load_ns(d, leaf_processor=lambda x: x):
         ns[k] = load_ns(v, leaf_processor)
     return ns
 
+
+def dump_ns(ns, leaf_processor=lambda x: x):
+    '''a recursive namespace-to-dict dumper'''
+    if isinstance(ns, tuple):
+        return tuple([dump_ns(item) for item in ns])
+    if isinstance(ns, list):
+        return [dump_ns(item) for item in ns]
+    if isinstance(ns, dict) or isinstance(ns, Namespace):
+        return { k: dump_ns(v) for k,v in ns.items()}
+     
+    return leaf_processor(ns)
+
 def locate_ns_item(ns, item):
     '''
     locate queries of the form 'a.b.c' in a Namespace instance
