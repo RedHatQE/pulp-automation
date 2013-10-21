@@ -33,6 +33,10 @@ class QpidHandle(object):
             assert self.is_ok, 'Qpid session was not OK:\n%s' % self
         return namespace.load_ns(json.loads(ret.content))
 
+    def close(self):
+        '''shortcut for self.session.close()'''
+        return self.session.close()
+
     def __repr__(self):
         return type(self).__name__ + \
             '(%(url)s, %(receiver_name)s, sender_name=%(sender_name)s, asserting=%(_asserting)s)' % self.__dict__
@@ -55,6 +59,11 @@ class QpidHandle(object):
     def message(self):
         '''shortcut for self.fetch()'''
         return self.fetch()
+
+    @message.setter
+    def message(self, other):
+        '''shortcut for self.send()'''
+        self.send(other)
 
     @contextlib.contextmanager
     def asserting(self, value=True):
