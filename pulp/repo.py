@@ -88,6 +88,45 @@ class Distributor(item.AssociatedItem):
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']
 
 
+def create_yum_repo(
+    pulp,
+    repo_id,
+    feed,
+    relative_url=None,
+    importer_id='yum_importer',
+    distributor_id='yum_distributor',
+    http=True,
+    https=True
+):
+    '''create an almost default yum repo'''
+    repo = Repo({'id': repo_id})
+    with pulp.asserting(True):
+        repo = Repo.from_response(repo.create(pulp))
+        importer = Importer.from_response(repo.associate_importer(
+            pulp,
+            data={
+                'importer_type_id': 'yum_importer',
+                'importer_id': 'yum_importer',
+                'importer_config': {
+                    'feed': feed
+                }
+            }
+        ))
+        distributor = Distributor.from_response(repo.associate_distributor(
+            pulp,
+            data={
+                'distributor_id': distributor_id,
+                'distributor_type_id': 'yum_distributor',
+                'distributor_config': {
+                    'http': http,
+                    'https': https,
+                    'relative_url': relative_url
+                }
+            }
+        ))
+    return repo, importer, distributor
+
+
 SAMPLE_YUM_DISTRIBUTOR_CONFIG_DATA = {
     "distributor_id": "yum_distributor",
     "auto_publish": True,
