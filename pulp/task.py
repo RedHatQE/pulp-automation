@@ -28,6 +28,7 @@ class AbstractTask(object):
                 break
 
 
+
 class TaskDetails(hasdata.HasData):
     relevant_data_keys = [
         "response",
@@ -66,6 +67,16 @@ class Task(TaskDetails, AbstractTask, Item):
     '''an item-view task'''
     path = '/tasks/'
 
+    @classmethod
+    def wait_for_response(cls, pulp, response):
+        '''a shortcut for wait & from_response'''
+        ret = cls.from_response(response)
+        if isinstance(ret, list):
+            # more than one task pending
+            for task in ret:
+                task.wait(pulp)
+        else:
+            ret.wait(pulp)
 
 class GroupTask(TaskDetails, AbstractTask, GroupItem):
     '''task view from a task_group'''
