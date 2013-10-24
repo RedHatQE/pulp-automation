@@ -20,4 +20,4 @@ def path_split(path):
     return normalize_url(path).split('/')
 
 from pulp import (Pulp, Request, ResponseLike, format_response, format_preprequest)
-import item, repo, namespace, hasdata, qpid_handle, consumer
+import item, repo, namespace, hasdata, qpid_handle, consumer, agent
