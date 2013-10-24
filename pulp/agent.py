@@ -7,7 +7,7 @@ class Agent(object):
     def __init__(self, module, catching=False):
         self.module = module
         self._catching = catching
-        self.log = logging.getLogger(__name__ + "." + str(self))
+        self.log = logging.getLogger(__name__ + "." + type(self).__name__)
         self.log.addHandler(logging.StreamHandler())
 
     def __repr__(self):
@@ -35,6 +35,12 @@ class Agent(object):
         return ret
 
     @staticmethod
+    def make_status(envelope, status):
+        ret = envelope.copy()
+        ret['status'] = status
+        return ret
+
+    @staticmethod
     def invert_envelope(envelope):
         ''''return envelope copy suitable for request-to-response processing'''
         envelope = envelope.copy()
@@ -47,7 +53,13 @@ class Agent(object):
     def request_to_call(module, request):
         # instnatiate required class based on request.classname
         # call required method
-        obj = getattr(module, request['classname'])()
+        cargs=[]
+        ckvs={}
+        if 'cntr' in request and request['cntr'] is not None:
+            cargs = cntr[0]
+            ckvs = cntr[1]
+            
+        obj = getattr(module, request['classname'])(*cargs, **ckvs)
         return lambda: make_response(envelope, getattr(obj, request['method'])(request['args'], request['kws']))
 
     def __call__(self, qpid_handle):
@@ -55,6 +67,10 @@ class Agent(object):
         # get the request
         envelope, request = self.strip_request(qpid_handle.message)
         self.log.debug("dispatching: %r; %r" % (envelope, request))
+        # invert envelope
+        envelope = self.invert_envelope(envelope)
+        # accept
+        qpid_handle.message = self.make_status(envelope, 'accepted')
         # dispatch
         if self._catching:
             try:
