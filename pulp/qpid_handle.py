@@ -28,6 +28,7 @@ class QpidHandle(object):
     def fetch(self):
         '''shortcut for namespace.load_ns(json.loads(self.receiver.fetch().content))'''
         ret = self.receiver.fetch()
+        self.session.acknowledge()
         self.last_fetched = ret
         if self._asserting:
             assert self.is_ok, 'Qpid session was not OK:\n%s' % self
