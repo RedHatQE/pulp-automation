@@ -1,6 +1,7 @@
 import item, json
 from pulp import (Request, )
 from . import (path_join, format_response)
+from permission import Permission
 
 
 class User(item.Item):
@@ -31,3 +32,19 @@ class User(item.Item):
         return pulp.send(
             self.request('PUT', data=delta)
         )
+
+    def grant_permission(
+        self,
+        pulp,
+        data,
+        path='/actions/grant_to_user/'
+    ):
+        return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
+
+    def revoke_permission(
+        self,
+        pulp,
+        data,
+        path='/actions/revoke_from_user/'
+    ):
+        return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
