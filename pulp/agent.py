@@ -50,17 +50,40 @@ class Agent(object):
         return envelope
 
     @staticmethod
-    def request_to_call(module, envelope, request):
-        # instnatiate required class based on request.classname
-        # call required method
+    def request_to_call(module, request):
+        ''' return a lambda that performs instnatiating required class
+        and calling required method upon execution'''
         cargs=[]
         ckvs={}
+        # assert sanity of the fields is mainained
         if 'cntr' in request and request['cntr'] is not None:
+            assert isinstance(request['cntr'], list)
+            assert len(request['cntr']) == 2
             cargs = cntr[0]
             ckvs = cntr[1]
+            assert isinstance(cargs, list)
+            assert isinstance(ckvs, dict)
+        assert 'args' in request and isinstance(request['args'], list)
+        assert 'kws' in request and isinstance(request['kws'], dict)
             
-        obj = getattr(module, request['classname'])(*cargs, **ckvs)
-        return lambda: self.make_response(envelope, getattr(obj, request['method'])(request['args'], request['kws']))
+        return lambda: \
+            getattr(
+                    # instantiate required object
+                    getattr(
+                        module,
+                        request['classname']
+                    )(
+                        *cargs,
+                        **ckvs
+                    ),
+                    # access required method
+                    request['method']
+            )(
+                # call required object method with requested signature
+                *request['args'],
+                **request['kws']
+            )
+        
 
     def __call__(self, qpid_handle):
         '''dispatch a single RMI request--response'''
@@ -69,20 +92,24 @@ class Agent(object):
         self.log.debug("dispatching: %r; %r" % (envelope, request))
         # invert envelope
         envelope = self.invert_envelope(envelope)
-        # accept
+        # accept the message
         qpid_handle.message = self.make_status(envelope, 'accepted')
         # dispatch
         if self._catching:
             try:
-                response = self.request_to_call(self.module, envelope, request)()
+                response = self.request_to_call(self.module, request)()
             except Exception as e:
+                # when in cathcing mode, propagate all exceptions to the remote end
                 import traceback
-                response = self.make_exception(envelope, {'Traceback': traceback.format_exc(e)})
+                t = traceback.format_exc(e)
+                self.log.warning("propagating failure: %s" % t)
+                qpid_handle.message = self.make_exception(envelope, {'Traceback': t})
+                return
         else:
-                response = self.request_to_call(self.module, envelope, request)()
+                response = self.request_to_call(self.module, request)()
 
         # send the response
-        qpid_handle.message = response 
+        qpid_handle.message = self.make_response(envelope, response)
         
     @contextlib.contextmanager
     def catching(self, value=True):
