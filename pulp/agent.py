@@ -8,7 +8,6 @@ class Agent(object):
         self.module = module
         self._catching = catching
         self.log = logging.getLogger(__name__ + "." + type(self).__name__)
-        self.log.addHandler(logging.StreamHandler())
 
     def __repr__(self):
         return type(self).__name__ + "(%(module)r, catching=%(_catching)r)" % self.__dict__
