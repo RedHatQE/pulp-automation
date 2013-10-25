@@ -50,7 +50,7 @@ class Agent(object):
         return envelope
 
     @staticmethod
-    def request_to_call(module, request):
+    def request_to_call(module, envelope, request):
         # instnatiate required class based on request.classname
         # call required method
         cargs=[]
@@ -60,7 +60,7 @@ class Agent(object):
             ckvs = cntr[1]
             
         obj = getattr(module, request['classname'])(*cargs, **ckvs)
-        return lambda: make_response(envelope, getattr(obj, request['method'])(request['args'], request['kws']))
+        return lambda: self.make_response(envelope, getattr(obj, request['method'])(request['args'], request['kws']))
 
     def __call__(self, qpid_handle):
         '''dispatch a single RMI request--response'''
@@ -74,12 +74,12 @@ class Agent(object):
         # dispatch
         if self._catching:
             try:
-                response = self.make_response(envelope, self.request_to_call(self.module, request)())
+                response = self.request_to_call(self.module, envelope, request)()
             except Exception as e:
                 import traceback
                 response = self.make_exception(envelope, {'Traceback': traceback.format_exc(e)})
         else:
-            response = self.make_response(envelope, self.request_to_call(self.module, request)())
+                response = self.request_to_call(self.module, envelope, request)()
 
         # send the response
         qpid_handle.message = response 
