@@ -1,13 +1,14 @@
-import contextlib, logging
+import contextlib, logging, namespace
 
 
 class Agent(object):
     '''consumer agent object. Handles envelopes, routing, secrets... And the remote calls'''
 
-    def __init__(self, module, catching=False):
+    def __init__(self, module, PROFILE=namespace.load_ns({}), catching=False):
         self.module = module
         self._catching = catching
         self.log = logging.getLogger(__name__ + "." + type(self).__name__)
+        self.PROFILE = PROFILE
 
     def __repr__(self):
         return type(self).__name__ + "(%(module)r, catching=%(_catching)r)" % self.__dict__
@@ -26,10 +27,13 @@ class Agent(object):
         return ret
 
     @staticmethod
-    def make_exception(envelope, exception):
+    def make_exception(envelope, error=Exception(), trace=None):
         ret = envelope.copy()
         ret['result'] = {
-            'exval': exception
+            'exval': str(error),
+            'xstate': {
+                'trace': str(trace)
+            }
         }
         return ret
 
@@ -43,13 +47,19 @@ class Agent(object):
     def invert_envelope(envelope):
         ''''return envelope copy suitable for request-to-response processing'''
         envelope = envelope.copy()
-        # strip non-required keys
-        for key in ['routing', 'replyto']:
-            envelope.pop(key, None)
+
+        replyto_fields = envelope['replyto'].split(';')
+        source = replyto_fields[0]
+        destination = envelope['routing'][1]
+        routing_id = envelope['routing'][0]
+        queue_properties = replyto_fields[1]
+        
+        envelope['routing'] = [routing_id, source]
+        envelope['replyto'] = ";".join([destination,queue_properties])
         return envelope
 
     @staticmethod
-    def request_to_call(module, request):
+    def request_to_call(module, request, PROFILE):
         ''' return a lambda that performs instnatiating required class
         and calling required method upon execution'''
         cargs=[]
@@ -80,7 +90,8 @@ class Agent(object):
             )(
                 # call required object method with requested signature
                 *request['args'],
-                **request['kws']
+                # augment with PROFILE
+                **dict(list(request['kws'].viewitems()) + [('PROFILE', PROFILE)])
             )
         
 
@@ -91,18 +102,20 @@ class Agent(object):
         self.log.debug("dispatching: %r; %r" % (envelope, request))
         # invert envelope
         envelope = self.invert_envelope(envelope)
-        # accept the message
+        # acknowledge the message
         qpid_handle.message = self.make_status(envelope, 'accepted')
+        qpid_handle.message = self.make_status(envelope, 'started')
+        qpid_handle.message = self.make_status(envelope, 'progress')
         # dispatch
         if self._catching:
             try:
-                response = self.request_to_call(self.module, request)()
+                response = self.request_to_call(self.module, request, self.PROFILE)()
             except Exception as e:
                 # when in cathcing mode, propagate all exceptions to the remote end
                 import traceback
                 t = traceback.format_exc(e)
                 self.log.warning("propagating failure: %s" % t)
-                qpid_handle.message = self.make_exception(envelope, {'Traceback': t})
+                qpid_handle.message = self.make_exception(envelope, error=e, trace=t)
                 return
         else:
                 response = self.request_to_call(self.module, request)()
@@ -116,7 +129,7 @@ class Agent(object):
         old_value = self._catching
         self._catching = value
         try:
-            yield
+            yield self
         finally:
             self._catching = old_value
 
