@@ -74,7 +74,6 @@ class Agent(object):
             assert isinstance(ckvs, dict)
         assert 'args' in request and isinstance(request['args'], list)
         assert 'kws' in request and isinstance(request['kws'], dict)
-            
         return lambda: \
             getattr(
                     # instantiate required object
@@ -118,7 +117,7 @@ class Agent(object):
                 qpid_handle.message = self.make_exception(envelope, error=e, trace=t)
                 return
         else:
-                response = self.request_to_call(self.module, request)()
+                response = self.request_to_call(self.module, request, self.PROFILE)()
 
         # send the response
         qpid_handle.message = self.make_response(envelope, response)
