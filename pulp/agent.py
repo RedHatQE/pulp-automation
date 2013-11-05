@@ -1,5 +1,5 @@
 import contextlib, logging, namespace
-
+log = logging.getLogger(__name__)
 
 class Agent(object):
     '''consumer agent object. Handles envelopes, routing, secrets... And the remote calls'''
@@ -63,8 +63,8 @@ class Agent(object):
         return envelope
 
     @staticmethod
-    def forget_request_envelope(envelope):
-        return envelope['replyto'] is None
+    def forget_request_envelope(envelope): 
+        return  envelope['routing'][1] == None
 
     @staticmethod
     def request_to_call(module, request, PROFILE):
@@ -133,6 +133,7 @@ class Agent(object):
 
         if self.forget_request_envelope(envelope):
             # response not required
+            log.info("forgetting response: %s" % response)
             return
 
         # send the response
