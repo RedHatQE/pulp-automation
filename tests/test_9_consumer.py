@@ -25,6 +25,8 @@ class TestConsumer(PulpTest):
             Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
             cls.consumer.delete(cls.pulp)
 
+    def test_00_none(self):
+        pass
 
     def test_01_update_consumer(self):
         self.consumer |= {'display_name': "A %s consumer" % type(self).__name__}

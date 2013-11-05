@@ -48,15 +48,23 @@ class Agent(object):
         ''''return envelope copy suitable for request-to-response processing'''
         envelope = envelope.copy()
 
-        replyto_fields = envelope['replyto'].split(';')
+        if envelope['replyto'] is None:
+            # handle inverting of don't care messages
+            replyto_fields = [None, None]
+        else:
+            replyto_fields = envelope['replyto'].split(';')
         source = replyto_fields[0]
         destination = envelope['routing'][1]
         routing_id = envelope['routing'][0]
         queue_properties = replyto_fields[1]
         
         envelope['routing'] = [routing_id, source]
-        envelope['replyto'] = ";".join([destination,queue_properties])
+        envelope['replyto'] = ";".join([str(destination),str(queue_properties)])
         return envelope
+
+    @staticmethod
+    def forget_request_envelope(envelope):
+        return envelope['replyto'] is None
 
     @staticmethod
     def request_to_call(module, request, PROFILE):
@@ -101,10 +109,11 @@ class Agent(object):
         self.log.debug("dispatching: %r; %r" % (envelope, request))
         # invert envelope
         envelope = self.invert_envelope(envelope)
-        # acknowledge the message
-        qpid_handle.message = self.make_status(envelope, 'accepted')
-        qpid_handle.message = self.make_status(envelope, 'started')
-        qpid_handle.message = self.make_status(envelope, 'progress')
+        if not self.forget_request_envelope(envelope):
+            # acknowledge the message
+            qpid_handle.message = self.make_status(envelope, 'accepted')
+            qpid_handle.message = self.make_status(envelope, 'started')
+            qpid_handle.message = self.make_status(envelope, 'progress')
         # dispatch
         if self._catching:
             try:
@@ -114,10 +123,17 @@ class Agent(object):
                 import traceback
                 t = traceback.format_exc(e)
                 self.log.warning("propagating failure: %s" % t)
+                if self.forget_request_envelope(envelope):
+                    # response not required
+                    return
                 qpid_handle.message = self.make_exception(envelope, error=e, trace=t)
                 return
         else:
                 response = self.request_to_call(self.module, request, self.PROFILE)()
+
+        if self.forget_request_envelope(envelope):
+            # response not required
+            return
 
         # send the response
         qpid_handle.message = self.make_response(envelope, response)
