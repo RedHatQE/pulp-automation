@@ -149,3 +149,33 @@ class Agent(object):
         finally:
             self._catching = old_value
 
+    @contextlib.contextmanager
+    def running(self, qpid_handle, frequency=3):
+        '''context with the agent serving in "background"'''
+        import gevent
+        from gevent import monkey
+        from gevent.event import Event
+
+        monkey.patch_all()#(thread=False, select=False)
+
+        def job(stop):
+            '''running qpid handle'''
+            from qpid_handle import (Timeout, Empty)
+            while True:
+                if stop.is_set():
+                    log.debug('joining %r' % self)
+                    break
+                try:
+                    with qpid_handle.timeout(1.0/frequency):
+                        self(qpid_handle)
+                except (Timeout, Empty) as e:
+                    log.debug('no messages %r' % self)
+                    continue
+
+        stop = Event()
+        agent = gevent.spawn(job, stop)
+        try:
+            yield self
+        finally:
+            stop.set()
+            agent.join()

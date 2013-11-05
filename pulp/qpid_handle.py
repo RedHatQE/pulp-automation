@@ -1,4 +1,7 @@
 import contextlib, json, namespace
+from qpid.messaging import Connection
+from qpid.messaging import Message
+from qpid.messaging.exceptions import (Timeout, Empty)
 
 class QpidHandle(object):
     '''qpid handle'''
@@ -11,14 +14,13 @@ class QpidHandle(object):
         self._asserting = asserting
         self.last_sent = None
         self.last_fetched = None
-        from qpid.messaging import Connection
         self.session = Connection.establish(self.url, **options).session()
         self.receiver = self.session.receiver(self.receiver_name)
         self.sender = self.session.sender(self.sender_name)
+        self._timeout = None
 
     def send(self, message):
         '''shortcut for self.sender.send(Message(content=json.dumps(message))'''
-        from qpid.messaging import Message
         self.last_sent = Message(content=json.dumps(message))
         ret = self.sender.send(self.last_sent)
         if self._asserting:
@@ -27,7 +29,7 @@ class QpidHandle(object):
 
     def fetch(self):
         '''shortcut for namespace.load_ns(json.loads(self.receiver.fetch().content))'''
-        ret = self.receiver.fetch()
+        ret = self.receiver.fetch(timeout=self._timeout)
         self.session.acknowledge()
         self.last_fetched = ret
         if self._asserting:
@@ -75,4 +77,14 @@ class QpidHandle(object):
             yield
         finally:
             self._asserting = old_value
+
+    @contextlib.contextmanager
+    def timeout(self, value=None):
+        '''enter a timeout context where fetch/self.message raise Timeouts'''
+        old_value = self._timeout
+        self._timeout = value
+        try:
+            yield self
+        finally:
+            self._timeout = old_value
         
