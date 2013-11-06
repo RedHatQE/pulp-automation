@@ -156,12 +156,13 @@ class Agent(object):
         from gevent import monkey
         from gevent.event import Event
 
-        monkey.patch_all()#(thread=False, select=False)
+        monkey.patch_all(thread=False, select=False)
 
         def job(stop):
             '''running qpid handle'''
             from qpid_handle import (Timeout, Empty)
             while True:
+                gevent.sleep()
                 if stop.is_set():
                     log.debug('joining %r' % self)
                     break
@@ -170,7 +171,6 @@ class Agent(object):
                         self(qpid_handle)
                 except (Timeout, Empty) as e:
                     log.debug('no messages %r' % self)
-                    continue
 
         stop = Event()
         agent = gevent.spawn(job, stop)
@@ -178,4 +178,5 @@ class Agent(object):
             yield self
         finally:
             stop.set()
+            gevent.sleep()
             agent.join()
