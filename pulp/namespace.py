@@ -14,11 +14,27 @@ class Namespace(dict):
 def load_ns(d, leaf_processor=lambda x: x):
     '''a recursive dict-to-Namespace loader'''
     if not isinstance(d, dict):
+        if isinstance(d, list):
+            return [load_ns(item) for item in d]
+        if isinstance(d, tuple):
+            return tuple([load_ns(item) for item in d])
         return leaf_processor(d)
     ns = Namespace()
     for k, v in d.items():
         ns[k] = load_ns(v, leaf_processor)
     return ns
+
+
+def dump_ns(ns, leaf_processor=lambda x: x):
+    '''a recursive namespace-to-dict dumper'''
+    if isinstance(ns, tuple):
+        return tuple([dump_ns(item) for item in ns])
+    if isinstance(ns, list):
+        return [dump_ns(item) for item in ns]
+    if isinstance(ns, dict) or isinstance(ns, Namespace):
+        return { k: dump_ns(v) for k,v in ns.items()}
+     
+    return leaf_processor(ns)
 
 def locate_ns_item(ns, item):
     '''

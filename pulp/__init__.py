@@ -19,5 +19,6 @@ def path_join(*args):
 def path_split(path):
     return normalize_url(path).split('/')
 
+
 from pulp import (Pulp, Request, ResponseLike, format_response, format_preprequest)
-import item, repo, namespace, hasdata, permission
+import item, repo, namespace, hasdata, qpid_handle, consumer, agent, permission, handler
