@@ -22,14 +22,6 @@ class SimpleRepoTest(RepoTest):
 
     def test_02_get_repo(self):
         repo = Repo.get(self.pulp, self.repo.id)
-        with self.pulp.async():
-            self.pulp.send(repo.request('GET'))
-            self.pulp.send(repo.request('GET'))
-            self.pulp.send(repo.request('GET'))
-        from pulp import format_response
-        for response in self.pulp.last_response:
-            print format_response(response)
-   
         self.assertEqual(repo.id, self.repo.id)
         self.repo.reload(self.pulp)
         self.assertEqual(self.repo, repo)
