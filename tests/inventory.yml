@@ -2,3 +2,5 @@ ROLES:
   pulp:
     auth: [admin, admin]
     url: 'https://pulp.example.com'
+  qpid:
+    url: 'pulp.example.com'
