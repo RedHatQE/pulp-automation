@@ -1,4 +1,4 @@
 ROLES:
   pulp:
     auth: [admin, admin]
-    url: 'https://ec2-54-217-142-152.eu-west-1.compute.amazonaws.com'
+    url: 'https://pulp.example.com'
