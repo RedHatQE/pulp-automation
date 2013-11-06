@@ -22,19 +22,19 @@ class Content(Handler):
                     'details': []
                 })
 
-    @logged
+    @logged(log.info)
     @unit_method
     def install(self, unit_type, unit, PROFILE):
         '''dispatch installing new units'''
         unit_type.store(unit, PROFILE)
 
-    @logged
+    @logged(log.info)
     @unit_method
     def update(self, unit_type, unit, PROFILE):
         '''dispatch updating units'''
         unit_type.update(unit, PROFILE)
 
-    @logged
+    @logged(log.info)
     @unit_method
     def uninstall(self, unit_type, unit, PROFILE):
         '''disptach removing units'''

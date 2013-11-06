@@ -11,17 +11,17 @@ class Consumer(Handler):
         'yum_distributor': yum_unit.Distributor
     }
 
-    @logged
+    @logged(log.info)
     @unit_method
     def bind(self, unit_type, unit, PROFILE):
         unit_type.bind(unit, PROFILE)
 
-    @logged
+    @logged(log.info)
     @unit_method
     def unbind(self, unit_type, unit, PROFILE):
         unit_type.unbind(unit, PROFILE)
 
-    @logged
+    @logged(log.info)
     def unregistered(self, *args, **kvs):
         pass
 

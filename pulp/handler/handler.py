@@ -8,18 +8,20 @@ def format_function_call(fn_name, args, kvs):
     rkvs = map(lambda x: "%s=%r" % (x[0], x[1]), kvs)
     return "%s(" % fn_name  + ", ".join(rargs + rkvs) + ")"
 
-def logged(fn, log_method=log.info):
+def logged(log_method=log.info):
     '''decorate a method to log its calls and returned value'''
-    def logged_wrapper(*args, **kvs):
-        ret = None
-        # method's first argument is always its 'self' object
-        obj = args[0]
-        try:
-            ret = fn(*args, **kvs)
-        finally:
-            log_method(repr(obj) + "." + format_function_call(fn.__name__, args[1:], kvs) + " == " + repr(ret))
-        return ret
-    return logged_wrapper
+    def decorator_maker(method):
+        import functools
+        @functools.wraps(method)
+        def logged_wrapper(self, *args, **kvs):
+            ret = None
+            try:
+                ret = method(self, *args, **kvs)
+            finally:
+                log_method(repr(self) + "." + format_function_call(method.__name__, args, kvs) + " == " + repr(ret))
+            return ret
+        return logged_wrapper
+    return decorator_maker
 
 def unit_method(method):
     '''maps a method on all the units;
@@ -82,7 +84,7 @@ class Handler(object):
     def unit_types(units):
         return set([unit.type_id for unit in units])
 
-    @logged
+    @logged()
     def profile(self, *args, **kvs):
         '''return the profile'''
         _PROFILE = kvs.pop('PROFILE', PROFILE.copy())
@@ -92,7 +94,7 @@ class Handler(object):
 
 class Admin(Handler):
 
-    @logged
+    @logged()
     def cancel(*args, **kvs):
         return {
             'succeeded': True
