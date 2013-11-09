@@ -1,5 +1,5 @@
 import pulp_test
-from pulp import login
+from pulp_auto import login
 
 
 class TestLogin(pulp_test.PulpTest):

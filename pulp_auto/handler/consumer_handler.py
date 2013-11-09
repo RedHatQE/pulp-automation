@@ -1,5 +1,5 @@
 from handler import (Handler, logged, unit_method)
-from pulp.namespace import load_ns
+from pulp_auto.namespace import load_ns 
 from profile import PROFILE
 import logging, yum_unit
 log = logging.getLogger(__name__)

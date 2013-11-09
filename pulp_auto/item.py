@@ -1,6 +1,6 @@
 import namespace, json, requests
 from . import (normalize_url, path_join, path_split, strip_url)
-from pulp import (Request, format_response)
+from pulp_auto import (Request, format_response)
 from hasdata import HasData
 
 
@@ -28,14 +28,14 @@ class Item(HasData):
 
     @classmethod
     def get(cls, pulp, id):
-        '''create an instance from pulp id'''
+        '''create an instance from pulp_auto id'''
         with pulp.asserting(True):
             response = pulp.send(Request('GET', path_join(cls.path, id)))
         return cls.from_response(response)
 
     @classmethod
     def list(cls, pulp):
-        '''create a list of instances from pulp'''
+        '''create a list of instances from pulp_auto '''
         with pulp.asserting(True):
             response = pulp.send(Request('GET', cls.path))
         return map (lambda x: cls(data=x), response.json())
@@ -50,7 +50,7 @@ class Item(HasData):
         self.data['id'] = other
 
     def reload(self, pulp):
-        '''reload self.data from pulp'''
+        '''reload self.data from pulp_auto '''
         with pulp.asserting(True):
             self.data = type(self).from_response(pulp.send(self.request('GET'))).data
 
@@ -59,7 +59,7 @@ class Item(HasData):
         return pulp.send(Request('POST', path=self.path, data=self.data))
 
     def delete(self, pulp):
-        '''remove self from pulp'''
+        '''remove self from pulp_auto '''
         return pulp.send(self.request('DELETE'))
 
     def update(self, pulp):
@@ -104,11 +104,11 @@ class AssociatedItem(Item):
 
     @classmethod
     def get(cls, pulp, id):
-        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+        raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
 
     @classmethod
     def list(cls, pulp):
-        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+        raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
 
 
 class GroupItem(Item):
@@ -131,11 +131,11 @@ class GroupItem(Item):
  
     @classmethod
     def get(cls, pulp, id):
-        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+        raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
 
     @classmethod
     def list(cls, pulp):
-        raise TypeError("can't instantiate %s from pulp get response" % cls.__name__)
+        raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
 
     @property
     def group_id(self):

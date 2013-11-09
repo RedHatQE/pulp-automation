@@ -1,8 +1,8 @@
 import pulp_test, json
 from pulp_test import PulpTest
-from pulp.repo import Repo, Importer
-from pulp.task import Task, GroupTask
-from pulp import ResponseLike, login, format_response
+from pulp_auto.repo import Repo, Importer 
+from pulp_auto.task import Task, GroupTask 
+from pulp_auto import ResponseLike, login, format_response
 
 class RepoTest(pulp_test.PulpTest):
     def setUp(self):

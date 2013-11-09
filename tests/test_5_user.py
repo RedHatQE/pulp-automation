@@ -1,6 +1,6 @@
 import pulp_test, json
-from pulp.user import User
-from pulp import login, Pulp, format_response, format_preprequest
+from pulp_auto.user import User 
+from pulp_auto import login, Pulp, format_response, format_preprequest
 
 
 def setUpModule():

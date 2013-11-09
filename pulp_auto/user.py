@@ -1,5 +1,5 @@
 import item, json
-from pulp import (Request, )
+from pulp_auto import (Request, )
 from . import (path_join, format_response)
 from permission import Permission
 

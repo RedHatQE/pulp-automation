@@ -1,4 +1,4 @@
-from pulp import namespace
+from pulp_auto import namespace
 import yaml
 
 # load inventory globals

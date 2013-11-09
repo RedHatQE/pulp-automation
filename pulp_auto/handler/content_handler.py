@@ -1,5 +1,5 @@
 import rpm_unit, profile, logging
-from pulp.namespace import load_ns
+from pulp_auto.namespace import load_ns 
 from handler import (Handler, logged, unit_method)
 
 log = logging.getLogger(__name__)

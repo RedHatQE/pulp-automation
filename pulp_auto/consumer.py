@@ -1,6 +1,6 @@
 import json, namespace, requests
 from . import (normalize_url, path_join, path_split, strip_url)
-from pulp import (Request, )
+from pulp_auto import (Request, )
 from item import (Item, AssociatedItem)
 
 

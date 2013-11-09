@@ -1,5 +1,5 @@
 import item, json
-from pulp import (Request, path_join)
+from pulp_auto import (Request, path_join)
 
 
 class Permission(item.Item):

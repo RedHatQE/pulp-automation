@@ -1,4 +1,4 @@
-from pulp.namespace import load_ns
+from pulp_auto.namespace import load_ns 
 
 
 class Rpm(object):

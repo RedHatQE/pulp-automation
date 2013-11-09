@@ -1,14 +1,14 @@
 # basic pulp test class
 import unittest, pprint, logging
 from . import ROLES
-from pulp import Pulp, format_response
-from pulp.handler.profile import PROFILE
-from pulp.consumer import (Consumer, Binding)
-from pulp.repo import create_yum_repo
-from pulp.task import Task
-from pulp.agent import Agent
-from pulp.qpid_handle import QpidHandle
-import pulp.handler
+from pulp_auto import Pulp, format_response
+from pulp_auto.handler.profile import PROFILE 
+from pulp_auto.consumer import (Consumer, Binding) 
+from pulp_auto.repo import create_yum_repo 
+from pulp_auto.task import Task 
+from pulp_auto.agent import Agent 
+from pulp_auto.qpid_handle import QpidHandle 
+import pulp_auto.handler 
 
 class PulpTest(unittest.TestCase):
     @classmethod
@@ -73,7 +73,7 @@ class ConsumerAgentPulpTest(PulpTest):
         cls.consumer.create(cls.pulp)
         cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
         cls.log.info('instantiating agent')
-        cls.agent = Agent(pulp.handler, PROFILE=pulp.handler.profile.PROFILE)
+        cls.agent = Agent(pulp_auto.handler, PROFILE=pulp_auto.handler.profile.PROFILE)
         cls.log.info('instantiating qpid handle')
         cls.qpid_handle = QpidHandle(ROLES.qpid.url, cls.consumer.id)
 

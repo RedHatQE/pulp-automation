@@ -1,6 +1,6 @@
 import pulp_test, json
-from pulp.repo import Repo, Importer, Distributor
-from pulp.task import Task, GroupTask
+from pulp_auto.repo import Repo, Importer, Distributor 
+from pulp_auto.task import Task, GroupTask 
  
 def setUpModule():
     pass

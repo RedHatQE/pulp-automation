@@ -1,8 +1,8 @@
 from gevent import monkey
 monkey.patch_all(select=False, thread=False)
 
-from pulp.consumer import (Consumer, Binding)
-from pulp.task import Task
+from pulp_auto.consumer import (Consumer, Binding) 
+from pulp_auto.task import Task 
 from pulp_test import (ConsumerAgentPulpTest, agent_test)
 
 

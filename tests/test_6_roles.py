@@ -1,6 +1,6 @@
 import pulp_test, json
-from pulp.role import Role
-from pulp.user import User
+from pulp_auto.role import Role 
+from pulp_auto.user import User 
  
 def setUpModule():
     pass

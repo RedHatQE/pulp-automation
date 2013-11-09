@@ -1,5 +1,5 @@
 import logging, profile
-from pulp.namespace import load_ns
+from pulp_auto.namespace import load_ns 
 log = logging.getLogger(__name__)
 
 def format_function_call(fn_name, args, kvs):
