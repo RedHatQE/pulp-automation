@@ -1,5 +1,5 @@
 Name:		pulp_auto
-Version:	0.7
+Version:	0.8
 Release:	1%{?dist}
 Summary:	Pulp REST API automation library and test cases
 
@@ -36,4 +36,7 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
+* Sun Nov 10 2013 dparalen <vetrisko@gmail.com> 0.8-1
+- new package built with tito
+
 
