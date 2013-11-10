@@ -1,5 +1,5 @@
 Name:		pulp_auto
-Version:	0.8
+Version:	0.9
 Release:	1%{?dist}
 Summary:	Pulp REST API automation library and test cases
 
@@ -31,11 +31,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc LICENSE README.md
 %{python_sitelib}/*.egg-info
 %{python_sitelib}/%{name}/*.py*
+%{python_sitelib}/%{name}/handler/*.py*
 %dir %{_datadir}/%{name}/tests
 %attr(0644, root, root) %{_datadir}/%{name}/tests/*.py
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
+* Sun Nov 10 2013 dparalen <vetrisko@gmail.com> 0.9-1
+- new package built with tito
+
 * Sun Nov 10 2013 dparalen <vetrisko@gmail.com> 0.8-1
 - new package built with tito
 
