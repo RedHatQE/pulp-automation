@@ -102,9 +102,12 @@ class ResponseLike(object):
         self.text = text
 
     def __eq__(self, other):
-        if self.text is not None:
-            return self.status_code, self.text == other.status_code, other.text
-        return self.status_code == other.status_code
+        try:
+            if self.text is not None:
+                return self.status_code, self.text == other.status_code, other.text
+            return self.status_code == other.status_code
+        except AttributeError:
+            return False
 
     def __repr__(self):
         return  type(self).__name__ + '(status_code=%(status_code)s, text=%(text)s)' % self.__dict__
