@@ -14,6 +14,7 @@ class Pulp(object):
         self.last_request = None
         self._asserting = asserting
         self._async = False
+        self._semaphore = gevent.coros.BoundedSemaphore(1)
 
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
@@ -57,10 +58,15 @@ class Pulp(object):
         '''enter a async/concurent--send context; pending requests will be processed at context exit'''
         self.last_request = ()
         self._async = True
+
+        def sender(request):
+            with self._semaphore:
+                return self.session.send(request)
+        
         try:
             yield # gather send requests here
             # process pending requests
-            jobs = [gevent.spawn(self.session.send, request) for request in self.last_request]
+            jobs = [gevent.spawn(sender, request) for request in self.last_request]
             gevent.joinall(jobs, timeout=timeout, raise_error=True)
             self.last_response = tuple([job.value for job in jobs])
             if self._asserting:
