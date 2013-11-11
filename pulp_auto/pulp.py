@@ -61,7 +61,7 @@ class Pulp(object):
             yield # gather send requests here
             # process pending requests
             jobs = [gevent.spawn(self.session.send, request) for request in self.last_request]
-            gevent.joinall(jobs, timeout=timeout, raise_exception=True)
+            gevent.joinall(jobs, timeout=timeout, raise_error=True)
             self.last_response = tuple([job.value for job in jobs])
             if self._asserting:
                 assert self.is_ok, 'pulp was not OK:\n' + \
