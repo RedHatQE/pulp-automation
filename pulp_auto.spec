@@ -1,5 +1,5 @@
 Name:		pulp_auto
-Version:	0.10
+Version:	0.11
 Release:	1%{?dist}
 Summary:	Pulp REST API automation library and test cases
 
@@ -38,6 +38,14 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
+* Mon Nov 11 2013 dparalen <vetrisko@gmail.com> 0.11-1
+- fix: avoid racecondition giving ssl cert errors for one of the greenlets here
+  (vetrisko@gmail.com)
+- fix: attribute name (vetrisko@gmail.com)
+- enhancing gevent.monkey.patch-ing (vetrisko@gmail.com)
+- fix: attr error in case different types of objects are being compared
+  (vetrisko@gmail.com)
+
 * Sun Nov 10 2013 dparalen <vetrisko@gmail.com> 0.10-1
 - 
 
