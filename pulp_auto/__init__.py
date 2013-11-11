@@ -1,4 +1,5 @@
 # top-level stuff
+from gevent import monkey; monkey.patch_all()
 
 path='/pulp/api/v2/'
 

@@ -1,4 +1,5 @@
-import contextlib, logging, namespace
+import contextlib, logging, namespace, gevent
+from gevent.event import Event
 log = logging.getLogger(__name__)
 
 class Agent(object):
@@ -152,12 +153,6 @@ class Agent(object):
     @contextlib.contextmanager
     def running(self, qpid_handle, frequency=3):
         '''context with the agent serving in "background"'''
-        import gevent
-        from gevent import monkey
-        from gevent.event import Event
-
-        monkey.patch_all(thread=False, select=False)
-
         def job(stop):
             '''running qpid handle'''
             from qpid_handle import (Timeout, Empty)

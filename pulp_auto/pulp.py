@@ -1,6 +1,5 @@
-import requests, json, contextlib
+import requests, json, contextlib, gevent
 from . import (normalize_url, path_join, path as pulp_path)
-
 
 class Pulp(object):
     '''Pulp handle'''
@@ -61,11 +60,8 @@ class Pulp(object):
         try:
             yield # gather send requests here
             # process pending requests
-            import gevent
-            from gevent import monkey
-            monkey.patch_all(thread=False, select=False)
             jobs = [gevent.spawn(self.session.send, request) for request in self.last_request]
-            gevent.joinall(jobs, timeout=timeout)
+            gevent.joinall(jobs, timeout=timeout, raise_exception=True)
             self.last_response = tuple([job.value for job in jobs])
             if self._asserting:
                 assert self.is_ok, 'pulp was not OK:\n' + \
