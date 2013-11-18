@@ -23,12 +23,36 @@ tail -1 /etc/hosts
 
 # fetch pulp repo file
 pushd /etc/yum.repos.d/
-curl -# -O http://repos.fedorapeople.org/repos/pulp/pulp/fedora-pulp.repo
-cat fedora-pulp.repo
+cat << PULP_REPO_EOF > fedora-pulp.repo
+# Version 2.x Production Releases
+[pulp-v2-stable]
+name=Pulp v2 Production Releases
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+# Version 2.x Beta Builds
+[pulp-v2-beta]
+name=Pulp v2 Beta Builds
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.3/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+# Weekly Testing Builds
+[pulp-v2-testing]
+name=Pulp v2 Testing Builds
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0 
+PULP_REPO_EOF
 popd
 
 # install pulp
-yum update -y selinux-policy-targeted # avoid  https://bugzilla.redhat.com/show_bug.cgi?id=877831
+yum update -y selinux-policy-targeted ||: # avoid  https://bugzilla.redhat.com/show_bug.cgi?id=877831
+yum update -y
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
 
@@ -81,8 +105,8 @@ systemctl start httpd.service
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
-yum groupinstall 'development tools'
-yum install -y python-devel python-virtualenv git tito createrepo ruby
+yum groupinstall -y 'development tools'
+yum install -y python-devel python-virtualenv git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
 [pulp-local-build]
@@ -128,7 +152,6 @@ easy_install sqlalchemy-migrate
 easy_install jinja2
 easy_install buildbot
 easy_install buildbot-slave
-easy_install -U requests
 
 buildbot create-master -r master
 buildslave create-slave slave localhost:9989 example-slave pass
