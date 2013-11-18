@@ -105,6 +105,9 @@ systemctl start httpd.service
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
+iptables -I INPUT -p tcp --destination-port 8010 -j ACCEPT
+service iptables save
+
 yum groupinstall -y 'development tools'
 yum install -y python-devel python-virtualenv git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel
 
