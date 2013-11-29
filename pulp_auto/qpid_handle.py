@@ -15,7 +15,7 @@ class QpidHandle(object):
         self.last_sent = None
         self.last_fetched = None
         self.session = Connection.establish(self.url, **options).session()
-        self.receiver = self.session.receiver(self.receiver_name)
+        self.receiver = self.session.receiver("%s; {create: always}" % self.receiver_name)
         self.sender = self.session.sender(self.sender_name)
         self._timeout = None
 
