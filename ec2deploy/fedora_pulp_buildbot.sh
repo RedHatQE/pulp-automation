@@ -109,7 +109,7 @@ iptables -I INPUT -p tcp --destination-port 8010 -j ACCEPT
 service iptables save
 
 yum groupinstall -y 'development tools'
-yum install -y python-devel python-virtualenv git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel
+yum install -y python-devel python-virtualenv git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
 [pulp-local-build]
