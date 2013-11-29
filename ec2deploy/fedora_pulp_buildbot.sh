@@ -146,7 +146,13 @@ ROLES:
     url: '`hostname`'
 INVENTORY_EOF
 
-su - buildbot
+# pipe the rest of this script via a sudo call
+tail -n +$[LINENO+2] $0 | exec sudo -u buildbot bash
+exit $?
+
+# preserve logging
+sudo exec &>> /var/log/fedora_pulp.log
+set -xe
 
 mkdir -p /tmp/tito
 pushd /tmp/tito
