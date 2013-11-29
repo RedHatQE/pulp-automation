@@ -89,6 +89,14 @@ umask $old_umask
 chmod go+r certs/localhost.crt
 popd
 
+# insecure qpidd is required
+cat <<QPIDD_CONF > /etc/qpidd.conf
+auth=no
+log-to-syslog=yes
+ssl-require-client-authentication=no
+log-enable='trace+'
+QPIDD_CONF
+
 # enable services
 systemctl enable mongod.service
 systemctl start mongod.service || systemctl start mongod.service # sometimes it just takes too long and gets killed the first time
