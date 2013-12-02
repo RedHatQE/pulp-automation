@@ -175,4 +175,4 @@ buildslave create-slave slave localhost:9989 example-slave pass
 wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/master.cfg
 
 buildbot start master
-uilslave start slave
+buildslave start slave
