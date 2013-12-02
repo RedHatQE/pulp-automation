@@ -147,7 +147,7 @@ ROLES:
 INVENTORY_EOF
 
 # pipe the rest of this script via a sudo call
-tail -n +$[LINENO+2] $0 | exec sudo -u buildbot bash
+tail -n +$[LINENO+2] $0 | exec sudo -i -u buildbot bash
 exit $?
 
 # preserve logging
