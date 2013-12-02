@@ -151,7 +151,6 @@ tail -n +$[LINENO+2] $0 | exec sudo -i -u buildbot bash
 exit $?
 
 # preserve logging
-sudo exec &>> /var/log/fedora_pulp.log
 set -xe
 
 mkdir -p /tmp/tito
