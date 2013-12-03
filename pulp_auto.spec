@@ -1,5 +1,5 @@
 Name:		pulp_auto
-Version:	0.11
+Version:	0.12
 Release:	1%{?dist}
 Summary:	Pulp REST API automation library and test cases
 
@@ -38,6 +38,24 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
+* Tue Dec 03 2013 dparalen <vetrisko@gmail.com> 0.12-1
+- bump version (vetrisko@gmail.com)
+- full git update (vetrisko@gmail.com)
+- fix: buildslave start command (vetrisko@gmail.com)
+- fix: redirection is preserved (vetrisko@gmail.com)
+- fix: sudo has to be 'interactive' (vetrisko@gmail.com)
+- fix: exec as a buildbot user (vetrisko@gmail.com)
+- fix: tests require insecure broker (vetrisko@gmail.com)
+- fix: always create receiver queues (vetrisko@gmail.com)
+- add qpid-tools package (vetrisko@gmail.com)
+- fix: allow port 8010 (vetrisko@gmail.com)
+- fix: updates and packages; custom pulp repo (vetrisko@gmail.com)
+- fix: custom pulp repo; yum updates (vetrisko@gmail.com)
+- fix: failing steps have to stop build; mutual exclusivity of steps introduced
+  (vetrisko@gmail.com)
+- buildbot deployment (vetrisko@gmail.com)
+- introducing master.cfg (vetrisko@gmail.com)
+
 * Mon Nov 11 2013 dparalen <vetrisko@gmail.com> 0.11-1
 - fix: avoid racecondition giving ssl cert errors for one of the greenlets here
   (vetrisko@gmail.com)
