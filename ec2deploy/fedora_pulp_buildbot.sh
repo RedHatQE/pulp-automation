@@ -117,7 +117,7 @@ iptables -I INPUT -p tcp --destination-port 8010 -j ACCEPT
 service iptables save
 
 yum groupinstall -y 'development tools'
-yum install -y python-devel python-virtualenv git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools
+yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
 [pulp-local-build]
@@ -160,14 +160,6 @@ popd
 
 mkdir workdir
 pushd workdir
-virtualenv --no-site-packages sandbox
-source sandbox/bin/activate
-
-easy_install sqlalchemy
-easy_install sqlalchemy-migrate
-easy_install jinja2
-easy_install buildbot
-easy_install buildbot-slave
 
 buildbot create-master -r master
 buildslave create-slave slave localhost:9989 example-slave pass
@@ -176,3 +168,4 @@ wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/mas
 
 buildbot start master
 buildslave start slave
+popd
