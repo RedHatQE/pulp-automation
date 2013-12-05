@@ -91,10 +91,13 @@ popd
 
 # insecure qpidd is required
 cat <<QPIDD_CONF > /etc/qpidd.conf
+ssl-require-client-authentication=no
 auth=no
 log-to-syslog=yes
-ssl-require-client-authentication=no
-log-enable='trace+'
+log-enable=info+
+log-time=yes
+log-source=yes
+og-function=yes
 QPIDD_CONF
 
 # enable services
