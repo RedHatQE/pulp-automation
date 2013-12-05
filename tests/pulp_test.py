@@ -1,5 +1,5 @@
 # basic pulp test class
-import unittest, pprint, logging
+import unittest, pprint, logging, nose
 from . import ROLES
 from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE 
@@ -43,10 +43,11 @@ class PulpTest(unittest.TestCase):
         '''nothing to do'''
         pass
 
+@nose.tools.nottest
 def agent_test(catching=False, frequency=1):
     def decorator_maker(method):
         import functools
-        @functools.wraps(method)
+        @nose.tools.make_decorator(method)
         def decorated_method(self):
             with self.agent.catching(catching):
                 with self.agent.running(self.qpid_handle, frequency=frequency):
