@@ -13,15 +13,24 @@ class Consumer(Item):
     path = '/consumers/'
     relevant_data_keys = ['id', 'display_name']
 
-    def create(self, pulp):
-        '''creating consumer gives vital data: private key in cert; one can't fetch it otherwise
-        The private key is preserved by an implicit self.data update. A reload destroys it, though.
+    @classmethod
+    def register(cls, pulp, id, display_name=None, description=None, notes=None):
+        '''register new consumer
+        return a Consumer instance made out of pulp response
         '''
-        response = super(Consumer, self).create(pulp)
-        tmp_consumer = type(self).from_response(response)
-        self.data = tmp_consumer.data
-        return response
-        
+        # the response contains private&public key in certificate field
+        # consequent reloads give just public key
+        # it is vital to return an cls.from_response instance
+        with pulp.asserting(True):
+            response = cls(
+                {
+                    'id':  id,
+                    'display_name': display_name,
+                    'description':  description,
+                    'notes':        notes
+                }
+            ).create(pulp)
+        return cls.from_response(response)
 
     def bind_distributor(self, pulp, data):
         '''bind this consumer to a repo distributor'''
