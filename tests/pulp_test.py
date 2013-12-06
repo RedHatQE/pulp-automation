@@ -70,8 +70,7 @@ class ConsumerAgentPulpTest(PulpTest):
             cls.repo_feed,
             '/' + cls.__name__ + '_repo/zoo/'
         )
-        cls.consumer = Consumer({'id': cls.__name__ + '_consumer'})
-        cls.consumer.create(cls.pulp)
+        cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer')
         cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
         cls.log.info('instantiating agent')
         cls.agent = Agent(pulp_auto.handler, PROFILE=pulp_auto.handler.profile.PROFILE)
