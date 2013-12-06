@@ -9,10 +9,11 @@ class TestConsumer(ConsumerAgentPulpTest):
         pass
 
     def test_01_update_consumer(self):
-        self.consumer |= {'display_name': "A %s consumer" % type(self).__name__}
+        # update causes private key loss; do not change self.consumer 
+        consumer = self.consumer | {'display_name': "A %s consumer" % type(self).__name__}
         with self.pulp.asserting(True):
-            self.consumer.update(self.pulp)
-            self.assertEqual(Consumer.get(self.pulp, self.consumer.id), self.consumer)
+            consumer.update(self.pulp)
+            self.assertEqual(Consumer.get(self.pulp, consumer.id), consumer)
     
     @agent_test(catching=True)
     def test_02_bind_distributor(self):
