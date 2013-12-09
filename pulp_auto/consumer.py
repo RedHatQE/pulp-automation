@@ -1,4 +1,4 @@
-import json, namespace, requests
+import json, namespace, requests, contextlib
 from . import (normalize_url, path_join, path_split, strip_url)
 from pulp_auto import (Request, )
 from item import (Item, AssociatedItem)
@@ -53,6 +53,22 @@ class Consumer(Item):
     @certificate.setter
     def certificate(self, cert):
         self.data['certificate'] = cert
+
+    @contextlib.contextmanager
+    def tmp_certfile(self, closed=False):
+        '''context manager creating a named temporary cert file'''
+        import tempfile
+        certfile = tempfile.NamedTemporaryFile(delete=False)
+        certfile.write(self.certificate)
+        certfile.seek(0)
+        if closed:
+            certfile.close()
+        try: 
+            yield certfile
+        finally:
+            if not certfile.closed:
+                certfile.close()
+            certfile.unlink(certfile.name)
 
 SAMPLE_DISTRIBUTOR_BIND_DATA = {
     "repo_id": "test-repo",
