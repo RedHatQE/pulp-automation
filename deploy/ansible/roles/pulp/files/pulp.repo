@@ -1,0 +1,30 @@
+# Version 2.x Production Releases
+[pulp-v2-stable]
+name=Pulp v2 Production Releases
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+# Version 2.x Beta Builds
+[pulp-v2-beta]
+name=Pulp v2 Beta Builds
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.3/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+# Weekly Testing Builds
+[pulp-v2-testing]
+name=Pulp v2 Testing Builds
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/fedora-\$releasever/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0 
+
+# default --- fixed version repo
+[pulp-v2-f19]
+name=Pulp v2 Fedora 19
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/fedora-19/\$basearch/
+enabled=1
+gpgcheck=0

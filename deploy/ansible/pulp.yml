@@ -1,0 +1,6 @@
+---
+- name: pulp deployment
+  hosts: pulp
+  roles:
+  - { role: cloud, when: CLOUD is defined }
+  - { role: pulp }

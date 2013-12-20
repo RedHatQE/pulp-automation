@@ -1,0 +1,46 @@
+- name: copy repo file
+  copy: src=pulp.repo dest=/etc/yum.repos.d/pulp.repo owner=root group=root mode=0644
+
+- name: install pulp server
+  yum: name="@pulp-server" state=latest
+
+- name: enable https port
+  firewalld: service=https state=enabled permanent=true
+
+- name: generate ssl certs
+  shell: openssl req -new -x509 -nodes -out /etc/pki/tls/certs/localhost.crt -keyout /etc/pki/tls/private/localhost.key -subj "/C=US/ST=NC/L=Raleigh/CN=`hostname`"
+
+- name: assert proper private key permissions
+  file: path=/etc/pki/tls/private/localhost.key mode=0400
+        
+
+- name: assert proper public key permissions
+  file: path=/etc/pki/tls/certs/localhost.crt mode=0444
+
+- name: enable amqp port
+  firewalld: service=amqp state=enabled permanent=true
+
+- name: enable amqps port
+  firewalld: service=amqps state=enabled permanent=true
+
+- name: configure qpidd
+  copy: src=qpidd.conf dest=/etc/qpid/qpidd.conf owner=root group=root mode=0644
+
+- name: stop hddpt
+  service: name=httpd state=stopped
+
+- name: restart and enable mongod
+  service: name=mongod state=restarted enabled=yes
+  register: result
+  until: result|success
+  retries: 5
+
+- name: restart and enable qpidd
+  service: name=qpidd state=restarted enabled=yes
+
+- name: init pulp db
+  shell: pulp-manage-db
+
+- name: start and enable httpd
+  service: name=httpd state=started enabled=yes
+ 

@@ -1,0 +1,21 @@
+---
+- name: copy keys on Fedora instances
+  shell: cat ~fedora/.ssh/authorized_keys > /root/.ssh/authorized_keys
+  when: ansible_distribution == "Fedora"
+
+- name: copy keys on RHEL instances
+  shell: cat ~ec2-user/.ssh/authorized_keys > /root/.ssh/authorized_keys
+  when: ansible_distribution == "RedHat" and ansible_distribution_version|float >= 6.0
+
+- name: enable root ssh access
+  shell: sed -i s,disable_root:.*,disable_root:0, /etc/cloud/cloud.cfg
+
+- name: set public hostname in EC2
+  shell: hostname `curl -# http://169.254.169.254/latest/meta-data/public-hostname` 
+  when: EC2 is defined
+
+- name: ensure hostname present inin /etc/sysconfig/network
+  shell: grep HOSTNAME= /etc/sysconfig/network || echo HOSTNAME=`hostname` >> /etc/sysconfig/network
+
+- name: update hostname in /etc/sysconfig/network
+  shell: sed -i s,HOSTNAME=.*$,HOSTNAME=`hostname`, /etc/sysconfig/network

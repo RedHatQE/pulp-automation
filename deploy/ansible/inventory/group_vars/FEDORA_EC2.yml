@@ -1,0 +1,5 @@
+ansible_ssh_user: fedora
+ansible_sudo: True
+ansible_sudo_user: root
+ansible_connection: paramiko
+
