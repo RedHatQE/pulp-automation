@@ -47,6 +47,7 @@ class PulpTest(unittest.TestCase):
 def agent_test(catching=False, frequency=1):
     def decorator_maker(method):
         import functools
+        @nose.plugins.attrib.attr('agent_test')
         @nose.tools.make_decorator(method)
         def decorated_method(self):
             with self.agent.catching(catching):
