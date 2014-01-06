@@ -1,6 +1,15 @@
 ---
+- name: cloud nodes setup
+  hosts: CLOUD
+  roles:
+  - { role: cloud}
+
 - name: pulp deployment
   hosts: pulp
   roles:
-  - { role: cloud, when: CLOUD is defined }
   - { role: pulp }
+
+- name: build master deployment
+  hosts: build_master
+  roles:
+  - { role: build_master}
