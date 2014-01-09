@@ -48,7 +48,7 @@ class RpmOrphan(AbstractOrphan):
     '''rpm-specific orphan code'''
     path = AbstractOrphan.path + "/rpm/"
     
-    # expand as needded
+    # expand as needed
     relevant_data_keys = AbstractOrphan.relevant_data_keys + ['arch', 'version']
 
 
@@ -98,7 +98,7 @@ class YumRepoMetadataFileOrphan(AbstractOrphan):
 
 
 class OrphanFactory(Item):
-    """to dispach Orphans instantiation"""
+    """to dispatch Orphans instantiation"""
     
     # type of orphan to instantiate is dependant on the
     # response's data['_content_type_id'] value
@@ -168,7 +168,7 @@ class Orphans(object):
         info = cls.info(pulp)
         ret = {}
         for orphan_type in info.keys():
-            assert orphan_type in OrphanFactory.type_map, "Unknow orphan type: %s" % orphan_type
+            assert orphan_type in OrphanFactory.type_map, "Unknown orphan type: %s" % orphan_type
             ret[orphan_type] = OrphanFactory.type_map[orphan_type].list(pulp) 
         return ret
 
