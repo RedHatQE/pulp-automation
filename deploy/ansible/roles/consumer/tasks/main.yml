@@ -1,5 +1,5 @@
 - name: copy repo file
-  copy: src=pulp.repo dest=/etc/yum.repos.d/pulp.repo owner=root group=root mode=0644
+  copy: src=roles/common/files/pulp.repo dest=/etc/yum.repos.d/pulp.repo owner=root group=root mode=0644
 
 - name: install pulp consumer
   yum: name=@pulp-consumer state=latest
