@@ -9,6 +9,11 @@
   roles:
   - { role: pulp }
 
+- name: pulp consumer deployment
+  hosts: consumer
+  roles:
+  - { role: consumer}
+
 - name: build master deployment
   hosts: build_master
   roles:
