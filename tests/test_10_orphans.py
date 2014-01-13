@@ -1,7 +1,7 @@
 import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
-from pulp_auto.orphan import Orphans, OrphanFactory, RpmOrphan
+from pulp_auto.orphan import Orphans, OrphanFactory, RpmOrphan,PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan,DistributionOrphan
  
 def setUpModule():
     pass
@@ -66,6 +66,29 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         for orphan_type_name in info.keys():
             self.assertEqual(len(orphans[orphan_type_name]), info[orphan_type_name]['count'])
             self.assertEqual(orphans[orphan_type_name], [])
+
+
+
+    def test_04_delete_orphan_rpm(self):
+        self.setUpClass()
+        RpmOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_05_delete_orphan_pkggroup(self):
+        PackageGroupOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_06_delete_orphan_pkgcategory(self):
+        PackageCategoryOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_06_delete_orphan_erratum(self):
+        ErratumOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_06_delete_orphan_distribution(self):
+        DistributionOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
 
     @classmethod
     def tearDownClass(cls):
