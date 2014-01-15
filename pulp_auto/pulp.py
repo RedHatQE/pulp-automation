@@ -1,12 +1,15 @@
 import requests, json, contextlib, gevent
+from requests.adapters import HTTPAdapter
 from . import (normalize_url, path_join, path as pulp_path)
 
 class Pulp(object):
     '''Pulp handle'''
     check_function = staticmethod(lambda x: x.status_code >= 200 and x.status_code < 400)
 
-    def __init__(self, url, auth=None, verify=False, asserting=False):
+    def __init__(self, url, auth=None, verify=False, asserting=False, adapter=HTTPAdapter(max_retries=3)):
         self.session = requests.Session()
+        # a transport adapter is mounted to the session 
+        self.session.mount('https://', adapter)
         self.url = url
         self.auth = auth
         self.verify = verify
