@@ -7,10 +7,10 @@ class Pulp(object):
     check_function = staticmethod(lambda x: x.status_code >= 200 and x.status_code < 400)
 
     def __init__(self, url, auth=None, verify=False, asserting=False, adapter=HTTPAdapter(max_retries=3)):
+        self.url = url
         self.session = requests.Session()
         # a transport adapter is mounted to the session 
-        self.session.mount('https://', adapter)
-        self.url = url
+        self.session.mount(url, adapter)
         self.auth = auth
         self.verify = verify
         self.last_response = None
