@@ -1,15 +1,14 @@
 from patchwork import (Connection, Expect)
 from ConfigParser import ConfigParser
-import contextlib
+import contextlib, re
 
 class Command(object):
-    '''represents an authorized pulp-consumer command to be executed in the plumbum fashion'''
-    consumer_path = '/bin/pulp-consumer' 
-
-    def __init__(self, *args, **kvs):
+    '''represents a command to be executed in the plumbum fashion'''
+    def __init__(self, command, *args, **kvs):
         '''create the command representation convert attr_name=attr_value to --attr-name=attr_value
         cli string args tuple
         '''
+        self.command = command
         # merge args and kvs together to form a huge tuple
         # that plumbum understands
         self.args = reduce(
@@ -33,12 +32,27 @@ class Command(object):
     def kvs_to_args(**kvs):
         return 
 
-    def __call__(self, remote, auth=['admin', 'admin']):
-        '''create plumbum-fashion command over remote with provided authentication'''
-        return remote[self.consumer_path][('-u', str(auth[0]), '-p', str(auth[1])) + self.args]
+    def __call__(self, remote):
+        '''create plumbum-fashion command over remote'''
+        return remote[self.command][self.args]
 
     def __str__(self):
         return str(self.args)
+
+
+
+class ConsumerCommand(Command):
+    '''represents an authorized pulp-consumer command to be executed in the plumbum fashion'''
+    consumer_command = '/bin/pulp-consumer' 
+
+    def __init__(self, *args, **kvs):
+        super(ConsumerCommand, self).__init__(self.consumer_command, *args, **kvs)
+
+    def __call__(self, remote, auth=['admin', 'admin']):
+        '''create plumbum-fashion command over remote with provided authentication'''
+        self.args = ('-u', str(auth[0]), '-p', str(auth[1])) + self.args
+        return super(ConsumerCommand,self).__call__(remote)
+
 
 class Cli(object):
     '''a consumer cli handle'''
@@ -74,11 +88,11 @@ class Cli(object):
         self.consumer_id = consumer_id
         self.pulp_auth = pulp_auth
         self._registered = True
-        command = Command('register', consumer_id=consumer_id, description=description,
+        command = ConsumerCommand('register', consumer_id=consumer_id, description=description,
                             display_name=display_name, note=note)
         return self(command)
 
-    def unregister(self, command=Command('unregister')):
+    def unregister(self, command=ConsumerCommand('unregister')):
         result = self(command)
         self._registered = False
         return result
