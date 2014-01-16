@@ -3,3 +3,9 @@
 
 - name: install pulp consumer
   yum: name=@pulp-consumer state=latest
+
+- name: configure pulp consumer
+  template: src=consumer.conf.j2 dest=/etc/pulp/consumer/consumer.conf mode=0643
+
+- name: start pulp consumer service
+  service: name=pulp-agent state=restarted enabled=yes
