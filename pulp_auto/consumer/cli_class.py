@@ -72,6 +72,7 @@ class Cli(object):
         config.set('server', 'port', pulp_port)
         with self.connection.rpyc.builtin.open(config_filename, 'w+') as fp:
             config.write(fp)
+        Command('/bin/systemctl', 'restart', 'goferd.service')(self.connection.pbm)()
 
     def remote(self, command):
         '''return a Plubmub bound remote command instance of pulp-consumer and args'''
