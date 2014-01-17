@@ -4,6 +4,9 @@
 - name: install pulp server
   yum: name="@pulp-server" state=latest
 
+- name: install pulp admin tools
+  yum: name="@pulp-admin" state=latest
+
 - name: enable https port
   firewalld: service=https state=enabled permanent=true
 
