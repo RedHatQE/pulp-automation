@@ -58,7 +58,9 @@ class Cli(object):
     '''a consumer cli handle'''
     def __init__(self, hostname='localhost', ssh_key=None):
         self.connection = Connection(instance=hostname, key_filename=ssh_key)
-        self._registered = False
+        self.pulp_auth = None
+        self.pulp_hostname = None
+        self.pulp_port = None
 
     def configure(self, pulp_hostname='localhost', pulp_port=443):
         '''set consumer cli hostname and port'''
@@ -76,8 +78,6 @@ class Cli(object):
 
     def remote(self, command):
         '''return a Plubmub bound remote command instance of pulp-consumer and args'''
-        if not self._registered:
-            raise RuntimeError("Can't issue remote calls over an un-registered consumer cli")
         return command(remote=self.connection.pbm, auth=self.pulp_auth)
 
     def __call__(self, command):
@@ -88,7 +88,6 @@ class Cli(object):
         '''register the consumer to pulp with specified id'''
         self.consumer_id = consumer_id
         self.pulp_auth = pulp_auth
-        self._registered = True
         command = ConsumerCommand('register', consumer_id=consumer_id, description=description,
                             display_name=display_name, note=note)
         return self(command)
