@@ -198,6 +198,7 @@ buildbot create-master -r master
 buildslave create-slave slave localhost:9989 example-slave pass
 
 wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/master.cfg
+wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/jenkins_feed.py
 
 buildbot start master
 buildslave start slave
