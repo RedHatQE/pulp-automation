@@ -70,8 +70,11 @@ class YumRepo(BaseRepo):
         return txt
 
     @classmethod
-    def list(cls, connection):
-        repolist = connection.remote(Command('yum', '-v', 'repolist')) | \
-                    connection.remote(Command('sed', '-e 1,5d', '-e $d', '-e s,^Repo-,,'))
+    def list(cls, con):
+        from connection import Connection
+        # asser proper connection instance
+        con = Connection.from_connection(con)
+        repolist = con.remote(Command('yum', '-v', 'repolist')) | \
+                    con.remote(Command('sed', '-e 1,5d', '-e $d', '-e s,^Repo-,,'))
         items = cls.parse(cls.strip_header(repolist()))
         return map(lambda item: cls(item), items)

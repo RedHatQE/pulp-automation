@@ -2,6 +2,8 @@ from patchwork import Connection as PatchworkConnection
 
 class Connection(object):
     def __init__(self, hostname='localhost', ssh_key=None):
+        self.hostname = hostname
+        self.ssh_key = ssh_key
         self.connection = PatchworkConnection(instance=hostname, key_filename=ssh_key)
 
     def remote(self, command):
@@ -11,5 +13,9 @@ class Connection(object):
     def __call__(self, command):
         '''return remote pulp-consumer command result'''
         return self.remote(command)()
+
+    @classmethod
+    def from_connection(cls, connection):
+        return cls(hostname=connection.hostname, ssh_key=connection.ssh_key)
 
 
