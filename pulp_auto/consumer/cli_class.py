@@ -1,44 +1,8 @@
 from patchwork import (Connection, Expect)
 from ConfigParser import ConfigParser
+from command import Command
+from connection import Connection
 import contextlib, re
-
-class Command(object):
-    '''represents a command to be executed in the plumbum fashion'''
-    def __init__(self, command, *args, **kvs):
-        '''create the command representation convert attr_name=attr_value to --attr-name=attr_value
-        cli string args tuple
-        '''
-        self.command = command
-        # merge args and kvs together to form a huge tuple
-        # that plumbum understands
-        self.args = reduce(
-            lambda the_tuple, key_value_pair: the_tuple + key_value_pair,
-            [ \
-                (Command.key_to_argname(key), Command.value_to_argvalue(value)) \
-                for key, value in kvs.items() if value is not None \
-            ],
-            tuple(args)
-        )
-
-    @staticmethod
-    def key_to_argname(key):
-        return '--' + str(key).replace('_', '-')
-
-    @staticmethod
-    def value_to_argvalue(value):
-        return str(value)
-
-    @staticmethod
-    def kvs_to_args(**kvs):
-        return 
-
-    def __call__(self, remote):
-        '''create plumbum-fashion command over remote'''
-        return remote[self.command][self.args]
-
-    def __str__(self):
-        return str(self.args)
-
 
 
 class ConsumerCommand(Command):
@@ -54,13 +18,17 @@ class ConsumerCommand(Command):
         return super(ConsumerCommand,self).__call__(remote)
 
 
-class Cli(object):
+class Cli(Connection):
     '''a consumer cli handle'''
     def __init__(self, hostname='localhost', ssh_key=None):
-        self.connection = Connection(instance=hostname, key_filename=ssh_key)
+        super(Cli, self).__init__(hostname, ssh_key)
         self.pulp_auth = None
         self.pulp_hostname = None
         self.pulp_port = None
+
+    def remote(self, command):
+        '''return a Plubmub bound remote command instance of pulp-consumer and args'''
+        return command(remote=self.connection.pbm, auth=self.pulp_auth)
 
     def configure(self, pulp_hostname='localhost', pulp_port=443):
         '''set consumer cli hostname and port'''
@@ -75,14 +43,6 @@ class Cli(object):
         with self.connection.rpyc.builtin.open(config_filename, 'w+') as fp:
             config.write(fp)
         Command('/bin/systemctl', 'restart', 'goferd.service')(self.connection.pbm)()
-
-    def remote(self, command):
-        '''return a Plubmub bound remote command instance of pulp-consumer and args'''
-        return command(remote=self.connection.pbm, auth=self.pulp_auth)
-
-    def __call__(self, command):
-        '''return remote pulp-consumer command result'''
-        return self.remote(command)()
 
     def register(self, consumer_id, pulp_auth=['admin', 'admin'], description=None, display_name=None, note=None):
         '''register the consumer to pulp with specified id'''
