@@ -19,7 +19,7 @@ class BaseRepo(HasData):
         """read txt (output of pulp-consumer <type> repos command) and convert it to base types"""
         # parsing with intermediate ConfigParser
         # make all id: <repo_id> fields to section names [<repo_id>]
-        fp = StringIO.StringIO(re.sub(r'Id:\s*(.*)', r'[\1]', txt))
+        fp = StringIO.StringIO(re.sub(r'[Ii]d\s*:\s*(.*)', r'[\1]', txt))
         cfgp = ConfigParser.ConfigParser()
         cfgp.readfp(fp)
         return [dict(cfgp.items(section) + [('id', section)]) for section in cfgp.sections()]
@@ -58,4 +58,20 @@ class PuppetRepo(BaseRepo):
     @classmethod
     def list(cls, remote):
         items = cls.parse(cls.strip_header(remote(ConsumerCommand('puppet', 'repos'))))
+        return map(lambda item: cls(item), items)
+
+
+class YumRepo(BaseRepo):
+    """Yum consumer repos"""
+    # yum repos are different than the rest, just the id field seems to make sense
+    relevant_data_keys = ['id']
+    @classmethod
+    def strip_header(cls, txt):
+        return txt
+
+    @classmethod
+    def list(cls, connection):
+        repolist = connection.remote(Command('yum', '-v', 'repolist')) | \
+                    connection.remote(Command('sed', '-e 1,5d', '-e $d', '-e s,^Repo-,,'))
+        items = cls.parse(cls.strip_header(repolist()))
         return map(lambda item: cls(item), items)
