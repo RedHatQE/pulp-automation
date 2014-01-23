@@ -19,28 +19,33 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(SimpleRepoCopyTest, cls).setUpClass()
-        # prepare repos
+        #Destination repo
         feed = None
+        dest_repo_name = cls.__name__ + '_copy'
+        dest_repo1 = Repo({'id': dest_repo_name})
+        dest_repo1.delete(cls.pulp)
+        cls.dest_repo1 = create_yum_repo(cls.pulp, dest_repo_name, feed, relative_url=dest_repo_name)[0]
+
+        #2nd Destination Repo
+        dest_repo_name = cls.__name__ + '_copy1'
+        dest_repo2 = Repo({'id': dest_repo_name})
+        dest_repo2.delete(cls.pulp)
+        cls.dest_repo2 = create_yum_repo(cls.pulp, dest_repo_name, feed, relative_url=dest_repo_name)[0]
+
+        # Source repo
         feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
-        dest_repo = cls.__name__ + '_copy'
-        repo1 = Repo({'id': dest_repo})
-        repo1.delete(cls.pulp)
-        cls.repo1 = create_yum_repo(cls.pulp, dest_repo, feed, relative_url=dest_repo)[0]
-        feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
-        source_repo =  cls.__name__ + '_repo'
-        repo2 = Repo({'id': source_repo})
-        repo2.delete(cls.pulp)
-        cls.repo2 = create_yum_repo(cls.pulp, source_repo, feed, relative_url=dest_repo)[0]
-        sync_task = Task.from_response(cls.repo2.sync(cls.pulp))[0]
+        source_repo_name =  cls.__name__ + '_repo'
+        source_repo = Repo({'id': source_repo_name})
+        source_repo.delete(cls.pulp)
+        cls.source_repo = create_yum_repo(cls.pulp, source_repo_name, feed, relative_url=source_repo_name)[0]
+        sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
-        #repo2.sync(cls.pulp)
 
 
+    def test_1_copy_repo_all(self):
 
-    def test_1_copy_repo(self):
-
-        source_repo = self.repo2.id
-        response = self.repo1.copy(
+        source_repo = self.source_repo.id
+        response = self.dest_repo1.copy(
             self.pulp,
             data={
                 'source_repo_id': source_repo
@@ -49,4 +54,9 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         self.assertPulp(code=202)
         task = Task.from_response(response)
         task.wait(self.pulp)
+
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
