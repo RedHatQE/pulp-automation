@@ -55,7 +55,7 @@ class HasData(object):
         return {
             key: self.data[key] for key in filter( \
                 lambda key: data[key] != self.data[key], \
-                    self.relevant_data_keys
+                    [key for key in self.relevant_data_keys if key in self.data]
             )
         }
 
