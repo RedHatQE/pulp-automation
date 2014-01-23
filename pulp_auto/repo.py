@@ -22,6 +22,7 @@ class Repo(item.Item):
     ):
         return pulp.send(self.request('POST', path=path, data=data))
 
+
     def sync(
         self,
         pulp,
@@ -76,6 +77,20 @@ class Repo(item.Item):
         path = path_join(self.path, self.id, Distributor.path)
         with pulp.asserting(True):
             return Distributor.from_response(pulp.send(self.request('GET', path=path)))
+
+
+    def copy(
+        self,
+        pulp,
+        data={
+             'override_config': {
+               'resolve_dependencies': True,
+                 'recursive': True
+            }
+        },
+        path='/actions/associate/'
+    ):
+        return pulp.send(self.request('POST', path=path, data=data))
         
 
 
