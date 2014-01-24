@@ -6,13 +6,6 @@ def setUpModule():
     pass
 
 
-"""class RepoTest(pulp_test.PulpTest):
-    @classmethod
-    def setUpClass(cls):
-        super(RepoTest, cls).setUpClass()
-        cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
-        cls.feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'"""
-
 
 class SimpleRepoCopyTest(pulp_test.PulpTest):
 
@@ -49,6 +42,103 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             self.pulp,
             data={
                 'source_repo_id': source_repo
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_2_copy_rpm(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['rpm']
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_3_copy_category(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['package_category']
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+
+    def test_4_copy_group(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['package_group']
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_4_copy_distribution(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['distribution']
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_5_copy_erratum(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['erratum']
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_6_copy_srpm(self):
+
+        source_repo = self.source_repo.id
+        response = self.dest_repo2.copy(
+            self.pulp,
+            data={
+                'source_repo_id': source_repo,
+                'criteria': {
+                'type_ids': ['srpm']
+                },
             }
         )
         self.assertPulp(code=202)
