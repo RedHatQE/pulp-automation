@@ -6,6 +6,13 @@ class Repo(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description', 'notes']
     path='/repositories/'
 
+    def custom_update(
+        self,
+        pulp,
+        data):
+        path=""
+        return pulp.send(self.request('PUT', path=path, data=data))
+
     def associate_importer(
         self,
         pulp,
