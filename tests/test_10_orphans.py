@@ -1,7 +1,7 @@
 import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
-from pulp_auto.orphan import Orphans, OrphanFactory, RpmOrphan,PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan,DistributionOrphan
+from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan,DistributionOrphan
  
 def setUpModule():
     pass
@@ -34,7 +34,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         for orphan_type_name in orphans.keys():
             # reported count info is the same as the orphans counted
             self.assertEqual(len(orphans[orphan_type_name]), info[orphan_type_name]['count'])
-            orphan_type = OrphanFactory.type_map[orphan_type_name]
+            orphan_type = UnitFactory.type_map[orphan_type_name]
             # '_href' is correct
             self.assertEqual(pulp_auto.path_join(pulp_auto.path, orphan_type.path), info[orphan_type_name]['_href'])
             # all orphans are of the same type

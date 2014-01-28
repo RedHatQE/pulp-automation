@@ -1,9 +1,16 @@
-from unit import AbstractUnit, RpmUnit
+from unit import (AbstractUnit, RpmUnit, UnitFactory)
+from pulp_auto.pulp import Request
 
 class AbstractOrphan(AbstractUnit):
     """Orphans are Units just like the rest; only path differs. This is rather an abstract
     Orphan type"""
     path = '/content/orphans/'
+
+    @classmethod
+    def delete_all(cls, pulp):
+        '''delete all orphans of particular type in pulp instance'''
+        return pulp.send(Request('DELETE', cls.path))
+
 
 class RpmOrphan(AbstractOrphan):
     '''rpm-specific orphan code'''
@@ -77,8 +84,8 @@ class Orphans(object):
         info = cls.info(pulp)
         ret = {}
         for orphan_type in info.keys():
-            assert orphan_type in OrphanFactory.type_map, "Unknown orphan type: %s" % orphan_type
-            ret[orphan_type] = OrphanFactory.type_map[orphan_type].list(pulp) 
+            assert orphan_type in UnitFactory.type_map, "Unknown orphan type: %s" % orphan_type
+            ret[orphan_type] = UnitFactory.type_map[orphan_type].list(pulp)
         return ret
 
     
