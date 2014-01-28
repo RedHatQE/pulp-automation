@@ -17,7 +17,13 @@ class Pulp(object):
         self.last_request = None
         self._asserting = asserting
         self._async = False
-        self._semaphore = gevent.coros.BoundedSemaphore(1)
+
+        try:
+            from gevent.coros import BoundedSemaphore
+        except ImportError:
+            from gevent.lock import BoundedSemaphore
+
+        self._semaphore = BoundedSemaphore(1)
 
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
