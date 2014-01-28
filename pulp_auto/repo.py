@@ -116,15 +116,14 @@ class Distributor(item.AssociatedItem):
 def create_yum_repo(
     pulp,
     repo_id,
-    feed,
-    relative_url=None,
-    importer_id='yum_importer',
-    distributor_id='yum_distributor',
+    distributor_name_id,
+    feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/',
     http=True,
     https=True
 ):
     '''create an almost default yum repo'''
-    repo = Repo({'id': repo_id})
+    repo = Repo({'id': repo_id,
+                 'notes': {"_repo-type": "rpm-repo"}})
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
         importer = Importer.from_response(repo.associate_importer(
@@ -140,17 +139,17 @@ def create_yum_repo(
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
-                'distributor_id': distributor_id,
+                'distributor_id': distributor_name_id,
                 'distributor_type_id': 'yum_distributor',
                 'distributor_config': {
                     'http': http,
                     'https': https,
-                    'relative_url': relative_url
-                }
+                    'relative_url': repo_id
+                },
+                'auto_pubblish':False
             }
         ))
     return repo, importer, distributor
-
 
 def create_puppet_repo(
     pulp,
