@@ -78,19 +78,20 @@ class Repo(item.Item):
         with pulp.asserting(True):
             return Distributor.from_response(pulp.send(self.request('GET', path=path)))
 
-
     def copy(
         self,
         pulp,
+        source_repo_id,
         data={
-             'override_config': {
-               'resolve_dependencies': True,
-                 'recursive': True
-            }
-        },
-        path='/actions/associate/'
+              'override_config': {
+                'resolve_dependencies': True,
+                  'recursive': True
+             }
+         },
+         path='/actions/associate/'
     ):
-        return pulp.send(self.request('POST', path=path, data=data))
+         data.update({'source_repo_id': source_repo_id})
+         return pulp.send(self.request('POST', path=path, data=data))
         
 
 
