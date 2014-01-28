@@ -32,6 +32,7 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/*.egg-info
 %{python_sitelib}/%{name}/*.py*
 %{python_sitelib}/%{name}/handler/*.py*
+%{python_sitelib}/%{name}/units/*.py*
 %dir %{_datadir}/%{name}/tests
 %attr(0644, root, root) %{_datadir}/%{name}/tests/*.py
 %attr(0644, root, root) %{_datadir}/%{name}/tests/inventory.yml
