@@ -6,12 +6,13 @@ class Repo(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description', 'notes']
     path='/repositories/'
 
-    def custom_update(
+    def importer_config_update(
         self,
         pulp,
         data):
         path=""
         return pulp.send(self.request('PUT', path=path, data=data))
+
 
     def associate_importer(
         self,
@@ -89,7 +90,8 @@ class Repo(item.Item):
 class Importer(item.AssociatedItem):
     path = '/importers/'
     relevant_data_keys = ['id', 'importer_type_id', 'repo_id', 'config', 'last_sync']
-    
+
+   
 class Distributor(item.AssociatedItem):
     path = '/distributors/'
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']

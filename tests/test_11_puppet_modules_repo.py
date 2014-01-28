@@ -110,7 +110,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
 
     def test_06_update_query_repo(self):
         #adding another query
-        self.repo.custom_update(self.pulp,data={"importer_config":{"queries":["tomcat"]}})
+        self.repo.importer_config_update(self.pulp,data={"importer_config":{"queries":["tomcat"]}})
         self.assertPulp(code=200)
 
     def test_07_sync_repo(self):
