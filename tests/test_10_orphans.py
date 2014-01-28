@@ -44,6 +44,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
     def test_02_delete_single_orphan(self):
         old_info = Orphans.info(self.pulp)
         rpm_orphans = RpmOrphan.list(self.pulp)
+        assert rpm_orphans, "No orphans found; there might be other 'Zoo' repos in %s" % self.pulp
         rpm_orphans[0].delete(self.pulp)
         del rpm_orphans[0]
         self.assertPulpOK()
