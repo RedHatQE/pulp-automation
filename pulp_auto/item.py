@@ -40,6 +40,18 @@ class Item(HasData):
             response = pulp.send(Request('GET', cls.path))
         return map (lambda x: cls(data=x), response.json())
 
+    @classmethod
+    def search(
+        cls,
+        pulp,
+        data):
+        '''search API for various resource type as example users, repositories, consumers,etc'''
+        path='/search/'
+        with pulp.asserting(True):
+            '''in the data use criteria field to perform the search'''
+            response = pulp.send(Request('POST',path_join(cls.path, path),data=data))
+        return cls.from_response(response)
+
     @property
     def id(self):
         '''shortcut for self.data['id']; all items should give one'''
