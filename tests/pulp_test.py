@@ -58,18 +58,18 @@ def agent_test(catching=False, frequency=1):
     return decorator_maker
 
 class ConsumerAgentPulpTest(PulpTest):
-    repo_feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
 
     @classmethod
     def setUpClass(cls):
         super(ConsumerAgentPulpTest, cls).setUpClass()
         cls.ROLES = ROLES
         cls.PROFILE = PROFILE
+        repo_id = cls.__name__ + "_repo"
+        distributor_name_id = 'dist_1'
         cls.repo, cls.importer, cls.distributor = create_yum_repo(
             cls.pulp,
-            cls.__name__ + "_repo",
-            cls.repo_feed,
-            '/' + cls.__name__ + '_repo/zoo/'
+            repo_id,
+            distributor_name_id
         )
         cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer')
         cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}

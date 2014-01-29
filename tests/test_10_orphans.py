@@ -13,11 +13,12 @@ class SimpleOrphanTest(pulp_test.PulpTest):
     def setUpClass(cls):
         super(SimpleOrphanTest, cls).setUpClass()
         # prepare orphans
-        feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
         repo_name = cls.__name__ + '_repo'
+        distributor_name_id = 'dist_1'
         repo = Repo({'id': repo_name})
         repo.delete(cls.pulp)
-        cls.repo = create_yum_repo(cls.pulp, repo_name, feed, relative_url=repo_name)[0]
+        # create_yum_repo() returns 3 items:repo, importer and distributor.
+        cls.repo = create_yum_repo(cls.pulp, repo_name, distributor_name_id)[0]
         sync_task = Task.from_response(cls.repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
         # this is where orphans appear
