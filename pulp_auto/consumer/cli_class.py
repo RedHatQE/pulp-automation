@@ -58,11 +58,24 @@ class Cli(Connection):
         return result
 
     @classmethod
-    def ready_instance(cls, consumer_id, hostname='localhost', ssh_key=None, pulp_hostname='localhost',
-                        pulp_port=443, pulp_auth=['admin', 'admin'], description=None, display_name=None, note=None):
+    def ready_instance(
+            cls,
+            id,
+            hostname='localhost',
+            ssh_key=None,
+            pulp={
+                'hostname': 'localhost',
+                'port': 443,
+                'auth': ['admin', 'admin']
+            },
+            description=None,
+            display_name=None,
+            note=None,
+            **kvs
+    ):
         '''instantiate a ready-to-use cli i.e. configured and registered'''
         cli = cls(hostname, ssh_key)
-        cli.configure(pulp_hostname, pulp_port)
-        cli.register(consumer_id, pulp_auth, description, display_name, note)
+        cli.configure(pulp.get('hostname', 'localhost'), pulp.get('port', 443))
+        cli.register(id, pulp.get('auth', ['admin', 'admin']), description, display_name, note)
         return cli
 
