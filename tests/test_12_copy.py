@@ -126,5 +126,6 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
+            Repo({'id': repo_id}).delete(cls.pulp)
 
