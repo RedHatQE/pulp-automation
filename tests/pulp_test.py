@@ -92,3 +92,7 @@ class ConsumerAgentPulpTest(PulpTest):
             Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
             cls.consumer.delete(cls.pulp)
         super(ConsumerAgentPulpTest, cls).tearDownClass()
+
+
+class InventoryInducedSkip(unittest.SkipTest):
+        '''some inventory items are missing --- skip the test that requires these'''
