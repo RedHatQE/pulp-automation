@@ -64,6 +64,10 @@ class YumRepoMetadataFileOrphan(AbstractOrphan):
     '''Yum-metada orphan code'''
     path = AbstractOrphan.path + "/yum_repo_metadata_file/"
 
+class PackageEnvironmentOrphan(AbstractOrphan):
+    ''' package environments (collections of package groups) orphan code'''
+    path = AbstractOrphan.path + "/package_environment/"
+
 
 class Orphans(object):
     '''The content/orphans/ container handler'''

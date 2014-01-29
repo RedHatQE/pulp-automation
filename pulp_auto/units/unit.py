@@ -155,4 +155,8 @@ class YumRepoMetadataFileUnit(AbstractUnit):
     path = AbstractUnit.path + "/yum_repo_metadata_file/"
     # TODO: relevant_data_keys
 
+class PackageEnvironmentUnit(AbstractUnit):
+    '''package environments (collections of package groups)'''
+    path = AbstractUnit.path + "/package_environment/"
+    # TODO: relevant_data_keys
 
