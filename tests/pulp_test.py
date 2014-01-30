@@ -2,13 +2,14 @@
 import unittest, pprint, logging, nose
 from . import ROLES
 from pulp_auto import Pulp, format_response
-from pulp_auto.handler.profile import PROFILE 
-from pulp_auto.consumer import (Consumer, Binding) 
-from pulp_auto.repo import create_yum_repo 
-from pulp_auto.task import Task 
-from pulp_auto.agent import Agent 
-from pulp_auto.qpid_handle import QpidHandle 
-import pulp_auto.handler 
+from pulp_auto.handler.profile import PROFILE
+from pulp_auto.consumer import (Consumer, Binding)
+from pulp_auto.repo import create_yum_repo
+from pulp_auto.task import Task
+from pulp_auto.agent import Agent
+from pulp_auto.qpid_handle import QpidHandle
+import pulp_auto.handler
+
 
 class PulpTest(unittest.TestCase):
     @classmethod
@@ -43,10 +44,12 @@ class PulpTest(unittest.TestCase):
         '''nothing to do'''
         pass
 
+
 @nose.tools.nottest
 def agent_test(catching=False, frequency=1):
     def decorator_maker(method):
         import functools
+
         @nose.plugins.attrib.attr('agent_test')
         @nose.tools.make_decorator(method)
         def decorated_method(self):
@@ -56,6 +59,7 @@ def agent_test(catching=False, frequency=1):
             return ret
         return decorated_method
     return decorator_maker
+
 
 class ConsumerAgentPulpTest(PulpTest):
 
@@ -88,6 +92,3 @@ class ConsumerAgentPulpTest(PulpTest):
             Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
             cls.consumer.delete(cls.pulp)
         super(ConsumerAgentPulpTest, cls).tearDownClass()
-
-
-

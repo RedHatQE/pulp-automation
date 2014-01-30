@@ -5,8 +5,9 @@ from item import (Item, AssociatedItem)
 
 
 class Binding(AssociatedItem):
-    path='/bindings/'
+    path = '/bindings/'
     relevant_data_keys = ['repo_id', 'consumer_id', 'distributor_id']
+
 
 class Consumer(Item):
     '''consumer item implementation'''
@@ -24,10 +25,10 @@ class Consumer(Item):
         with pulp.asserting(True):
             response = cls(
                 {
-                    'id':  id,
+                    'id': id,
                     'display_name': display_name,
-                    'description':  description,
-                    'notes':        notes
+                    'description': description,
+                    'notes': notes
                 }
             ).create(pulp)
         return cls.from_response(response)
@@ -38,7 +39,7 @@ class Consumer(Item):
 
     def unbind_distributor(self, pulp, repo_id, distributor_id):
         '''unbind this consumer from a given repo distributor'''
-        return pulp.send(self.request('DELETE', path=path_join(Binding.path, repo_id ,distributor_id)))
+        return pulp.send(self.request('DELETE', path=path_join(Binding.path, repo_id, distributor_id)))
 
     def list_bindings(self, pulp):
         return Binding.from_response(pulp.send(self.request('GET', path=Binding.path)))
@@ -63,7 +64,7 @@ class Consumer(Item):
         certfile.seek(0)
         if closed:
             certfile.close()
-        try: 
+        try:
             yield certfile
         finally:
             if not certfile.closed:
@@ -73,7 +74,7 @@ class Consumer(Item):
 SAMPLE_DISTRIBUTOR_BIND_DATA = {
     "repo_id": "test-repo",
     "distributor_id": "dist-1",
-    "options": None, # Options of consumer handler
-    "notify_agent": True, # by default
+    "options": None,  # Options of consumer handler
+    "notify_agent": True,  # by default
     "bindning_config": None
 }

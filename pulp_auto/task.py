@@ -1,6 +1,7 @@
 import item, time, hasdata
 from item import (Item, GroupItem)
 
+
 class AbstractTask(object):
     state = None
     active_states = []
@@ -26,7 +27,6 @@ class AbstractTask(object):
                 # FIXME: doesn't work with group-tasks, dunno why they can't be accessed via
                 # /tasks_group/<task.group_id>/<task.task_id>/
                 break
-
 
 
 class TaskDetails(hasdata.HasData):
@@ -62,7 +62,6 @@ class TaskDetails(hasdata.HasData):
         self.data['task_id'] = other
 
 
-
 class Task(TaskDetails, AbstractTask, Item):
     '''an item-view task'''
     path = '/tasks/'
@@ -77,6 +76,7 @@ class Task(TaskDetails, AbstractTask, Item):
                 task.wait(pulp)
         else:
             ret.wait(pulp)
+
 
 class GroupTask(TaskDetails, AbstractTask, GroupItem):
     '''task view from a task_group'''

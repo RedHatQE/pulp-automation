@@ -3,6 +3,7 @@ from qpid.messaging import Connection
 from qpid.messaging import Message
 from qpid.messaging.exceptions import (Timeout, Empty)
 
+
 class QpidHandle(object):
     '''qpid handle'''
 
@@ -52,7 +53,7 @@ class QpidHandle(object):
     def is_ok(self):
         '''when OK, there are no errors in self.session'''
         return self.session.error is None
-    
+
     @property
     def error(self):
         '''shortcut to self.session.error'''
@@ -87,4 +88,3 @@ class QpidHandle(object):
             yield self
         finally:
             self._timeout = old_value
-        

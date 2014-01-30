@@ -38,18 +38,19 @@ class Item(HasData):
         '''create a list of instances from pulp_auto '''
         with pulp.asserting(True):
             response = pulp.send(Request('GET', cls.path))
-        return map (lambda x: cls(data=x), response.json())
+        return map(lambda x: cls(data=x), response.json())
 
     @classmethod
     def search(
         cls,
         pulp,
-        data):
+        data
+    ):
         '''search API for various resource type as example users, repositories, consumers,etc'''
-        path='/search/'
+        path = '/search/'
         with pulp.asserting(True):
             '''in the data use criteria field to perform the search'''
-            response = pulp.send(Request('POST',path_join(cls.path, path),data=data))
+            response = pulp.send(Request('POST', path_join(cls.path, path), data=data))
         return cls.from_response(response)
 
     @property
@@ -112,7 +113,6 @@ class AssociatedItem(Item):
                 ret.append(cls(data=x, path=response_path))
             return ret
         return cls(data=response.json(), path=response_path)
-            
 
     @classmethod
     def get(cls, pulp, id):
@@ -140,7 +140,7 @@ class GroupItem(Item):
 
     # same path adjusting
     from_response = AssociatedItem.from_response
- 
+
     @classmethod
     def get(cls, pulp, id):
         raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
@@ -168,4 +168,3 @@ class GroupItem(Item):
         path_items = path_split(other)
         self._path = path_join(*path_items[:-2])
         self.group_id = path_join(*path_items[-2:])
-        

@@ -1,5 +1,5 @@
 import pulp_test, json
-from pulp_auto.user import User 
+from pulp_auto.user import User
 from pulp_auto import login, Pulp, format_response, format_preprequest
 
 

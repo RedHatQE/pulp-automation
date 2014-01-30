@@ -1,8 +1,8 @@
 import pulp_test, json
-from pulp_auto.user import User 
-from pulp_auto.permission import Permission 
+from pulp_auto.user import User
+from pulp_auto.permission import Permission
 from pulp_auto import login, Pulp, format_response, format_preprequest
-from pulp_auto.repo import Repo 
+from pulp_auto.repo import Repo
 
 
 def setUpModule():

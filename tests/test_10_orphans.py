@@ -1,7 +1,7 @@
 import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
-from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan, DistributionOrphan
+from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, PackageCategoryOrphan, ErratumOrphan, DistributionOrphan
 
 
 def setUpModule():

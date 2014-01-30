@@ -3,9 +3,10 @@ from pulp_auto import (Request, )
 from . import (path_join, format_response)
 from permission import Permission
 
+
 class Role(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description']
-    path='/roles/'
+    path = '/roles/'
 
     @classmethod
     def create(cls, pulp, data):
@@ -26,7 +27,7 @@ class Role(item.Item):
     ):
         path = path_join(User.path, user_id)
         return pulp.send(self.request('DELETE', path=path))
-        
+
     def grant_permission(
         self,
         pulp,
@@ -42,7 +43,7 @@ class Role(item.Item):
         path='/actions/revoke_from_role/'
     ):
         return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
-            
-    
+
+
 class User(item.AssociatedItem):
     path = '/users/'

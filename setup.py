@@ -16,24 +16,24 @@ def walk_topdirs(dest, topdirs):
             )
     return datafiles
 
-data_files =  walk_topdirs('/usr/share/pulp_auto/', ['tests'])
+data_files = walk_topdirs('/usr/share/pulp_auto/', ['tests'])
 
 setup(name='pulp_auto',
-    version=0.1,
-    description='Pulp REST API automation library and test cases',
-    author='dparalen',
-    author_email='vetrisko@gmail.com',
-    url='https://github.com/RedHatQE/pulp-automation',
-    license='GPLv3+',
-    install_requires=['nose', 'requests', 'PyYAML', 'qpid-python', 'gevent'],
-    classifiers=[
-            'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-            'Programming Language :: Python',
-            'Topic :: Software Development :: Libraries :: Python Modules',
-            'Operating System :: POSIX',
-            'Intended Audience :: Developers',
-            'Development Status :: 4 - Beta'
-    ],
-    packages=find_packages(exclude=['tests*']),
-    data_files=data_files
-    )
+      version=0.1,
+      description='Pulp REST API automation library and test cases',
+      author='dparalen',
+      author_email='vetrisko@gmail.com',
+      url='https://github.com/RedHatQE/pulp-automation',
+      license='GPLv3+',
+      install_requires=['nose', 'requests', 'PyYAML', 'qpid-python', 'gevent'],
+      classifiers=[
+          'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+          'Programming Language :: Python',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+          'Operating System :: POSIX',
+          'Intended Audience :: Developers',
+          'Development Status :: 4 - Beta'
+      ],
+      packages=find_packages(exclude=['tests*']),
+      data_files=data_files
+      )

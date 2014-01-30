@@ -2,17 +2,18 @@ import item, json
 from pulp_auto import (Request, )
 from . import (path_join, format_response)
 
+
 class Repo(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description', 'notes']
-    path='/repositories/'
+    path = '/repositories/'
 
     def importer_config_update(
         self,
         pulp,
-        data):
-        path=""
+        data
+    ):
+        path = ""
         return pulp.send(self.request('PUT', path=path, data=data))
-
 
     def associate_importer(
         self,
@@ -30,7 +31,6 @@ class Repo(item.Item):
     ):
         return pulp.send(self.request('POST', path=path, data=data))
 
-
     def sync(
         self,
         pulp,
@@ -41,7 +41,7 @@ class Repo(item.Item):
         path='/actions/sync/'
     ):
         return pulp.send(self.request('POST', path=path, data=data))
-        
+
     def publish(
         self,
         pulp,
@@ -58,7 +58,7 @@ class Repo(item.Item):
         with pulp.asserting(True):
             response = pulp.send(self.request('GET', path=path)).json()
         return map(lambda x: Importer(data=x, path_prefix=path_join(self.path, self.id)), response)
-        
+
     def list_distributors(
         self,
         pulp,
@@ -76,7 +76,7 @@ class Repo(item.Item):
         path = path_join(self.path, self.id, Importer.path)
         with pulp.asserting(True):
             return Importer.from_response(pulp.send(self.request('GET', path=path)))
-            
+
     def get_distributor(
         self,
         pulp,
@@ -91,23 +91,22 @@ class Repo(item.Item):
         pulp,
         source_repo_id,
         data={
-              'override_config': {
+            'override_config': {
                 'resolve_dependencies': True,
-                  'recursive': True
-             }
-         },
-         path='/actions/associate/'
+                'recursive': True
+            }
+        },
+        path='/actions/associate/'
     ):
-         data.update({'source_repo_id': source_repo_id})
-         return pulp.send(self.request('POST', path=path, data=data))
-        
+        data.update({'source_repo_id': source_repo_id})
+        return pulp.send(self.request('POST', path=path, data=data))
 
 
 class Importer(item.AssociatedItem):
     path = '/importers/'
     relevant_data_keys = ['id', 'importer_type_id', 'repo_id', 'config', 'last_sync']
 
-   
+
 class Distributor(item.AssociatedItem):
     path = '/distributors/'
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']
@@ -117,7 +116,7 @@ def create_yum_repo(
     pulp,
     repo_id,
     distributor_name_id,
-    feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/',
+    feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/',
     http=True,
     https=True
 ):
@@ -146,19 +145,21 @@ def create_yum_repo(
                     'https': https,
                     'relative_url': repo_id
                 },
-                'auto_pubblish':False
+                'auto_pubblish': False
             }
         ))
     return repo, importer, distributor
+
 
 def create_puppet_repo(
     pulp,
     repo_id,
     distributor_name_id,
-    queries = [],
+    queries=[],
     feed='http://forge.puppetlabs.com',
     http=True,
-    https=False):
+    https=False
+):
 
     '''create an almost default puppet repo'''
     repo = Repo({'id': repo_id,
@@ -184,7 +185,7 @@ def create_puppet_repo(
                     'http': http,
                     'https': https
                 },
-                'auto_pubblish':False
+                'auto_pubblish': False
             }
         ))
     return repo, importer, distributor
@@ -205,45 +206,45 @@ SAMPLE_EXPORT_DISTRIBUTOR_CONFIG_DATA = {
     "distributor_id": "export_distributor",
     "auto_publish": False,
     "distributor_type": "export_distributor",
-    "distributor_config":{
+    "distributor_config": {
         "http": False,
         "https": True
     }
 }
 
 SAMPLE_YUM_DISTRIBUTOR_DATA = {
-        "_id": {
-            "$oid": "5257ef5cc805d066faef1d2f"
-        },
-        "_ns": "repo_distributors",
-        "auto_publish": True,
-        "config": {
-            "http": False,
-            "https": True,
-            "relative_url": "/repos/pulp/pulp/demo_repos/zoo/"
-        },
-        "distributor_type_id": "yum_distributor",
-        "id": "yum_distributor",
-        "last_publish": "2013-10-11T13:06:32Z",
-        "repo_id": "test_rpm_repo",
-        "scheduled_publishes": [],
-        "scratchpad": {}
+    "_id": {
+        "$oid": "5257ef5cc805d066faef1d2f"
+    },
+    "_ns": "repo_distributors",
+    "auto_publish": True,
+    "config": {
+        "http": False,
+        "https": True,
+        "relative_url": "/repos/pulp/pulp/demo_repos/zoo/"
+    },
+    "distributor_type_id": "yum_distributor",
+    "id": "yum_distributor",
+    "last_publish": "2013-10-11T13:06:32Z",
+    "repo_id": "test_rpm_repo",
+    "scheduled_publishes": [],
+    "scratchpad": {}
 }
 
 SAMPLE_EXPORT_DISTRIBUTOR_DATA = {
-        "_id": {
-            "$oid": "5257ef5cc805d066faef1d30"
-        },
-        "_ns": "repo_distributors",
-        "auto_publish": False,
-        "config": {
-            "http": False,
-            "https": True
-        },
-        "distributor_type_id": "export_distributor",
-        "id": "export_distributor",
-        "last_publish": None,
-        "repo_id": "test_rpm_repo",
-        "scheduled_publishes": [],
-        "scratchpad": None
+    "_id": {
+        "$oid": "5257ef5cc805d066faef1d30"
+    },
+    "_ns": "repo_distributors",
+    "auto_publish": False,
+    "config": {
+    "http": False,
+    "https": True
+    },
+    "distributor_type_id": "export_distributor",
+    "id": "export_distributor",
+    "last_publish": None,
+    "repo_id": "test_rpm_repo",
+    "scheduled_publishes": [],
+    "scratchpad": None
 }

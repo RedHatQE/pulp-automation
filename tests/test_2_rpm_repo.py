@@ -1,7 +1,8 @@
 import pulp_test, json
-from pulp_auto.repo import Repo, Importer, Distributor 
-from pulp_auto.task import Task, GroupTask 
- 
+from pulp_auto.repo import Repo, Importer, Distributor
+from pulp_auto.task import Task, GroupTask
+
+
 def setUpModule():
     pass
 
@@ -101,7 +102,7 @@ class SimpleRepoTest(RepoTest):
         self.assertPulp(code=202)
         task = Task.from_response(response)[0]
         task.wait(self.pulp)
-        
+
     def test_08_publish_repo(self):
         response = self.repo.publish(
             self.pulp,

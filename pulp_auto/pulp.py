@@ -2,6 +2,7 @@ import requests, json, contextlib, gevent
 from requests.adapters import HTTPAdapter
 from . import (normalize_url, path_join, path as pulp_path)
 
+
 class Pulp(object):
     '''Pulp handle'''
     check_function = staticmethod(lambda x: x.status_code >= 200 and x.status_code < 400)
@@ -9,7 +10,7 @@ class Pulp(object):
     def __init__(self, url, auth=None, verify=False, asserting=False, adapter=HTTPAdapter(max_retries=3)):
         self.url = url
         self.session = requests.Session()
-        # a transport adapter is mounted to the session 
+        # a transport adapter is mounted to the session
         self.session.mount(url, adapter)
         self.auth = auth
         self.verify = verify
@@ -44,7 +45,7 @@ class Pulp(object):
         if self.last_response is None:
             return True
         if isinstance(self.last_response, tuple):
-            return reduce(lambda x, y : x and self.check_function(y), self.last_response, True)
+            return reduce(lambda x, y: x and self.check_function(y), self.last_response, True)
         return self.check_function(self.last_response)
 
     @contextlib.contextmanager
@@ -55,7 +56,7 @@ class Pulp(object):
         old_check_function = self.check_function
         if check_function is not None:
             self.check_function = check_function
-        
+
         try:
             yield
         finally:
@@ -71,9 +72,9 @@ class Pulp(object):
         def sender(request):
             with self._semaphore:
                 return self.session.send(request)
-        
+
         try:
-            yield # gather send requests here
+            yield  # gather send requests here
             # process pending requests
             jobs = [gevent.spawn(sender, request) for request in self.last_request]
             gevent.joinall(jobs, timeout=timeout, raise_error=True)
@@ -86,7 +87,7 @@ class Pulp(object):
 
 
 class Request(object):
-    '''a callable request compatible with Pulp.send''' 
+    '''a callable request compatible with Pulp.send'''
     def __init__(self, method, path, data={}, headers={'Content-Type': 'application/json'}):
         self.method = method
         self.path = path
@@ -121,7 +122,8 @@ class ResponseLike(object):
             return False
 
     def __repr__(self):
-        return  type(self).__name__ + '(status_code=%(status_code)s, text=%(text)s)' % self.__dict__
+        return type(self).__name__ + '(status_code=%(status_code)s, text=%(text)s)' % self.__dict__
+
 
 def format_response(response):
     '''format some response attributes'''
@@ -131,6 +133,7 @@ def format_response(response):
     except Exception:
         text = response.text
     return '>response:\n>c %s\n>u %s\n>t\n%s\n' % (response.status_code, response.url, text)
+
 
 def format_preprequest(preprequest):
     '''format some prepared request attributes'''

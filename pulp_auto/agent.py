@@ -2,6 +2,7 @@ import contextlib, logging, namespace, gevent
 from gevent.event import Event
 log = logging.getLogger(__name__)
 
+
 class Agent(object):
     '''consumer agent object. Handles envelopes, routing, secrets... And the remote calls'''
 
@@ -17,7 +18,7 @@ class Agent(object):
     @staticmethod
     def strip_request(request):
         '''strip the envelope from the request; return envelope and the request'''
-        return { k: request[k] for k in request.keys() if k != 'request'}, request['request']
+        return {k: request[k] for k in request.keys() if k != 'request'}, request['request']
 
     @staticmethod
     def make_response(envelope, response):
@@ -58,21 +59,21 @@ class Agent(object):
         destination = envelope['routing'][1]
         routing_id = envelope['routing'][0]
         queue_properties = replyto_fields[1]
-        
+
         envelope['routing'] = [routing_id, source]
-        envelope['replyto'] = ";".join([str(destination),str(queue_properties)])
+        envelope['replyto'] = ";".join([str(destination), str(queue_properties)])
         return envelope
 
     @staticmethod
-    def forget_request_envelope(envelope): 
-        return  envelope['routing'][1] == None
+    def forget_request_envelope(envelope):
+        return envelope['routing'][1] == None
 
     @staticmethod
     def request_to_call(module, request, PROFILE):
         ''' return a lambda that performs instnatiating required class
         and calling required method upon execution'''
-        cargs=[]
-        ckvs={}
+        cargs = []
+        ckvs = {}
         # assert sanity of the fields is mainained
         if 'cntr' in request and request['cntr'] is not None:
             assert isinstance(request['cntr'], list)
@@ -85,23 +86,22 @@ class Agent(object):
         assert 'kws' in request and isinstance(request['kws'], dict)
         return lambda: \
             getattr(
-                    # instantiate required object
-                    getattr(
-                        module,
-                        request['classname']
-                    )(
-                        *cargs,
-                        **ckvs
-                    ),
-                    # access required method
-                    request['method']
+                # instantiate required object
+                getattr(
+                    module,
+                    request['classname']
+                )(
+                    *cargs,
+                    **ckvs
+                ),
+                # access required method
+                request['method']
             )(
                 # call required object method with requested signature
                 *request['args'],
                 # augment with PROFILE
                 **dict(list(request['kws'].viewitems()) + [('PROFILE', PROFILE)])
             )
-        
 
     def __call__(self, qpid_handle):
         '''dispatch a single RMI request--response'''
@@ -139,7 +139,7 @@ class Agent(object):
 
         # send the response
         qpid_handle.message = self.make_response(envelope, response)
-        
+
     @contextlib.contextmanager
     def catching(self, value=True):
         '''propagate exception as an exception response message to the other end'''

@@ -1,8 +1,9 @@
 import pulp_test, json
 from pulp_test import PulpTest
-from pulp_auto.repo import Repo, Importer 
-from pulp_auto.task import Task, GroupTask 
+from pulp_auto.repo import Repo, Importer
+from pulp_auto.task import Task, GroupTask
 from pulp_auto import ResponseLike, login, format_response
+
 
 class RepoTest(pulp_test.PulpTest):
     def setUp(self):
@@ -24,4 +25,3 @@ class RaceRepoTest(RepoTest):
             self.repo.create(self.pulp)
         self.assertIn(ResponseLike(status_code=409), self.pulp.last_response)
         self.assertIn(ResponseLike(status_code=201), self.pulp.last_response)
-

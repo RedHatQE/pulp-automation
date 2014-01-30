@@ -1,8 +1,9 @@
 import json
 
+
 class HasData(object):
-    required_data_keys = [] # keys that are asserted and not touched by data update
-    relevant_data_keys = [] # keys relevant for comparison of values
+    required_data_keys = []  # keys that are asserted and not touched by data update
+    relevant_data_keys = []  # keys relevant for comparison of values
 
     def assert_data(self, data):
         for key in self.required_data_keys:
@@ -73,7 +74,7 @@ class HasData(object):
         '''call to update self.data with other.data'''
         if hasattr(other, 'data'):
             data = self.data_add(other.data)
-        else:    
+        else:
             data = self.data_add(other)
 
         self.data = data
@@ -112,4 +113,3 @@ class HasData(object):
     @property
     def json_data(self):
         return json.dumps(self.data)
-

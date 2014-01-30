@@ -1,11 +1,11 @@
 import pulp_test, json, pulp_auto
 from pulp_auto.repo import Repo, Importer, Distributor, create_yum_repo
 from pulp_auto.task import Task, GroupTask
-from pulp_auto.units import Orphans 
- 
+from pulp_auto.units import Orphans
+
+
 def setUpModule():
     pass
-
 
 
 class SimpleRepoCopyTest(pulp_test.PulpTest):
@@ -28,7 +28,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         cls.dest_repo2 = create_yum_repo(cls.pulp, dest_repo_name, 'dist_2', feed)[0]
 
         # Source repo
-        source_repo_name =  cls.__name__ + '_repo'
+        source_repo_name = cls.__name__ + '_repo'
         source_repo = Repo({'id': source_repo_name})
         source_repo.delete(cls.pulp)
         cls.source_repo = create_yum_repo(cls.pulp, source_repo_name, 'dist_3')[0]
