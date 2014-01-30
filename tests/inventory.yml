@@ -1,6 +1,24 @@
 ROLES:
-  pulp:
+  pulp: &PULP
     auth: [admin, admin]
-    url: 'https://pulp.example.com'
+    url: 'https://pulp.example.com/'
+    hostname: pulp.example.com
   qpid:
-    url: 'pulp.example.com'
+    url: pulp.example.com
+  repos:
+    - &ZOO
+      id: zoo
+      type: rpm
+      feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
+      display_name: ZOo rEPO
+  consumers:
+  - &MY_CONSUMER
+    id: my_consumer
+    hostname: consumer.example.com
+    ssh_key:  /home/user/.ssh/id_rsa
+    os:
+      name: Fedora
+      version: 20
+    repos:
+    - *ZOO
+    pulp: *PULP
