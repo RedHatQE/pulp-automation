@@ -68,13 +68,8 @@ class ConsumerAgentPulpTest(PulpTest):
         super(ConsumerAgentPulpTest, cls).setUpClass()
         cls.ROLES = ROLES
         cls.PROFILE = PROFILE
-        repo_id = cls.__name__ + "_repo"
-        distributor_name_id = 'dist_1'
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(
-            cls.pulp,
-            repo_id,
-            distributor_name_id
-        )
+        from . import ROLES as inventory_roles
+        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **[repo for repo in inventory_roles.repos if repo.type == 'rpm'][0])
         cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer')
         cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
         cls.log.info('instantiating agent')
