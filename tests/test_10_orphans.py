@@ -1,8 +1,9 @@
 import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
-from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan,DistributionOrphan
- 
+from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan,  PackageCategoryOrphan, ErratumOrphan, DistributionOrphan
+
+
 def setUpModule():
     pass
 
@@ -15,6 +16,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         # prepare orphans
         repo_name = cls.__name__ + '_repo'
         distributor_name_id = 'dist_1'
+        #make sure that there is no repo with such id already
         repo = Repo({'id': repo_name})
         repo.delete(cls.pulp)
         # create_yum_repo() returns 3 items:repo, importer and distributor.
@@ -55,8 +57,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
             sorted(map(lambda x: x.data['name'], rpm_orphans)),
             sorted(map(lambda x: x.data['name'], RpmOrphan.list(self.pulp)))
         )
-        
- 
+
     def test_03_delete_orphans(self):
         delete_response = Orphans.delete(self.pulp)
         self.assertPulpOK()
@@ -69,26 +70,27 @@ class SimpleOrphanTest(pulp_test.PulpTest):
             self.assertEqual(len(orphans[orphan_type_name]), info[orphan_type_name]['count'])
             self.assertEqual(orphans[orphan_type_name], [])
 
-
-
-    def test_04_delete_orphan_rpm(self):
+    def test_04_create_orphans_again(self):
+        # first a repo created, synced and then deleted
         self.setUpClass()
+
+    def test_05_delete_orphan_rpm(self):
         RpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_05_delete_orphan_pkggroup(self):
+    def test_06_delete_orphan_pkggroup(self):
         PackageGroupOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_06_delete_orphan_pkgcategory(self):
+    def test_07_delete_orphan_pkgcategory(self):
         PackageCategoryOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_06_delete_orphan_erratum(self):
+    def test_08_delete_orphan_erratum(self):
         ErratumOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_06_delete_orphan_distribution(self):
+    def test_09_delete_orphan_distribution(self):
         DistributionOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
