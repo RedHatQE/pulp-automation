@@ -160,30 +160,34 @@ def create_puppet_repo(
     http=True,
     https=False):
 
-    data={
-          'id':repo_id,
-          'notes': {"_repo-type": "puppet-repo"},
-          'importer_type_id':'puppet_importer',
-          'importer_config':{
-              'feed':feed,
-              'queries':queries},
-          'distributors':[
-                {
-                 'distributor_id': distributor_name_id,
-                 'distributor_type': 'puppet_distributor',
-                 'distributor_config': {
-                    'http': http,
-                    'https': https},
-                 'auto_pubblish':False}
-                 ]
-         }
-
-    repo = Repo(data)
-
+    '''create an almost default puppet repo'''
+    repo = Repo({'id': repo_id,
+                 'notes': {"_repo-type": "puppet-repo"}})
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
-
-    return repo
+        importer = Importer.from_response(repo.associate_importer(
+            pulp,
+            data={
+                'importer_type_id': 'puppet_importer',
+                'importer_config': {
+                    'feed': feed,
+                    'queries': queries
+                }
+            }
+        ))
+        distributor = Distributor.from_response(repo.associate_distributor(
+            pulp,
+            data={
+                'distributor_id': distributor_name_id,
+                'distributor_type_id': 'puppet_distributor',
+                'distributor_config': {
+                    'http': http,
+                    'https': https
+                },
+                'auto_pubblish':False
+            }
+        ))
+    return repo, importer, distributor
 
 
 SAMPLE_YUM_DISTRIBUTOR_CONFIG_DATA = {
