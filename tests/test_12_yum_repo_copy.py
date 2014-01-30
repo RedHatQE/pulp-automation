@@ -1,6 +1,7 @@
 import pulp_test, json, pulp_auto
 from pulp_auto.repo import Repo, Importer, Distributor, create_yum_repo
-from pulp_auto.task import Task, GroupTask 
+from pulp_auto.task import Task, GroupTask
+from pulp_auto.units import Orphans 
  
 def setUpModule():
     pass
@@ -128,4 +129,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
     def tearDownClass(cls):
         for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
             Repo({'id': repo_id}).delete(cls.pulp)
-
+        #orphans also should be deleted in cleanup
+        delete_response = Orphans.delete(cls.pulp)
+        delete_task = Task.from_response(delete_response)
+        delete_task.wait(cls.pulp)
