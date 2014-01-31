@@ -56,10 +56,6 @@ yum update -y
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
 
-# configure firewall
-iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
-iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
-service iptables save
 
 # configure pulp
 sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
@@ -120,8 +116,6 @@ systemctl start goferd.service
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
-iptables -I INPUT -p tcp --destination-port 8010 -j ACCEPT
-service iptables save
 
 yum groupinstall -y 'development tools'
 yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto
