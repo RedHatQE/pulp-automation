@@ -9,6 +9,26 @@ from pulp_auto.task import Task
 from pulp_auto.agent import Agent
 from pulp_auto.qpid_handle import QpidHandle
 import pulp_auto.handler
+from pulp_auto.namespace import (locate_ns_item,)
+
+
+def requires(thing):
+    '''skip test case unless there is thing in ROLES'''
+    try:
+        locate_ns_item(ROLES, thing)
+    except KeyError:
+        return unittest.skip("no %r found in ROLES" % thing)
+    return lambda function: function
+
+def requires_any(thing, condition=lambda item: True):
+    '''skip test case unless there are any thing items ROLES for which the condition holds'''
+    @requires(thing)
+    def wrapped():
+        '''create propper decorator --- either skipping one or "empty" one'''
+        if not any(map(condition, locate_ns_item(ROLES, thing))):
+            return unittest.skip("no suitable items found in ROLES.%s" % thing)
+        return lambda function: function
+    return wrapped()
 
 
 class PulpTest(unittest.TestCase):
@@ -45,6 +65,7 @@ class PulpTest(unittest.TestCase):
         pass
 
 
+
 @nose.tools.nottest
 def agent_test(catching=False, frequency=1):
     def decorator_maker(method):
@@ -60,9 +81,7 @@ def agent_test(catching=False, frequency=1):
         return decorated_method
     return decorator_maker
 
-
 class ConsumerAgentPulpTest(PulpTest):
-
     @classmethod
     def setUpClass(cls):
         super(ConsumerAgentPulpTest, cls).setUpClass()
