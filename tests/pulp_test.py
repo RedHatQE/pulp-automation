@@ -32,6 +32,7 @@ def requires_any(thing, condition=lambda item: True):
     return wrapped()
 
 
+@requires('pulp.url', 'pulp.auth')
 class PulpTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -86,6 +87,7 @@ def agent_test(catching=False, frequency=1):
     return decorator_maker
 
 
+@requires('qpid.url')
 @requires_any('repos', lambda repo: repo.type == 'rpm')
 class ConsumerAgentPulpTest(PulpTest):
     @classmethod
