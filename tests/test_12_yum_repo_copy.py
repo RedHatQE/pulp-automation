@@ -2,6 +2,7 @@ import pulp_test, json, pulp_auto
 from pulp_auto.repo import Repo, Importer, Distributor, create_yum_repo
 from pulp_auto.task import Task, GroupTask
 from pulp_auto.units import Orphans
+from . import ROLES
 
 
 def setUpModule():
@@ -16,22 +17,22 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         #Destination repo
         feed = None
         dest_repo_name = cls.__name__ + '_copy'
-        distributor_name_id = 'dist_1'
         dest_repo1 = Repo({'id': dest_repo_name})
         dest_repo1.delete(cls.pulp)
-        cls.dest_repo1 = create_yum_repo(cls.pulp, dest_repo_name, distributor_name_id, feed)[0]
+        cls.dest_repo1, _, _ = create_yum_repo(cls.pulp, dest_repo_name, feed)
 
         #2nd Destination Repo
         dest_repo_name = cls.__name__ + '_copy1'
         dest_repo2 = Repo({'id': dest_repo_name})
         dest_repo2.delete(cls.pulp)
-        cls.dest_repo2 = create_yum_repo(cls.pulp, dest_repo_name, 'dist_2', feed)[0]
+        cls.dest_repo2, _, _ = create_yum_repo(cls.pulp, dest_repo_name, feed)
 
         # Source repo
+        default_repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
         source_repo_name = cls.__name__ + '_repo'
         source_repo = Repo({'id': source_repo_name})
         source_repo.delete(cls.pulp)
-        cls.source_repo = create_yum_repo(cls.pulp, source_repo_name, 'dist_3')[0]
+        cls.source_repo, _, _ = create_yum_repo(cls.pulp, source_repo_name, default_repo_config.feed)
         sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
 
