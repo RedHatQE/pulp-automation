@@ -162,17 +162,22 @@ def create_yum_repo(
 
 def create_puppet_repo(
     pulp,
-    repo_id,
-    distributor_name_id,
+    id,
     queries=[],
     feed='http://forge.puppetlabs.com',
+    display_name=None,
     http=True,
     https=False
 ):
 
     '''create an almost default puppet repo'''
-    repo = Repo({'id': repo_id,
-                 'notes': {"_repo-type": "puppet-repo"}})
+    repo = Repo(
+         {
+             'id': id,
+             'display_name': display_name,
+             'notes': {"_repo-type": "puppet-repo"}
+         }
+    )
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
         importer = Importer.from_response(repo.associate_importer(
@@ -188,7 +193,7 @@ def create_puppet_repo(
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
-                'distributor_id': distributor_name_id,
+                'distributor_id': id + "_distributor",
                 'distributor_type_id': 'puppet_distributor',
                 'distributor_config': {
                     'http': http,
