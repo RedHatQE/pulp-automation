@@ -1,0 +1,21 @@
+- job-template:
+    name: '{name}-pulp-automation'
+    project-type:  freestyle
+    defaults: global
+    display-name: "{name} pulp automation job"
+    concurent: True
+    quiet-period: 0
+    parameters:
+    - file:
+        name: nosetests.xml
+        description: nosetests xunit test result file
+    publishers:
+    - junit:
+        results: nosetests.xml
+
+    
+
+- project:
+    name: single-node
+    jobs:
+      - '{name}-pulp-automation':

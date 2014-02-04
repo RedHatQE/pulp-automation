@@ -114,15 +114,24 @@ class Distributor(item.AssociatedItem):
 
 def create_yum_repo(
     pulp,
-    repo_id,
-    distributor_name_id,
-    feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/',
+    id,
+    feed,
+    display_name=None,
+    relative_url=None,
     http=True,
-    https=True
+    https=True,
+    **kvs
 ):
     '''create an almost default yum repo'''
-    repo = Repo({'id': repo_id,
-                 'notes': {"_repo-type": "rpm-repo"}})
+    repo = Repo(
+        {
+            'id': id,
+            'display_name': display_name,
+            'notes': {"_repo-type": "rpm-repo"}
+        }
+    )
+    if relative_url is None:
+        relative_url = id
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
         importer = Importer.from_response(repo.associate_importer(
@@ -138,12 +147,12 @@ def create_yum_repo(
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
-                'distributor_id': distributor_name_id,
+                'distributor_id': id + "_distributor",
                 'distributor_type_id': 'yum_distributor',
                 'distributor_config': {
                     'http': http,
                     'https': https,
-                    'relative_url': repo_id
+                    'relative_url': relative_url
                 },
                 'auto_pubblish': False
             }

@@ -56,10 +56,6 @@ yum update -y
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
 
-# configure firewall
-iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
-iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
-service iptables save
 
 # configure pulp
 sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
@@ -113,14 +109,21 @@ pulp-manage-db
 systemctl enable httpd.service
 systemctl start httpd.service
 
+# start consumer service
+systemctl enable goferd.service
+systemctl start goferd.service
+
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
-iptables -I INPUT -p tcp --destination-port 8010 -j ACCEPT
-service iptables save
 
 yum groupinstall -y 'development tools'
 yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto
+
+# automation dependencies
+yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.3.0git40daa0c6-2.fc18.noarch.rpm \
+		https://rhuiqerpm.s3.amazonaws.com/python-plumbum-1.1.0_gitebe4cc4-2.fc18.noarch.rpm \
+		https://rhuiqerpm.s3.amazonaws.com/python-patchwork-0.4-1.git.28.2936d6a.fc19.noarch.rpm
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
 [pulp-local-build]
@@ -142,11 +145,29 @@ restorecon /etc/sudoers.d/91-buildbot-users
 mkdir -p /usr/share/pulp_auto/
 cat <<INVENTORY_EOF > /usr/share/pulp_auto/inventory.yml
 ROLES:
-  pulp:
+  pulp: &PULP
     auth: [admin, admin]
     url: 'https://`hostname`/'
+    hostname: `hostname`
   qpid:
-    url: '`hostname`'
+    url: `hostname`
+  repos:
+    - &ZOO
+      id: zoo
+      type: rpm
+      feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
+      display_name: ZOo rEPO
+  consumers:
+  - &MY_CONSUMER
+    id: my_consumer
+    hostname: `hostname`
+    ssh_key:  /home/buildbot/.ssh/id_rsa
+    os:
+      name: Fedora
+      version: 20
+    repos:
+    - *ZOO
+    pulp: *PULP
 INVENTORY_EOF
 
 # pipe the rest of this script via a sudo call
@@ -156,11 +177,17 @@ exit $?
 # preserve logging
 set -xe
 
+# create repo directory
 mkdir -p /tmp/tito
 pushd /tmp/tito
 wget https://raw.github.com/pulp/pulp/master/comps.xml
 popd
 
+# allow buildbot logging-in via ssh (consumer simulation part)
+ssh-keygen -f ~/.ssh/id_rsa -N ""
+sudo tee -a /root/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
+
+# deploy buildbot
 mkdir workdir
 pushd workdir
 
@@ -168,6 +195,9 @@ buildbot create-master -r master
 buildslave create-slave slave localhost:9989 example-slave pass
 
 wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/master.cfg
+wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/jenkins_feed.py
+# FIXME disable the jenkins feed
+sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
 
 buildbot start master
 buildslave start slave

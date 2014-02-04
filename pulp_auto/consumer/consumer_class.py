@@ -1,15 +1,12 @@
-import json, namespace, requests, contextlib
-from . import (normalize_url, path_join, path_split, strip_url)
-from pulp_auto import (Request, )
-from item import (Item, AssociatedItem)
+import json, requests, contextlib
+from .. import (namespace, normalize_url, path_join, path_split, strip_url, item, Request)
 
 
-class Binding(AssociatedItem):
-    path = '/bindings/'
+class Binding(item.AssociatedItem):
+    path='/bindings/'
     relevant_data_keys = ['repo_id', 'consumer_id', 'distributor_id']
 
-
-class Consumer(Item):
+class Consumer(item.Item):
     '''consumer item implementation'''
     path = '/consumers/'
     relevant_data_keys = ['id', 'display_name']

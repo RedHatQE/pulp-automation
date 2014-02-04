@@ -52,9 +52,8 @@ def locate_ns_item(ns, item):
     for list_prefix in [sub_items[:i] for i in range(len(sub_items), 0, -1)]:
         item_prefix = '.'.join(list_prefix)
         item_suffix = '.'.join(sub_items[i:])
-        print item, item_prefix, item_suffix
         if item_prefix in ns:
-            return ns_locate(ns[item_prefix], item_suffix)
+            return locate_ns_item(ns[item_prefix], item_suffix)
 
     # no match
     raise KeyError('item not found: %s' % item)

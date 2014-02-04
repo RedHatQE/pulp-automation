@@ -2,7 +2,7 @@ import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
 from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, PackageCategoryOrphan, ErratumOrphan, DistributionOrphan
-
+from . import ROLES
 
 def setUpModule():
     pass
@@ -13,14 +13,13 @@ class SimpleOrphanTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(SimpleOrphanTest, cls).setUpClass()
-        # prepare orphans
-        repo_name = cls.__name__ + '_repo'
-        distributor_name_id = 'dist_1'
-        #make sure that there is no repo with such id already
-        repo = Repo({'id': repo_name})
+        # prepare orphans by syncing and deleting a repo
+        # make sure the repo is gone
+        repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
+        repo = Repo(repo_config)
         repo.delete(cls.pulp)
-        # create_yum_repo() returns 3 items:repo, importer and distributor.
-        cls.repo = create_yum_repo(cls.pulp, repo_name, distributor_name_id)[0]
+        # create and sync repo
+        cls.repo, _, _ = create_yum_repo(cls.pulp, **repo_config)
         sync_task = Task.from_response(cls.repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
         # this is where orphans appear

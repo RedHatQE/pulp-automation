@@ -10,7 +10,7 @@ Source0:	%{name}-%{version}.tar.gz
 BuildArch:  	noarch
 
 BuildRequires:	python-devel
-Requires:	python-nose, python-gevent, python-qpid, PyYAML
+Requires:	python-nose, python-gevent, python-qpid, PyYAML, python-patchwork
 
 %description
 %{summary}
@@ -33,6 +33,7 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/%{name}/*.py*
 %{python_sitelib}/%{name}/handler/*.py*
 %{python_sitelib}/%{name}/units/*.py*
+%{python_sitelib}/%{name}/consumer/*.py*
 %dir %{_datadir}/%{name}/tests
 %attr(0644, root, root) %{_datadir}/%{name}/tests/*.py
 %attr(0644, root, root) %{_datadir}/%{name}/tests/inventory.yml
