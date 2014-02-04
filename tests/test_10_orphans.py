@@ -7,7 +7,7 @@ from . import ROLES
 def setUpModule():
     pass
 
-
+@pulp_test.requires_any('repos', lambda repo: repo.type == 'rpm')
 class SimpleOrphanTest(pulp_test.PulpTest):
 
     @classmethod
