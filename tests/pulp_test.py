@@ -12,10 +12,11 @@ import pulp_auto.handler
 from pulp_auto.namespace import (locate_ns_item,)
 
 
-def requires(thing):
+def requires(*things):
     '''skip test case unless there is thing in ROLES'''
     try:
-        locate_ns_item(ROLES, thing)
+        for thing in things:
+            locate_ns_item(ROLES, thing)
     except KeyError:
         return unittest.skip("no %r found in ROLES" % thing)
     return lambda function: function
@@ -80,6 +81,7 @@ def agent_test(catching=False, frequency=1):
             return ret
         return decorated_method
     return decorator_maker
+
 
 class ConsumerAgentPulpTest(PulpTest):
     @classmethod
