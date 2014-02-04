@@ -6,6 +6,10 @@ class Binding(item.AssociatedItem):
     path='/bindings/'
     relevant_data_keys = ['repo_id', 'consumer_id', 'distributor_id']
 
+class Event(item.AssociatedItem):
+    path='/history/'
+    relevant_data_keys = ['event_type', 'limit', 'sort', 'start_date', 'end_date']
+
 class Consumer(item.Item):
     '''consumer item implementation'''
     path = '/consumers/'
@@ -43,6 +47,12 @@ class Consumer(item.Item):
 
     def get_repo_bindings(self, pulp, repo_id):
         return Binding.from_response(pulp.send(self.request('GET', path=path_join(Binding.path, repo_id))))
+  
+    def get_single_binding(self, pulp, repo_id, distributor_id):
+        return Binding.from_response(pulp.send(self.request('GET', path=path_join(Binding.path, repo_id, distributor_id))))
+        
+    def get_history(self, pulp, params={}):
+        return Event.from_response(pulp.send(self.request('GET', path=Event.path, params=params)))
 
     @property
     def certificate(self):

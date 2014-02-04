@@ -87,17 +87,19 @@ class Pulp(object):
 
 
 class Request(object):
-    '''a callable request compatible with Pulp.send'''
-    def __init__(self, method, path, data={}, headers={'Content-Type': 'application/json'}):
+    '''a callable request compatible with Pulp.send''' 
+    def __init__(self, method, path, data={}, headers={'Content-Type': 'application/json'}, params={}):
         self.method = method
         self.path = path
         self.data = json.dumps(data)
         self.headers = headers
+        self.params = params
 
     def __call__(self, url, auth):
         return requests.Request(
             self.method,
             normalize_url(path_join(url, pulp_path, self.path)),
+            params=self.params,
             auth=auth,
             data=self.data,
             headers=self.headers

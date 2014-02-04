@@ -91,13 +91,13 @@ class Item(HasData):
             self.request('PUT', data=delta)
         )
 
-    def request(self, method, path='', data={}):
-        return Request(method, data=data, path=path_join(self.path, self.id, path))
+    def request(self, method, path='', data={}, params={}):
+        return Request(method, data=data, path=path_join(self.path, self.id, path), params=params)
 
 
 class AssociatedItem(Item):
     '''an Item that can't exist without previous association to another Item'''
-    def __init__(self, path='/', data={}):
+    def __init__(self, path='/', data={}):#, query=''):
         super(AssociatedItem, self).__init__(data=data)
         # adjust path
         if '_href' in self.data:
