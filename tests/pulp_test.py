@@ -35,6 +35,9 @@ def requires_any(thing, condition=lambda item: True):
 class PulpTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        if getattr(cls, '__unittest_skip__', False):
+            # FIXME: suggest a unittest patch dealing setUpClass being called even though __unittest_skip__ is set
+            raise unittest.SkipTest(getattr(cls, '__unittest_skip_why__', ''))
         cls.pulp = Pulp(ROLES.pulp.url, tuple(ROLES.pulp.auth))
         cls.log = logging.getLogger(cls.__name__)
 
@@ -83,6 +86,7 @@ def agent_test(catching=False, frequency=1):
     return decorator_maker
 
 
+@requires_any('repos', lambda repo: repo.type == 'rpm')
 class ConsumerAgentPulpTest(PulpTest):
     @classmethod
     def setUpClass(cls):
