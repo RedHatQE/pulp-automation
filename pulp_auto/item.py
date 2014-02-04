@@ -51,6 +51,10 @@ class Item(HasData):
         with pulp.asserting(True):
             '''in the data use criteria field to perform the search'''
             response = pulp.send(Request('POST', path_join(cls.path, path), data=data))
+            # example of criteria search
+            # {"criteria": {"sort": None, "fields": None, "limit": None, "filters": {"$and": [{"notes._repo-type": "puppet-repo"}, {"id": {"$regex": ".*repo.*"}}]}, "skip": None}}
+            # {"criteria": {"sort": None, "fields": None, "limit": None, "filters": {"$and": [{"id": "m1"}, {"notes._repo-type": "puppet-repo"}]}, "skip": None}}
+            # {"criteria": {"sort": None, "fields": None, "limit": None, "filters": {"$and": [{"notes._repo-type": "puppet-repo"}, {"id": {"$not": "m1"}}]}, "skip": None}}
         return cls.from_response(response)
 
     @property
