@@ -8,7 +8,7 @@ from . import ROLES
 def setUpModule():
     pass
 
-
+@pulp_test.requires_any('repos', lambda repo: repo.type == 'rpm')
 class SimpleRepoCopyTest(pulp_test.PulpTest):
 
     @classmethod
