@@ -70,11 +70,15 @@ class YumRepo(BaseRepo):
         return txt
 
     @classmethod
+    def parse(cls, txt):
+        pass
+
+    @classmethod
     def list(cls, con):
         from connection import Connection
-        # asser proper connection instance
+        # assert proper connection instance
         con = Connection.from_connection(con)
-        repolist = con.remote(Command('yum', '-v', 'repolist')) | \
-                    con.remote(Command('sed', '-e 1,5d', '-e $d', '-e s,^Repo-,,'))
-        items = cls.parse(cls.strip_header(repolist()))
-        return map(lambda item: cls(item), items)
+        # yum has a module that can be used
+        ybs = con.connection.rpyc.modules.yum.YumBase()
+        remote_repos = [{'id': repo.id} for repo in ybs.repos.listEnabled()]
+        return map(lambda item: cls(item), remote_repos)
