@@ -46,7 +46,12 @@ class CliConsumerTest(PulpTest):
         for repo, _, _ in self.repos:
             self.assertIn(repo.id, rpm_repo_ids)
 
-    def test_03_unbind_repos(self):
+    def test_03_assert_yum_repos(self):
+        remote_yum_repos = YumRepo.list(self.consumer_cli)
+        for repo, _, _ in self.repos:
+            self.assertIn(YumRepo({'id': repo.id}), remote_yum_repos)
+
+    def test_04_unbind_repos(self):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
