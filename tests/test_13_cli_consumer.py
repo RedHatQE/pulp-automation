@@ -1,22 +1,17 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import Task
 from pulp_auto.repo import create_yum_repo
-from pulp_test import (PulpTest, InventoryInducedSkip)
+from pulp_test import (PulpTest, requires_any)
 from . import ROLES
 
 def setUpModule():
-    '''sanity check roles'''
-    try:
-        ROLES.pulp, ROLES.consumers
-    except AttributeError as e:
-        raise InventoryInducedSkip(e.message)
-
-    if not ROLES.consumers:
-        raise InventoryInducedSkip("empty ROLES.consumers list")
+    pass
 
 def tearDownModule():
     pass
 
+@requires_any('consumers')
+@requires_any('repos', lambda repo: repo.type == 'rpm')
 class CliConsumerTest(PulpTest):
     @classmethod
     def setUpClass(cls):
