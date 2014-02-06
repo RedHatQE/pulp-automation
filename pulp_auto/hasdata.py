@@ -9,7 +9,13 @@ class HasData(object):
         for key in self.required_data_keys:
             assert key in data and data[key] is not None, "no %s key in data %s" % (key, data)
 
-    def __init__(self, data={}):
+    def __init__(self, data={}, required_data_keys=None, relevant_data_keys=None):
+        # owerride/customize class-level keys for special usecases
+        # e.g. to avoid specifying irelevant data in asserts: assert Repo({'id': 'my_repo'}, ['id'], ['id']) in Repo.list(pulp), "there's no my_repo in pulp (yet)"
+        if required_data_keys is not None:
+            self.required_data_keys = required_data_keys
+        if relevant_data_keys is not None:
+            self.relevant_data_keys = relevant_data_keys
         self.data = data
 
     def __str__(self):
