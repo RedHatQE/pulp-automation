@@ -102,6 +102,17 @@ class Repo(item.Item):
         return pulp.send(self.request('POST', path=path, data=data))
 
 
+    def unassociate_units(
+        self,
+        pulp,
+        data,
+        path='/actions/unassociate/'
+    ):
+        # example of criteria usage 
+        # {"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
+        return pulp.send(self.request('POST', path=path, data=data))
+
+
 class Importer(item.AssociatedItem):
     path = '/importers/'
     relevant_data_keys = ['id', 'importer_type_id', 'repo_id', 'config', 'last_sync']
