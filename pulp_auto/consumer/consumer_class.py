@@ -54,6 +54,53 @@ class Consumer(item.Item):
     def get_history(self, pulp, params={}):
         return Event.from_response(pulp.send(self.request('GET', path=Event.path, params=params)))
 
+    def install_unit(
+        self,
+        pulp,
+        unit_key,
+        type_id,
+        options = {
+            "apply": True,
+            "reboot": False,
+            "importkeys": False
+        }
+    ):
+        '''install single unit'''
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options" : options
+        }
+        return pulp.send(
+            self.request(
+                'POST',
+                path='/actions/content/install/',
+                data=data
+            )
+        )
+
+    def uninstall_unit(
+        self,
+        pulp,
+        unit_key,
+        type_id,
+        options = {
+            "apply": True,
+            "reboot": False
+        }
+    ):
+        '''remove single unit'''
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options": options
+        }
+        return pulp.send(
+            self.request(
+                'POST',
+                path='/actions/content/uninstall',
+                data=data
+            )
+        )
+
     @property
     def certificate(self):
         return self.data['certificate']

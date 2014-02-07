@@ -20,8 +20,9 @@ class CliConsumerTest(PulpTest):
         # create all repos
         with cls.pulp.asserting(True):
             cls.repos = [create_yum_repo(cls.pulp, **repo) for repo in consumer_config.repos if repo.type == 'rpm']
-            for repo, _, _ in cls.repos:
+            for repo, _, distributor in cls.repos:
                 Task.wait_for_response(cls.pulp, repo.sync(cls.pulp))
+                Task.wait_for_response(cls.pulp, repo.publish(cls.pulp, data={'id': distributor.id}))
         cls.consumer_cli = Cli.ready_instance(**consumer_config)
         cls.consumer = Consumer(consumer_config)
 
@@ -51,7 +52,45 @@ class CliConsumerTest(PulpTest):
         for repo, _, _ in self.repos:
             self.assertIn(YumRepo({'id': repo.id}), remote_yum_repos)
 
-    def test_04_unbind_repos(self):
+    def test_04_assert_unit_install(self):
+        unit = {
+            'name': 'zebra'
+        }
+        Task.wait_for_response(
+            self.pulp,
+            self.consumer.install_unit(
+                self.pulp,
+                unit,
+                'rpm'
+            )
+        )
+        self.assertIn(
+            RpmUnit(unit, relevant_data_keys=unit.keys()),
+            RpmUnit.list(self.consumer_cli)
+        )
+
+    def test_05_assert_unit_uninstall(self):
+        unit = {
+            'name': 'zebra'
+        }
+        self.assertIn(
+            RpmUnit(unit, relevant_data_keys=unit.keys()),
+            RpmUnit.list(self.consumer_cli)
+        )
+        Task.wait_for_response(
+            self.pulp,
+            self.consumer.uninstall_unit(
+                self.pulp,
+                unit,
+                'rpm'
+            )
+        )
+        self.assertNotIn(
+            RpmUnit(unit, relevant_data_keys=unit.keys()),
+            RpmUnit.list(self.consumer_cli)
+        )
+
+    def test_06_unbind_repos(self):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
