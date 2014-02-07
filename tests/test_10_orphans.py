@@ -1,7 +1,7 @@
 import pulp_test, json, pprint, pulp_auto
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
-from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, PackageCategoryOrphan, ErratumOrphan, DistributionOrphan
+from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, PackageCategoryOrphan, ErratumOrphan, DistributionOrphan, DrpmOrphan, SrpmOrphan, YumRepoMetadataFileOrphan
 from . import ROLES
 
 def setUpModule():
@@ -91,6 +91,18 @@ class SimpleOrphanTest(pulp_test.PulpTest):
 
     def test_09_delete_orphan_distribution(self):
         DistributionOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_09_delete_orphan_drpm(self):
+        DrpmOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_09_delete_orphan_srpm(self):
+        SrpmOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+
+    def test_09_delete_orphan_yum_repo_metadata(self):
+        YumRepoMetadataFileOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
     @classmethod
