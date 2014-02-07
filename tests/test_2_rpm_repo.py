@@ -118,3 +118,6 @@ class SimpleRepoTest(RepoTest):
     def test_09_delete_repo(self):
         self.repo.delete(self.pulp)
         self.assertPulpOK()
+        #check you cannot delete it twice
+        self.repo.delete(self.pulp)
+        self.assertPulp(code=404)
