@@ -7,6 +7,7 @@ class Repo(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description', 'notes']
     path = '/repositories/'
 
+
     def importer_config_update(
         self,
         pulp,
@@ -113,6 +114,15 @@ class Repo(item.Item):
         return pulp.send(self.request('POST', path=path, data=data))
 
 
+    def within_repo_search(
+        self,
+        pulp,
+        data,
+        path='/search/units/'
+    ):
+        return pulp.send(self.request('POST', path=path, data=data))
+
+
 class Importer(item.AssociatedItem):
     path = '/importers/'
     relevant_data_keys = ['id', 'importer_type_id', 'repo_id', 'config', 'last_sync']
@@ -121,6 +131,10 @@ class Importer(item.AssociatedItem):
 class Distributor(item.AssociatedItem):
     path = '/distributors/'
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']
+
+
+class Association(item.AssociatedItem):
+    path = '/search/units/'
 
 
 def create_yum_repo(
