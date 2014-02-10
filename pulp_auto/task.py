@@ -2,10 +2,17 @@ import item, time, hasdata
 from item import (Item, GroupItem)
 
 
+class TaskFailure(RuntimeError):
+    def __init__(self, *args, **kvs):
+        self.task = kvs.pop('task', None)
+        super(TaskFailure, self).__init__(*args, **kvs)
+
+
 class AbstractTask(object):
     state = None
     active_states = []
     end_states = []
+    error_state = []
 
     def update(self, pulp):
         '''an abstract update does nothing'''
@@ -22,6 +29,8 @@ class AbstractTask(object):
             time.sleep(frequency)
             try:
                 self.reload(pulp)
+                if self.state in self.error_state:
+                    raise TaskFailure('Task Failed.', task=self)
             except AssertionError as e:
                 # task gone --- no need to wait anymore
                 # FIXME: doesn't work with group-tasks, dunno why they can't be accessed via
@@ -48,6 +57,7 @@ class TaskDetails(hasdata.HasData):
     required_data_keys = ['task_id', 'state']
     active_states = ['running', 'waiting']
     end_states = ['finished']
+    error_state = ['error']
 
     @property
     def state(self):
