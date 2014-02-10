@@ -47,10 +47,10 @@ class Consumer(item.Item):
 
     def get_repo_bindings(self, pulp, repo_id):
         return Binding.from_response(pulp.send(self.request('GET', path=path_join(Binding.path, repo_id))))
-  
+
     def get_single_binding(self, pulp, repo_id, distributor_id):
         return Binding.from_response(pulp.send(self.request('GET', path=path_join(Binding.path, repo_id, distributor_id))))
-        
+
     def get_history(self, pulp, params={}):
         return Event.from_response(pulp.send(self.request('GET', path=Event.path, params=params)))
 
