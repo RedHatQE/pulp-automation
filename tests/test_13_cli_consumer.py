@@ -1,5 +1,5 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
-from pulp_auto.task import Task
+from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.repo import create_yum_repo
 from pulp_test import (PulpTest, requires_any)
 from . import ROLES
@@ -90,7 +90,21 @@ class CliConsumerTest(PulpTest):
             RpmUnit.list(self.consumer_cli)
         )
 
-    def test_06_unbind_repos(self):
+    def test_06_assert_nonexisten_unit_install(self):
+        unit = {
+            'name': '__NO_SUCH_UNIT__'
+        }
+        with self.assertRaises(TaskFailure):
+            Task.wait_for_response(
+                self.pulp,
+                self.consumer.install_unit(
+                    self.pulp,
+                    unit,
+                    'rpm'
+                )
+            )
+
+    def test_07_unbind_repos(self):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
