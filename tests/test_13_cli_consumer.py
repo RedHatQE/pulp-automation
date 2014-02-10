@@ -104,7 +104,21 @@ class CliConsumerTest(PulpTest):
                 )
             )
 
-    def test_07_unbind_repos(self):
+    def test_07_assert_nonexisten_unit_uninstall(self):
+        unit = {
+            'name': '__NO_SUCH_UNIT__'
+        }
+        with self.assertRaises(TaskFailure):
+            Task.wait_for_response(
+                self.pulp,
+                self.consumer.uninstall_unit(
+                    self.pulp,
+                    unit,
+                    'rpm'
+                )
+            )
+
+    def test_08_unbind_repos(self):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
