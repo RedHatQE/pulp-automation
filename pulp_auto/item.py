@@ -97,8 +97,8 @@ class Item(HasData):
 
 class AssociatedItem(Item):
     '''an Item that can't exist without previous association to another Item'''
-    def __init__(self, path='/', data={}):#, query=''):
-        super(AssociatedItem, self).__init__(data=data)
+    def __init__(self, path='/', data={}, **kvs):#, query=''):
+        super(AssociatedItem, self).__init__(data=data, **kvs)
         # adjust path
         if '_href' in self.data:
             self.path = self.strip_path(self.data['_href'])
