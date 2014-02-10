@@ -1,8 +1,9 @@
-import namespace, json, requests
+import namespace, json, requests, logging
 from . import (normalize_url, path_join, path_split, strip_url)
 from pulp_auto import (Request, format_response)
 from hasdata import HasData
-
+from handler import logged
+log = logging.getLogger(__name__)
 
 class Item(HasData):
     '''a generic pulp rest api item'''
@@ -16,6 +17,7 @@ class Item(HasData):
         return path_join(*path_split(strip_url(path))[:-1])
 
     @classmethod
+    @logged(log.debug)
     def from_response(cls, response):
         '''basic response to Item instance conversion'''
         data = response.json()
@@ -41,6 +43,7 @@ class Item(HasData):
         return map(lambda x: cls(data=x), response.json())
 
     @classmethod
+    @logged(log.debug)
     def search(
         cls,
         pulp,
@@ -107,6 +110,7 @@ class AssociatedItem(Item):
             self.path = path_join("/".join(path.rsplit(type(self).path)[:-1]), type(self).path)
 
     @classmethod
+    @logged(log.debug)
     def from_response(cls, response):
         '''paht of an associated item has to be adjusted'''
         response_path = cls.strip_path(response.url)
