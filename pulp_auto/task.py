@@ -30,7 +30,7 @@ class AbstractTask(object):
             try:
                 self.reload(pulp)
                 if self.state in self.error_state:
-                    raise TaskFailure('Task Failed.', task=self)
+                    raise TaskFailure('Task failed: %r' % self.data['reasons'], task=self)
             except AssertionError as e:
                 # task gone --- no need to wait anymore
                 # FIXME: doesn't work with group-tasks, dunno why they can't be accessed via
