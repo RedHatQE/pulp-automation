@@ -70,7 +70,13 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_08_get_list_consumers(self):
         self.assertIn(Consumer.get(self.pulp, self.consumer.id), Consumer.list(self.pulp))
     
-    #def test_09_search_consumers(self):
+    def test_09_search_consumer(self):
+        #perfom searh of the consumer by its id
+        #check that the filter works properly and as a result gave right consumer id
+        consumer = Consumer.search(self.pulp, data={"criteria": {"sort": None, "fields": None, "limit": None, "filters": {"id": self.consumer.id}, "skip": None}})
+        self.assertIn(Consumer({"id": self.consumer.id}, ['id'], ['id']), consumer)
+        #check that in the search result there is only one and unique consumer with such id
+        self.assertTrue(len(consumer) == 1)
     
     ### history
     
