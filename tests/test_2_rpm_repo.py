@@ -1,6 +1,7 @@
 import pulp_test, json
 from pulp_auto.repo import Repo, Importer, Distributor
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task, GroupTask, TaskFailure
+from pulp_auto.units import Orphans
 
 
 def setUpModule():
@@ -121,3 +122,9 @@ class SimpleRepoTest(RepoTest):
         #check you cannot delete it twice
         self.repo.delete(self.pulp)
         self.assertPulp(code=404)
+
+    def test_10_delete_orphans(self):
+        delete_response = Orphans.delete(self.pulp)
+        self.assertPulpOK()
+        task = Task.from_response(delete_response)
+        task.wait(self.pulp)

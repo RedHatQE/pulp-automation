@@ -2,6 +2,7 @@ import pulp_test, json
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task, GroupTask
+from pulp_auto.units import PuppetModuleOrphan
 
 
 def setUpModule():
@@ -138,4 +139,8 @@ class SimplePuppetRepoTest(PuppetRepoTest):
 
     def test_09_delete_repo(self):
         self.repo.delete(self.pulp)
+        self.assertPulpOK()
+
+    def test_10_delete_orphans(self):
+        PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
