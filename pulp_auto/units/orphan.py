@@ -88,10 +88,9 @@ class Orphans(object):
         info = cls.info(pulp)
         ret = {}
         for orphan_type in info.keys():
-            assert orphan_type in UnitFactory.type_map, "Unknown orphan type: %s" % orphan_type
-            ret[orphan_type] = UnitFactory.type_map[orphan_type].list(pulp)
+            assert orphan_type in UnitFactory.type_map.orphans, "Unknown orphan type: %s" % orphan_type
+            ret[orphan_type] = UnitFactory.type_map.orphans[orphan_type].list(pulp)
         return ret
 
     
-        
 # introduce all required Orphan Subtypes
