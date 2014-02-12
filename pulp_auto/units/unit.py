@@ -5,7 +5,7 @@ from pulp_auto.namespace import (Namespace, load_ns)
 
 class UnitFactory(Item):
     """to dispatch Units instantiation"""
-    
+
     # type of unit to instantiate is dependant on the
     # response's data['_content_type_id'] value
     # and its path e.g. /content/units/rpm/
@@ -17,7 +17,7 @@ class UnitFactory(Item):
     def register(cls, type_name, unit_type):
         # register a (typename, type) pair
         cls.type_map.update({type_name: unit_type})
-    
+
 
     @classmethod
     def from_data(cls, data):
@@ -43,7 +43,7 @@ class UnitFactory(Item):
         return cls.from_data(data)
 
 class MetaUnit(type):
-    '''a MetaClass to perform Unit type registration at Unit Factory''' 
+    '''a MetaClass to perform Unit type registration at Unit Factory'''
     def __new__(mcs, name, bases, dict):
         '''register unit type instance '''
         unit_type_instance = type.__new__(mcs, name, bases, dict)
@@ -62,20 +62,20 @@ class AbstractUnit(Item):
     # all sub classes shall be registered at the UnitFactory
     __metaclass__ = MetaUnit
 
-    # Units have a distinctive type_id 
+    # Units have a distinctive type_id
     @property
     def type_id (self):
             return self.data['_content_type_id']
-    
+
     @type_id.setter
     def type_id(self, value):
             self.data['_content_type_id'] = value
-    
+
     # and the .id field is named _id
     @property
     def id(self):
             return self.data['_id']
-    
+
     @id.setter
     def id(self, value):
             self.data['_id'] = value
@@ -89,7 +89,7 @@ class AbstractUnit(Item):
     def path_type(cls):
         '''what type the cls.path refers to'''
         return path_split(cls.path)[-2]
-   
+
     def __init__(self, data={}):
         super(AbstractUnit, self).__init__(data)
         path_type = type(self).path_type()
