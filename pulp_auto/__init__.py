@@ -24,6 +24,13 @@ def path_join(*args):
 def path_split(path):
     return normalize_url(path).split('/')
 
+def path_fields(path):
+    '''because the leading and terminating slashes give ["",... , ""] when path is split'''
+    return path_split(path)[1:-1]
+
+def path_last(path):
+    return path_fields[-1]
+
 
 from pulp import (Pulp, Request, ResponseLike, format_response, format_preprequest)
 import item, repo, namespace, hasdata, qpid_handle, consumer, agent, permission, handler, units
