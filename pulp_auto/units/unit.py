@@ -2,39 +2,48 @@ from pulp_auto.item import Item
 from pulp_auto import (normalize_url, path_join, path_split, strip_url)
 from pulp_auto.pulp import Request
 from pulp_auto.namespace import (Namespace, load_ns)
+from pulp_auto import path_fields
 
-class UnitFactory(Item):
+class UnitFactory(object):
     """to dispatch Units instantiation"""
 
     # type of unit to instantiate is dependant on the
     # response's data['_content_type_id'] value
     # and its path e.g. /content/units/rpm/
-    type_map = {}
+    type_map = Namespace()
 
     path = '/'
 
     @classmethod
-    def register(cls, type_name, unit_type):
-        # register a (typename, type) pair
-        cls.type_map.update({type_name: unit_type})
+    def register(cls, unit_type):
+        # register a unit_super_type.unit_type item e.g. type_map.units.rpm
+        fields = path_fields(unit_type.path)
+        if len(fields) <= 2:
+            # probably, AbstractUnit is being registered
+            return
+        unit_super_type_name, unit_type_name = path_fields(unit_type.path)[1:3]
+        if unit_super_type_name not in cls.type_map:
+            cls.type_map[unit_super_type_name] = Namespace()
+        cls.type_map[unit_super_type_name].update({unit_type_name: unit_type})
 
+    @classmethod
+    def process_item_data(cls, data):
+        '''figure out the type based on the url e.g. units/rpm -> RpmUnit, orphans/rpm -> RpmOrphan'''
+        path = '.'.join(path_fields(data['_url'])[-3:-1])
+        # make sure there's type to instantiate to
+        # this utilizes the namespace['a.b.c....'] item locations
+        assert path in cls.type_map, "path %s not found in type_map" % path
+        # make sure the _url matches the type_id
+        assert data['_content_type_id'] == path_fields(data['_url'])[-2], \
+                "_content_type_id doesn't match url: %s" % data
+        return type_map[path](data)
 
     @classmethod
     def from_data(cls, data):
         '''instantiate proper unit type instances based on data'''
         if not isinstance(data, list):
-            type_id = data['_content_type_id']
-            # make sure there's type to instantiate to
-            assert type_id in cls.type_map, "%s not found in type_map"\
-                    % type_id
-            return type_map[type_id](data)
-        ret = []
-        for item in data:
-            type_id = data['_content_type_id']
-            assert type_id in cls.type_map, "%s not found in type_map"\
-                    % type_id
-            ret.append(type_map[type_id](data))
-        return ret
+            return cls.process_item_data(data)
+        return map(lambda x: cls.process_item_data(x), data)
 
     @classmethod
     def from_response(cls, response):
@@ -42,12 +51,13 @@ class UnitFactory(Item):
         data = response.json()
         return cls.from_data(data)
 
+
 class MetaUnit(type):
     '''a MetaClass to perform Unit type registration at Unit Factory'''
     def __new__(mcs, name, bases, dict):
         '''register unit type instance '''
         unit_type_instance = type.__new__(mcs, name, bases, dict)
-        UnitFactory.register(unit_type_instance.path_type(), unit_type_instance)
+        UnitFactory.register(unit_type_instance)
         return unit_type_instance
 
 class AbstractUnit(Item):
@@ -88,7 +98,7 @@ class AbstractUnit(Item):
     @classmethod
     def path_type(cls):
         '''what type the cls.path refers to'''
-        return path_split(cls.path)[-2]
+        return path_fields(cls.path)[-1]
 
     def __init__(self, data={}):
         super(AbstractUnit, self).__init__(data)
@@ -159,4 +169,3 @@ class PackageEnvironmentUnit(AbstractUnit):
     '''package environments (collections of package groups)'''
     path = AbstractUnit.path + "/package_environment/"
     # TODO: relevant_data_keys
-
