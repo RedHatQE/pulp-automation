@@ -29,7 +29,7 @@ class UnitFactory(Item):
                     % type_id
             return type_map[type_id](data)
         ret = []
-        for item in items:
+        for item in data:
             type_id = data['_content_type_id']
             assert type_id in cls.type_map, "%s not found in type_map"\
                     % type_id
