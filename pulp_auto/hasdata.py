@@ -1,4 +1,4 @@
-import json
+import json, namespace
 
 
 class HasData(object):
@@ -7,7 +7,8 @@ class HasData(object):
 
     def assert_data(self, data):
         for key in self.required_data_keys:
-            assert key in data and data[key] is not None, "no %s key in data %s" % (key, data)
+            assert namespace.in_ns(data, key) and namespace.locate_ns_item(data, key) is not None, \
+                "no %s key in data %s" % (key, data)
 
     def __init__(self, data={}, required_data_keys=None, relevant_data_keys=None):
         # owerride/customize class-level keys for special usecases
@@ -31,10 +32,11 @@ class HasData(object):
         else:
             data = other
         try:
-            return reduce(
-                lambda x, y: x and (y[0] == y[1]), \
-                    [(self.data[key], data[key]) for key in self.relevant_data_keys],
-                    True
+            return all(
+                [
+                    namespace.locate_ns_item(self.data, key) == namespace.locate_ns_item(data, key) \
+                    for key in self.relevant_data_keys
+                ]
             )
         except KeyError:
             return False
@@ -59,12 +61,17 @@ class HasData(object):
             data = other.data
         else:
             data = other
-        return {
-            key: self.data[key] for key in filter( \
-                lambda key: data[key] != self.data[key], \
-                    [key for key in self.relevant_data_keys if key in self.data]
-            )
-        }
+        diffs = [
+            namespace.locate_ns_item(data, key, building=True) for key in \
+            filter( \
+                lambda key: namespace.locate_ns_item(data, key) != namespace.locate_ns_item(self.data, key), \
+                     [key for key in self.relevant_data_keys if namespace.in_ns(self.data, key)]
+            ) \
+        ]
+        delta = namespace.Namespace()
+        for diff in diffs:
+            delta.update(diff)
+        return delta
 
     def __or__(self, other):
         '''call to create a new Item with data set to union self.dict and other.dict
@@ -114,7 +121,7 @@ class HasData(object):
     @data.setter
     def data(self, _data):
         self.assert_data(_data)
-        self._data = _data
+        self._data = namespace.load_ns(_data)
 
     @property
     def json_data(self):
