@@ -39,25 +39,43 @@ def dump_ns(ns, leaf_processor=lambda x: x):
     return leaf_processor(ns)
 
 
-def locate_ns_item(ns, item):
+def locate_ns_item(ns, item, building=False):
     '''
     locate queries of the form 'a.b.c' in a Namespace instance
     tries to find longest match
     '''
+    if not isinstance(item, str):
+        # no point in splitting; try directly
+        return  ns[item]
+
     if item == '':
         # item found
         return ns
+
+    if type(ns) not in (Namespace, dict):
+        # item not found
+        raise KeyError(repr(item))
 
     sub_items = item.split('.')
     for list_prefix in [sub_items[:i] for i in range(len(sub_items), 0, -1)]:
         item_prefix = '.'.join(list_prefix)
         item_suffix = '.'.join(sub_items[i:])
         if item_prefix in ns:
-            return locate_ns_item(ns[item_prefix], item_suffix)
+            if building:
+                return {item_prefix: locate_ns_item(ns[item_prefix], item_suffix, building=building)}
+            else:
+                return locate_ns_item(ns[item_prefix], item_suffix, building=building)
 
-    # no match
-    raise KeyError('item not found: %s' % item)
+    # item not found
+    raise KeyError(repr(item))
 
+
+def in_ns(ns, item):
+    try:
+        locate_ns_item(ns, item)
+        return True
+    except KeyError:
+        return False
 
 def setattr_ns(obj, ns, leaf_processor=lambda x: x):
     '''kinda recursive setattr from a namespace to an arbitrary object'''
