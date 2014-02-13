@@ -62,7 +62,7 @@ class HasData(object):
         else:
             data = other
         diffs = [
-            namespace.locate_ns_item(data, key, building=True) for key in \
+            namespace.locate_ns_item(self.data, key, building=True) for key in \
             filter( \
                 lambda key: namespace.locate_ns_item(data, key) != namespace.locate_ns_item(self.data, key), \
                      [key for key in self.relevant_data_keys if namespace.in_ns(self.data, key)]
