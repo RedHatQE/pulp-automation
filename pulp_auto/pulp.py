@@ -1,6 +1,8 @@
-import requests, json, contextlib, gevent
+import requests, json, contextlib, gevent, logging
 from requests.adapters import HTTPAdapter
 from . import (normalize_url, path_join, path as pulp_path)
+from handler import logged
+log = logging.getLogger(__name__)
 
 
 class Pulp(object):
@@ -26,6 +28,7 @@ class Pulp(object):
 
         self._semaphore = BoundedSemaphore(1)
 
+    @logged(log.debug)
     def send(self, request):
         '''send a request; the request has to be callable that accepts url and auth params'''
         if self._async:
