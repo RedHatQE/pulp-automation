@@ -28,15 +28,15 @@ class UnitFactory(object):
 
     @classmethod
     def process_item_data(cls, data):
-        '''figure out the type based on the url e.g. units/rpm -> RpmUnit, orphans/rpm -> RpmOrphan'''
-        path = '.'.join(path_fields(data['_url'])[-3:-1])
+        '''figure out the type based on the href e.g. units/rpm -> RpmUnit, orphans/rpm -> RpmOrphan'''
+        path = '.'.join(path_fields(data['_href'])[-3:-1])
         # make sure there's type to instantiate to
         # this utilizes the namespace['a.b.c....'] item locations
         assert path in cls.type_map, "path %s not found in type_map" % path
-        # make sure the _url matches the type_id
-        assert data['_content_type_id'] == path_fields(data['_url'])[-2], \
-                "_content_type_id doesn't match url: %s" % data
-        return type_map[path](data)
+        # make sure the _href matches the type_id
+        assert data['_content_type_id'] == path_fields(data['_href'])[-2], \
+                "_content_type_id doesn't match href: %s" % data
+        return cls.type_map[path](data)
 
     @classmethod
     def from_data(cls, data):
