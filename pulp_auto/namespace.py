@@ -28,7 +28,7 @@ class Namespace(dict):
 
     def __getitem__(self, key):
         def locate(ns, key):
-            if not isinstance(key, str):
+            if not type(key) in (unicode, str):
                 # no point in splitting; try directly
                 return  dict.__getitem__(ns, key)
 
@@ -89,7 +89,7 @@ def locate_ns_item(ns, item, building=False):
     locate queries of the form 'a.b.c' in a Namespace instance
     tries to find longest match
     '''
-    if not isinstance(item, str):
+    if type(item) not in (unicode, str):
         # no point in splitting; try directly
         return  ns[item]
 
