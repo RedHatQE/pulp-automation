@@ -100,8 +100,8 @@ class AbstractUnit(Item):
         '''what type the cls.path refers to'''
         return path_fields(cls.path)[-1]
 
-    def __init__(self, data={}):
-        super(AbstractUnit, self).__init__(data)
+    def __init__(self, data={}, **kvs):
+        super(AbstractUnit, self).__init__(data=data, **kvs)
         path_type = type(self).path_type()
         assert self.type_id == path_type, "self.path different from self.type_id: %s, %s" % (self.type_id, path_type)
 
