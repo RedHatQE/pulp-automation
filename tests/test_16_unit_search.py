@@ -62,9 +62,11 @@ class SimpleUnitSearchTest(UnitSearchTest):
         self.assertEqual(unit_result, unit_result1)
 
     def test_06_delete_repo(self):
-        self.repo1.delete(self.pulp)
-        self.repo2.delete(self.pulp)
-        self.assertPulpOK()
+        with self.pulp.async(True):
+            self.repo1.delete(self.pulp)
+            self.repo2.delete(self.pulp)
+        for response in self.pulp.last_response:
+            Task.wait_for_response(self.pulp, response)
 
     def test_07_delete_orphans(self):
         response = Orphans.delete(self.pulp)
