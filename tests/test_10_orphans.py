@@ -23,7 +23,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         sync_task = Task.from_response(cls.repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
         # this is where orphans appear
-        cls.repo.delete(cls.pulp)
+        Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
 
     def test_00_get_orphan_info(self):
         Orphans.info(self.pulp)

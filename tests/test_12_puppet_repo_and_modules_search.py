@@ -80,7 +80,7 @@ class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
         with self.pulp.async(True):
             self.repo.delete(self.pulp)
             self.repo1.delete(self.pulp)
-        for response in self.pulp.last_response:
+        for response in list(self.pulp.last_response):
             Task.wait_for_response(self.pulp, response)
 
     def test_07_delete_puppet_orphans(self):
