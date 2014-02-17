@@ -9,11 +9,23 @@
     - file:
         name: nosetests.xml
         description: nosetests xunit test result file
+    - file:
+        name: coverage.xml
+        description: nosetests coverage result file
     publishers:
     - junit:
         results: nosetests.xml
-
-    
+    - cobertura:
+        report-file: coverage.xml
+        targets:
+            - files:
+                healthy: 0
+                unhealthy: 0
+                failing: 0
+            - method:
+                healthy: 0
+                unhealthy: 0
+                failing: 0
 
 - project:
     name: single-node
