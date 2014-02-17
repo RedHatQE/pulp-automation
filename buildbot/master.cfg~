@@ -24,8 +24,7 @@ REPOS=[
 AUTO_REPOS = REPOS[-1:]
 
 NOSETESTS_CONFIG= {
-	'command': ["nosetests" , "-vs", "--with-xunit", "--xunit-file=/tmp/nosetests.xml", "--all-modules", "--traverse-namespace",
-"--with-coverage", "--cover-package=pulp", "--cover-tests", "--cover-xml", "--cover-xml-file=/tmp/coverage.xml"],
+	'command': ["nosetests" , "-vs", "--with-xunit", "--xunit-file=/tmp/nosetests.xml"],
 	'workdir': '/usr/share/pulp_auto/',
 	'haltOnFailure': False
 }
