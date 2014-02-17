@@ -117,8 +117,7 @@ class SimpleIsoRepoTest(IsoRepoTest):
         task.wait(self.pulp)
 
     def test_09_delete_repo(self):
-        self.repo.delete(self.pulp)
-        self.assertPulpOK()
+        Task.wait_for_response(self.pulp, self.repo.delete(self.pulp))
         #check you cannot delete it twice
         self.repo.delete(self.pulp)
         self.assertPulp(code=404)
