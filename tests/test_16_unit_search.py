@@ -1,5 +1,5 @@
 import pulp_test, json, pulp_auto
-from pulp_auto import (Request, )
+from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo, create_yum_repo
 from pulp_auto.task import Task, GroupTask
@@ -18,6 +18,10 @@ class UnitSearchTest(pulp_test.PulpTest):
         #create and sync puppet repo
         repo_id = cls.__name__
         queries = ['tomcat']
+        # make sure we run clean
+        response = Repo({'id': repo_id}).delete(cls.pulp)
+        if response == ResponseLike(202):
+            Task.wait_for_response(cls.pulp, response)
         cls.repo1, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
         sync_task = Task.from_response(cls.repo1.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
