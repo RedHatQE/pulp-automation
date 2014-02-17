@@ -15,6 +15,8 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
     def setUpClass(cls):
         super(SimpleRepoCopyTest, cls).setUpClass()
         #Destination repo
+        # make sure repos don't exist
+        # no need to wait for repos.delete to happen
         feed = None
         dest_repo_name = cls.__name__ + '_copy'
         dest_repo1 = Repo({'id': dest_repo_name})
@@ -128,8 +130,11 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
 
     @classmethod
     def tearDownClass(cls):
-        for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
-            Repo({'id': repo_id}).delete(cls.pulp)
+        with cls.pulp.async():
+            for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
+                Repo({'id': repo_id}).delete(cls.pulp)
+        for response in list(cls.pulp.last_response):
+            Task.wait_for_response(cls.pulp, response)
         #orphans also should be deleted in cleanup
         delete_response = Orphans.delete(cls.pulp)
         delete_task = Task.from_response(delete_response)

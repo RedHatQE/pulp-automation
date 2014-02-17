@@ -62,7 +62,7 @@ class SimpleUnitSearchTest(UnitSearchTest):
         self.assertEqual(unit_result, unit_result1)
 
     def test_06_delete_repo(self):
-        with self.pulp.async(True):
+        with self.pulp.async():
             self.repo1.delete(self.pulp)
             self.repo2.delete(self.pulp)
         for response in list(self.pulp.last_response):

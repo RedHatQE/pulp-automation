@@ -77,7 +77,7 @@ class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
         self.assertTrue(len(repo) == 2)
 
     def test_06_delete_repos(self):
-        with self.pulp.async(True):
+        with self.pulp.async():
             self.repo.delete(self.pulp)
             self.repo1.delete(self.pulp)
         for response in list(self.pulp.last_response):
