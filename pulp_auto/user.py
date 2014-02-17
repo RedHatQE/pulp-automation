@@ -5,7 +5,7 @@ from permission import Permission
 
 
 class User(item.Item):
-    relevant_data_keys = ['login', 'name']
+    relevant_data_keys = ['login', 'name', 'roles']
     required_data_keys = ['login']
     path = '/users/'
 
