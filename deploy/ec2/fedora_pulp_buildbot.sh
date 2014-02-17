@@ -169,6 +169,8 @@ ROLES:
     - *ZOO
     pulp: *PULP
 INVENTORY_EOF
+# make .coveragerc available for buildbot
+cp -f /usr/share/pulp_auto/tests/.coveragerc /usr/share/pulp_auto/
 
 # pipe the rest of this script via a sudo call
 tail -n +$[LINENO+2] $0 | exec sudo -i -u buildbot bash
