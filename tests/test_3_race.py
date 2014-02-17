@@ -1,27 +1,57 @@
 import pulp_test, json
 from pulp_test import PulpTest
-from pulp_auto.repo import Repo, Importer
+from pulp_auto.repo import Repo, create_yum_repo
 from pulp_auto.task import Task, GroupTask
 from pulp_auto import ResponseLike, login, format_response
+from . import ROLES
 
-
-class RepoTest(pulp_test.PulpTest):
-    def setUp(self):
-        super(RepoTest, self).setUp()
-        self.repo = Repo(data={'id': type(self).__name__ + "_repo"})
-        self.feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
+@pulp_test.requires_any('repos', lambda repo: repo.type == 'rpm')
+class RaceRepoTest(PulpTest):
+    @classmethod
+    def setUpClass(cls):
+        super(RaceRepoTest, cls).setUpClass()
+        cls.repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
         # assert connection works
-        self.pulp.send(login.request())
-        self.assertPulpOK()
+        cls.pulp.send(login.request())
 
-    def tearDown(self):
-        self.repo.delete(self.pulp)
+    @classmethod
+    def tearDownClass(self):
+        pass
 
 
-class RaceRepoTest(RepoTest):
-    def test_01_race_create_delete(self):
+    def test_01_race_create(self):
+        repo = Repo(data=self.repo_config)
         with self.pulp.async():
-            self.repo.create(self.pulp)
-            self.repo.create(self.pulp)
+            repo.create(self.pulp)
+            repo.create(self.pulp)
         self.assertIn(ResponseLike(status_code=409), self.pulp.last_response)
         self.assertIn(ResponseLike(status_code=201), self.pulp.last_response)
+
+    def test_02_race_delete(self):
+        repo = Repo(data=self.repo_config)
+        with self.pulp.async():
+            repo.delete(self.pulp)
+            repo.delete(self.pulp)
+        self.assertIn(ResponseLike(status_code=404), self.pulp.last_response)
+        self.assertIn(ResponseLike(status_code=202), self.pulp.last_response)
+        task_responses = filter(lambda response: response == ResponseLike(status_code=202), self.pulp.last_response)
+        not_responses = filter(lambda response: response == ResponseLike(status_code=404), self.pulp.last_response)
+        for response in task_responses:
+            Task.wait_for_response(self.pulp, response)
+
+    def test_03_race_delete_published(self):
+        # repos with associated importers/distributors are deleted asynchronously; a 409 may happen
+        # see also: https://bugzilla.redhat.com/show_bug.cgi?id=1065455
+        repo, _, distributor = create_yum_repo(self.pulp, **self.repo_config)
+        repo.sync(self.pulp)
+        repo.publish(self.pulp, {'distributor_id': distributor.id})
+        with self.pulp.async():
+            repo.delete(self.pulp)
+            repo.delete(self.pulp)
+        self.assertIn(ResponseLike(status_code=409), self.pulp.last_response)
+        self.assertIn(ResponseLike(status_code=202), self.pulp.last_response)
+
+        task_responses = filter(lambda response: response == ResponseLike(status_code=202), self.pulp.last_response)
+        not_responses = filter(lambda response: response == ResponseLike(status_code=409), self.pulp.last_response)
+        for response in task_responses:
+            Task.wait_for_response(self.pulp, response)
