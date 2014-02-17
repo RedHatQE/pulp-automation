@@ -118,7 +118,7 @@ systemctl start goferd.service
 ### tracking pulp & pulp_auto repos
 
 yum groupinstall -y 'development tools'
-yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto
+yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto python-coverage
 
 # automation dependencies
 yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.3.0git40daa0c6-2.fc18.noarch.rpm \
