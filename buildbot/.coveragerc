@@ -1,0 +1,19 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source = /usr/share/pulp_auto/tests/*
+	/usr/lib/python2.7/site-packages/pulp_auto/*
+omit = 
+	/usr/lib/python2.7/site-packages/mllib/*
+	/usr/lib/python2.7/site-packages/nose/*
+	/usr/lib/python2.7/site-packages/qpid/*
+	/usr/lib/python2.7/site-packages/requests/*
+
+include = 
+	/usr/share/pulp_auto/tests/* 
+	/usr/lib/python2.7/site-packages/pulp_auto/*
+
+
+[report]
+include = /usr/lib/python2.7/site-packages/pulp_auto/*
+	/usr/share/pulp_auto/tests/*
