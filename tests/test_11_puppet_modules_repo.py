@@ -138,8 +138,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         task.wait(self.pulp)
 
     def test_09_delete_repo(self):
-        self.repo.delete(self.pulp)
-        self.assertPulpOK()
+        Task.wait_for_response(self.pulp, self.repo.delete(self.pulp))
 
     def test_10_delete_orphans(self):
         PuppetModuleOrphan.delete_all(self.pulp)
