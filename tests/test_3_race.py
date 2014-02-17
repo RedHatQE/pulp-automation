@@ -36,6 +36,7 @@ class RaceRepoTest(PulpTest):
         self.assertIn(ResponseLike(status_code=202), self.pulp.last_response)
         task_responses = filter(lambda response: response == ResponseLike(status_code=202), self.pulp.last_response)
         not_responses = filter(lambda response: response == ResponseLike(status_code=404), self.pulp.last_response)
+        self.assertEqual(len(task_responses), 1, "There should be just a single task response")
         for response in task_responses:
             Task.wait_for_response(self.pulp, response)
 
@@ -53,5 +54,6 @@ class RaceRepoTest(PulpTest):
 
         task_responses = filter(lambda response: response == ResponseLike(status_code=202), self.pulp.last_response)
         not_responses = filter(lambda response: response == ResponseLike(status_code=409), self.pulp.last_response)
+        self.assertEqual(len(task_responses), 1, "There should be just a single task response")
         for response in task_responses:
             Task.wait_for_response(self.pulp, response)
