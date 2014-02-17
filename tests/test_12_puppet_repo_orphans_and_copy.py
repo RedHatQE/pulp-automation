@@ -108,8 +108,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
 
     def test_09_check_orphan_appears(self):
         #delete source repo
-        self.source_repo.delete(self.pulp)
-        self.assertPulpOK()
+        Task.wait_for_response(self.pulp, self.source_repo.delete(self.pulp))
         #unasosciate same module that was unassocited in dest_repo1
         response = self.dest_repo2.unassociate_units(
             self.pulp,
