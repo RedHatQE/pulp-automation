@@ -37,6 +37,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/%{name}/tests
 %attr(0644, root, root) %{_datadir}/%{name}/tests/*.py
 %attr(0644, root, root) %{_datadir}/%{name}/tests/inventory.yml
+%attr(0644, root, root) %{_datadir}/%{name}/tests/.coveragerc
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
