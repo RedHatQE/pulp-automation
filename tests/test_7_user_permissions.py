@@ -35,32 +35,52 @@ class SimpleUserPermissionTest(UserPermissionTest):
         with self.user_pulp.asserting(True):
             Repo.list(self.user_pulp)
 
-    def test_04_revoke_user_permission(self):
+    def test_04_search_users_id(self):
+        # find user's login included in the list of permissions
+        permissions = Permission.list(self.pulp, params={'resource': '/repositories/'})
+        self.assertIn(self.user.data['login'], permissions[0].data['users'])
+
+    def test_05_revoke_user_permission(self):
         self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["READ", "EXECUTE"]})
         self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
         self.assertPulpOK()
 
-    def test_05_check_user_permission(self):
+    def test_06_check_user_permission(self):
         #check that user cannot access resource as permissions were revoked
         with self.assertRaises(AssertionError):
             with self.user_pulp.asserting(True):
                 Repo.list(self.user_pulp)
 
-    def test_06_delete_user(self):
+    def test_07_delete_user(self):
         self.user.delete(self.pulp)
         self.assertPulpOK()
 
-    def test_07_create_permission(self):
+    def test_08_create_permission(self):
         #verify that new permission cannot be created
         with self.assertRaises(TypeError):
             with self.pulp.asserting(True):
                 self.permission.create(self.pulp)
 
-    def test_08_grant_unexistant_user_permission(self):
+    def test_09_grant_unexistant_user_permission(self):
         self.user.grant_permission(self.pulp, data={"login": "UnexistantLogin", "resource": "/", "operations": ["EXECUTE"]})
         self.assertPulp(code=404)
 
-    def test_09_list_permissions(self):
-        Permission.list(self.pulp)
+    def test_10_grant_invalid_params(self):
+        self.user.grant_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["INVALID"]})
+        self.assertPulp(code=400)
+
+    def test_11_revoke_unexistant_user_permis(self):
+        self.user.revoke_permission(self.pulp, data={"login": "UnexistantLogin", "resource": "/", "operations": ["EXECUTE"]})
+        self.assertPulp(code=404)
+
+    def test_12_revoke_invalid_params(self):
+        self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["INVALID"]})
+        self.assertPulp(code=400)
+
+    def test_13_list_permissions(self):
+        # check that after deletion of all users permissions were also revoked
+        permissions = Permission.list(self.pulp)
         self.assertPulp(code=200)
-        #FIXME figure out how to AssertIn user id in the list of permissions
+        # so permissions only for admin user should stay
+        for i in range(0, len(permissions)):
+            self.assertTrue("admin" in permissions[i].data['users'] and len(permissions[i].data['users']) == 1)
