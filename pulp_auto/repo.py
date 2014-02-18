@@ -179,7 +179,7 @@ def create_yum_repo(
                     'https': https,
                     'relative_url': relative_url
                 },
-                'auto_pubblish': False
+                'auto_publish': False
             }
         ))
     return repo, importer, distributor
@@ -224,11 +224,59 @@ def create_puppet_repo(
                     'http': http,
                     'https': https
                 },
-                'auto_pubblish': False
+                'auto_publish': False
             }
         ))
     return repo, importer, distributor
 
+
+def create_iso_repo(
+    pulp,
+    id,
+    feed,
+    display_name=None,
+    relative_url=None,
+    http=True,
+    https=True,
+    **kvs
+):
+    '''create an almost default io repo'''
+    repo = Repo(
+        {
+            'id': id,
+            'feed': 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/',
+            'display_name': display_name,
+            'notes': {"_repo-type": "iso-repo"}
+        }
+    )
+    if relative_url is None:
+        relative_url = id
+    with pulp.asserting(True):
+        repo = Repo.from_response(repo.create(pulp))
+        importer = Importer.from_response(repo.associate_importer(
+            pulp,
+            data={
+                'importer_type_id': 'iso_importer',
+                'importer_id': 'iso_importer',
+                'importer_config': {
+                    'feed': feed
+                }
+            }
+        ))
+        distributor = Distributor.from_response(repo.associate_distributor(
+            pulp,
+            data={
+                'distributor_id': id + "_distributor",
+                'distributor_type_id': 'iso_distributor',
+                'distributor_config': {
+                    'http': http,
+                    'https': https,
+                    'relative_url': relative_url
+                },
+                'auto_publish': False
+            }
+        ))
+    return repo, importer, distributor
 
 SAMPLE_YUM_DISTRIBUTOR_CONFIG_DATA = {
     "distributor_id": "yum_distributor",
