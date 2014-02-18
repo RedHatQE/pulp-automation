@@ -36,10 +36,10 @@ class Item(HasData):
         return cls.from_response(response)
 
     @classmethod
-    def list(cls, pulp):
+    def list(cls, pulp, params={}):
         '''create a list of instances from pulp_auto '''
         with pulp.asserting(True):
-            response = pulp.send(Request('GET', cls.path))
+            response = pulp.send(Request('GET', cls.path, params=params))
         return map(lambda x: cls(data=x), response.json())
 
     @classmethod
