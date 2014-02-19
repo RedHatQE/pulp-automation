@@ -9,3 +9,26 @@ class ConsumerGroup(item.Item):
     def update(self, pulp, data):
         item = self.get(pulp, self.id)
         return pulp.send(self.request('PUT', data=data))
+
+    def associate_consumer(
+        self,
+        pulp,
+        data={
+            'criteria': {
+            }
+        },
+        path='/actions/associate/'
+    ):
+        print 
+        return pulp.send(self.request('POST', path=path, data=data))
+        
+    def unassociate_consumer(
+        self,
+        pulp,
+        data={
+            'criteria': {
+            }
+        },
+        path='/actions/unassociate/'
+    ):
+        return pulp.send(self.request('POST', path=path, data=data))

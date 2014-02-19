@@ -1,10 +1,13 @@
 import pulp_test, json
 from pulp_auto.consumer_group import ConsumerGroup 
+from pulp_auto.consumer.consumer_class import Consumer
+from pulp_auto.task import Task
+from pulp_test import (ConsumerAgentPulpTest, agent_test)
 
 def setUpModule():
     pass
 
-class ConsumerGroupTest(pulp_test.PulpTest):
+class ConsumerGroupTest(ConsumerAgentPulpTest):
     @classmethod
     def setUpClass(cls):
         super(ConsumerGroupTest, cls).setUpClass()
@@ -21,7 +24,19 @@ class SimpleConsumerGroupTest(ConsumerGroupTest):
         self.consumer_group.update(self.pulp, {'display_name': display_name})
         self.assertPulp(code=200)
         self.assertEqual(ConsumerGroup.get(self.pulp, self.consumer_group.id).data['display_name'], display_name)
-            
-    def test_0X_delete_goup(self):
+        
+    @agent_test(catching=True)
+    def test_03_associate_consumer(self):
+        response = self.consumer_group.associate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
+        self.assertPulp(code=200)
+        self.assertIn(self.consumer.id, response.json())
+        
+    def test_04_unassociate_consumer(self):
+        response = self.consumer_group.unassociate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
+        self.assertPulp(code=200)
+        self.assertEqual(response.json(), [])
+
+    def test_05_delete_goup(self):
         self.consumer_group.delete(self.pulp)
         self.assertPulpOK()
+        
