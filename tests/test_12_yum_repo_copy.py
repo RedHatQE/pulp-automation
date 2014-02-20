@@ -1,5 +1,5 @@
 import pulp_test, json, pulp_auto
-from pulp_auto.repo import Repo, Importer, Distributor, create_yum_repo
+from pulp_auto.repo import Repo, Importer, Distributor,Association, create_yum_repo
 from pulp_auto.task import Task, GroupTask
 from pulp_auto.units import Orphans
 from . import ROLES
@@ -38,13 +38,64 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
         sync_task.wait(cls.pulp)
 
-    def test_1_copy_repo_all(self):
+    def test_01_copy_repo_all(self):
         response = self.dest_repo1.copy(self.pulp, self.source_repo.id, data={})
         self.assertPulp(code=202)
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_2_copy_rpm(self):
+    def test_02_copy_1_rpm(self):
+        # copy 1 rpm
+        response = self.dest_repo2.copy(
+            self.pulp,
+            self.source_repo.id,
+            data={
+                'criteria': {
+                'type_ids': ['rpm'],
+                'filters': {"unit": {"name": "cow"}}
+                },
+            }
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_03_check_that_one_rpm(self):
+        # check that there is precisly one module
+        dest_repo2 = Repo.get(self.pulp, self.dest_repo2.id)
+        self.assertEqual(dest_repo2.data['content_unit_counts']['rpm'], 1)
+        # check that one exact module copied i.e. perform the search by modules name
+        response = self.dest_repo2.within_repo_search(
+            self.pulp,
+            data={"criteria": {"type_ids": ["rpm"], "filters": {"unit": {"name": "cow"}}}}
+        )
+        self.assertPulp(code=200)
+        result = Association.from_response(response)
+        # this means that only one module found with that name
+        self.assertTrue(len(result) == 1)
+
+    def test_04_unassociate_rpm_from_copied_repo(self):
+        # unassociate unit from a copied repo
+        response = self.dest_repo1.unassociate_units(
+            self.pulp,
+            data={"criteria": {"type_ids": ["rpm"], "filters": {"unit": {"name": "cow"}}}}
+        )
+        self.assertPulp(code=202)
+        task = Task.from_response(response)
+        task.wait(self.pulp)
+
+    def test_05_check_rpm_was_unassociated(self):
+        #perform a search within the repo
+        response = self.dest_repo1.within_repo_search(
+            self.pulp,
+            data={"criteria": {"type_ids": ["rpm"], "filters": {"unit": {"name": "cow"}}}}
+        )
+        self.assertPulp(code=200)
+        result = Association.from_response(response)
+        self.assertTrue(result == [])
+
+
+    def test_06_copy_rpm(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
@@ -58,7 +109,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_3_copy_category(self):
+    def test_07_copy_category(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
@@ -72,7 +123,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_4_copy_group(self):
+    def test_08_copy_group(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
@@ -86,7 +137,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_4_copy_distribution(self):
+    def test_09_copy_distribution(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
@@ -100,7 +151,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_5_copy_erratum(self):
+    def test_10_copy_erratum(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
@@ -114,7 +165,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         task = Task.from_response(response)
         task.wait(self.pulp)
 
-    def test_6_copy_srpm(self):
+    def test_11_copy_srpm(self):
         response = self.dest_repo2.copy(
             self.pulp,
             self.source_repo.id,
