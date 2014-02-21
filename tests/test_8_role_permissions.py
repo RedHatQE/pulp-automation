@@ -52,7 +52,15 @@ class SimpleRolePermissionTest(RolePermissionTest):
         self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
         self.assertPulpOK()
 
-    def test_02_check_role_permission(self):
+    def test_02_grant_unexistant_role_permission(self):
+        self.role.grant_permission(self.pulp, data={"role_id": "UnexistantRole", "resource": "/", "operations": ["EXECUTE"]})
+        self.assertPulp(code=404)
+
+    def test_03_grant_invalid_params(self):
+        self.role.grant_permission(self.pulp, data={"login": self.role.data['id'], "resource": "/", "operations": ["INVALID"]})
+        self.assertPulp(code=400)
+
+    def test_04_check_role_permission(self):
         # create users
         self.user.create(self.pulp)
         self.assertPulpOK()
@@ -73,25 +81,38 @@ class SimpleRolePermissionTest(RolePermissionTest):
         )
         self.assertPulp(code=200)
 
-        # check users' permissions
+        # check users' permissions, that thay can access resource after been added to specific role
         with self.user_pulp.asserting(True):
             Repo.list(self.user_pulp)
 
         with self.user_pulp2.asserting(True):
             Repo.list(self.user_pulp2)
 
-    def test_03_revoke_role_permission(self):
+    def test_05_search_users_id(self):
+        # find user's login included in the list of permissions
+        permissions = Permission.list(self.pulp, params={'resource': '/repositories/'})
+        self.assertIn(self.user.data['login'], permissions[0].data['users'])
+
+    def test_06_revoke_role_permission(self):
         self.role.revoke_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/", "operations": ["READ", "EXECUTE"]})
         self.role.revoke_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
         self.assertPulpOK()
 
-    def test_04_check_role_permission(self):
-        # check that user cannot access resource as permissions were revoked
+    def test_07_check_role_permission(self):
+        # check that user cannot access resource as permissions of the role were revoked
         with self.assertRaises(AssertionError):
             with self.user_pulp.asserting(True):
                 Repo.list(self.user_pulp)
 
-    def test_05_delete_users(self):
+    def test_08_revoke_unexistant_role_permis(self):
+        self.role.revoke_permission(self.pulp, data={"role_id": "UnexistantLogin", "resource": "/", "operations": ["EXECUTE"]})
+        self.assertPulp(code=404)
+
+    def test_09_revoke_invalid_params(self):
+        self.role.revoke_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/", "operations": ["INVALID"]})
+        self.assertPulp(code=400)
+
+    def test_10_delete_users(self):
         # delete users
         self.user.delete(self.pulp)
         self.assertPulpOK()
@@ -99,7 +120,7 @@ class SimpleRolePermissionTest(RolePermissionTest):
         self.user2.delete(self.pulp)
         self.assertPulpOK()
 
-    def test_06_two_roles_two_users(self):
+    def test_11_two_roles_two_users(self):
         # create users
         self.user.create(self.pulp)
         self.assertPulpOK()
@@ -148,9 +169,10 @@ class SimpleRolePermissionTest(RolePermissionTest):
         self.assertPulpOK()
 
         # check users' permissions
+        # user should still be able to access resource as it belongs to other role
         with self.user_pulp.asserting(True):
             Repo.list(self.user_pulp)
-
+        # user2 should not be able to access resource as no more pemissions are granted to it
         with self.assertRaises(AssertionError):
             with self.user_pulp2.asserting(True):
                 Repo.list(self.user_pulp2)
