@@ -1,6 +1,8 @@
 import pulp_test, json
+from pulp_auto import Pulp
 from pulp_auto.role import Role
 from pulp_auto.user import User
+from pulp_auto.repo import Repo
 
 
 def setUpModule():
@@ -11,7 +13,6 @@ class RoleTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(RoleTest, cls).setUpClass()
-
         # create roles
         with cls.pulp.asserting(True):
             response = Role.create(cls.pulp, data={'role_id': cls.__name__ + "_role"})
@@ -21,9 +22,15 @@ class RoleTest(pulp_test.PulpTest):
             response2 = Role.create(cls.pulp, data={'role_id': cls.__name__ + "_role2"})
         cls.role2 = Role.from_response(response2)
 
+        with cls.pulp.asserting(True):
+            response3 = Role.create(cls.pulp, data={'role_id': cls.__name__ + "_role3"})
+        cls.role3 = Role.from_response(response3)
+
         # users
         cls.user = User(data={"login": cls.__name__ + "_user", "name": cls.__name__, "password": cls.__name__})
         cls.user2 = User(data={"login": cls.__name__ + "_user2", "name": cls.__name__, "password": cls.__name__})
+        # a new session has to be created for the user as auth credeantials of admin are used by default
+        cls.user_pulp = Pulp(cls.pulp.url, auth=(cls.user.data['login'], cls.user.data['password']))
 
     @classmethod
     def tearDownClass(cls):
@@ -35,29 +42,44 @@ class RoleTest(pulp_test.PulpTest):
 
         # delete roles
         with cls.pulp.asserting(True):
-            cls.role.delete(cls.pulp)
-        with cls.pulp.asserting(True):
             cls.role2.delete(cls.pulp)
 
 
 class SimpleRoleTest(RoleTest):
 
-    def test_01_get_role(self):
+    def test_01_no_dupl_role(self):
+        Role.create(self.pulp, data={'role_id': self.role.id})
+        self.assertPulp(code=409)
+
+    def test_02_get_role(self):
         self.assertEqual(self.role, Role.get(self.pulp, self.role.id))
         self.assertEqual(self.role2, Role.get(self.pulp, self.role2.id))
 
-    def test_02_list_roles(self):
+    def test_03_get_unexistant_role(self):
+        with self.assertRaises(AssertionError):
+            Role.get(self.pulp, 'some_id')
+        self.assertPulp(code=404)
+
+    def test_04_list_roles(self):
         self.assertIn(self.role, Role.list(self.pulp))
         self.assertIn(self.role2, Role.list(self.pulp))
 
-    def test_03_update_role(self):
+    def test_05_update_role(self):
         display_name = 'A %s role' % self.__class__.__name__
         self.role |= {'display_name': display_name}
         self.role.update(self.pulp)
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['display_name'], display_name)
 
-    def test_04_add_user(self):
+    def test_06_update_unexistant_role(self):
+        self.role3.delete(self.pulp)
+        display_name = 'A %s role' % self.__class__.__name__
+        self.role3 |= {'display_name': display_name}
+        with self.assertRaises(AssertionError):
+            self.role3.update(self.pulp)
+        self.assertPulp(code=404)
+
+    def test_07_add_user(self):
         # create user
         self.user.create(self.pulp)
         self.assertPulpOK()
@@ -70,7 +92,15 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.data['login']])
 
-    def test_05_remove_user(self):
+    def test_08_add_unexistant_user(self):
+        # add user to the role
+        self.role.add_user(
+            self.pulp,
+            data={'login': "Unexistant_user"}
+        )
+        self.assertPulp(code=404)
+
+    def test_09_remove_user(self):
         # remove user from the role
         self.role.remove_user(
             self.pulp,
@@ -79,7 +109,7 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [])
 
-    def test_06_add_2_users(self):
+    def test_10_add_2_users(self):
         # create second user
         self.user2.create(self.pulp)
         self.assertPulpOK()
@@ -97,3 +127,25 @@ class SimpleRoleTest(RoleTest):
         )
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.data['login'], self.user2.data['login']])
+
+    def test_11_check_role_user_bindings(self):
+        self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/", "operations": ["READ", "EXECUTE"]})
+        self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
+        self.assertPulpOK()
+
+    def test_12_check_user_perm(self):
+        with self.user_pulp.asserting(True):
+            Repo.list(self.user_pulp)
+
+    def test_13_check_bindings_removed(self):
+        self.role.delete(self.pulp)
+        self.assertPulpOK()
+        #check that after role deletion user binding are also removed
+        with self.assertRaises(AssertionError):
+            with self.user_pulp.asserting(True):
+                Repo.list(self.user_pulp)
+
+    def test_14_delete_unexistant_role(self):
+        #check you cannot delete role twice
+        self.role.delete(self.pulp)
+        self.assertPulp(code=404)
