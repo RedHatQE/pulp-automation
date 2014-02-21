@@ -31,6 +31,7 @@ class RoleTest(pulp_test.PulpTest):
         cls.user2 = User(data={"login": cls.__name__ + "_user2", "name": cls.__name__, "password": cls.__name__})
         # a new session has to be created for the user as auth credeantials of admin are used by default
         cls.user_pulp = Pulp(cls.pulp.url, auth=(cls.user.data['login'], cls.user.data['password']))
+        cls.user_pulp2 = Pulp(cls.pulp.url, auth=(cls.user2.data['login'], cls.user2.data['password']))
 
     @classmethod
     def tearDownClass(cls):
@@ -128,7 +129,7 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.data['login'], self.user2.data['login']])
 
-    def test_11_check_role_user_bindings(self):
+    def test_11_add_role_perm(self):
         self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/", "operations": ["READ", "EXECUTE"]})
         self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
         self.assertPulpOK()
@@ -137,7 +138,24 @@ class SimpleRoleTest(RoleTest):
         with self.user_pulp.asserting(True):
             Repo.list(self.user_pulp)
 
-    def test_13_check_bindings_removed(self):
+        with self.user_pulp2.asserting(True):
+            Repo.list(self.user_pulp2)
+
+    def test_13_remove_user(self):
+        # remove user from the role
+        self.role.remove_user(
+            self.pulp,
+            self.user2.data['login']
+        )
+        self.assertPulp(code=200)
+
+    def test_14_check_bindings_removed(self):
+        #check that after user2 removal from role user binding are also removed
+        with self.assertRaises(AssertionError):
+            with self.user_pulp2.asserting(True):
+                Repo.list(self.user_pulp2)
+
+    def test_15_check_bindings_removed(self):
         self.role.delete(self.pulp)
         self.assertPulpOK()
         #check that after role deletion user binding are also removed
@@ -145,7 +163,7 @@ class SimpleRoleTest(RoleTest):
             with self.user_pulp.asserting(True):
                 Repo.list(self.user_pulp)
 
-    def test_14_delete_unexistant_role(self):
+    def test_16_delete_unexistant_role(self):
         #check you cannot delete role twice
         self.role.delete(self.pulp)
         self.assertPulp(code=404)
