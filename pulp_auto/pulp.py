@@ -6,6 +6,24 @@ log = logging.getLogger(__name__)
 
 
 class Pulp(object):
+    
+    '''
+    # Response codes
+    
+    OK = "200"
+    CREATED = "201"
+    ACCEPTED = "202"
+
+    BAD_REQUEST = "400"
+    UNAUTHORIZED = "401"
+    NOT_FOUND = "404"
+    CONFLICT = "409"
+
+    INTERNAL_SERVER_ERROR = "500"
+    NOT_IMPLEMENTED = "501"
+    SERVICE_UNAVAILABLE = "503"
+    '''
+    
     '''Pulp handle'''
     check_function = staticmethod(lambda x: x.status_code >= 200 and x.status_code < 400)
 
