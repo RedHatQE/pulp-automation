@@ -1,5 +1,5 @@
 #!/bin/bash
-# follows https://pulp-user-guide.readthedocs.org/en/pulp-2.2/installation.html
+# follows https://pulp-user-guide.readthedocs.org/en/latest/installation.html
 
 
 exec &> /var/log/fedora_pulp.log
@@ -53,6 +53,11 @@ popd
 # install pulp
 yum update -y selinux-policy-targeted ||: # avoid  https://bugzilla.redhat.com/show_bug.cgi?id=877831
 yum update -y
+
+# now need to install manually mongo and qpid as dependencies were removed
+yum -y install mongodb-server
+yum -y install qpid-cpp-server
+
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
 
@@ -60,6 +65,10 @@ yum -y groupinstall pulp-server
 # configure pulp
 sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
 grep url:.*:5672 /etc/pulp/server.conf
+
+#configure borker_url
+sed -i s,broker_url:.*amqp://.*:5673/,broker_url:amqp://guest:guest@`hostname`:5673/, /etc/pulp/server.conf
+grep broker_url:.*:5673/ /etc/pulp/server.conf
 
 # configure qpidd
 grep auth= /etc/qpidd.conf || echo auth=no >> /etc/qpidd.conf
@@ -86,7 +95,7 @@ chmod go+r certs/localhost.crt
 popd
 
 # insecure qpidd is required
-cat <<QPIDD_CONF > /etc/qpid/qpidd.conf
+cat <<QPIDD_CONF > /etc/qpidd.conf
 ssl-require-client-authentication=no
 auth=no
 log-to-syslog=yes
@@ -98,12 +107,25 @@ QPIDD_CONF
 
 # enable services
 systemctl enable mongod.service
-systemctl start mongod.service || systemctl start mongod.service # sometimes it just takes too long and gets killed the first time
+systemctl start mongod.service || systemctl start mongod.service ||systemctl start mongod.service # sometimes it just takes too long and gets killed the first time
 systemctl enable qpidd.service
 systemctl start qpidd.service
 
 # init db
-pulp-manage-db
+su - apache -s /bin/sh -c pulp-manage-db
+
+# rabbitmq config
+yum -y install rabbitmq-server
+cat <<RABBIT_CONF > /etc/rabbitmq/rabbitmq-env.conf
+NODE_PORT=5673
+RABBIT_CONF
+
+# enable rabbitmq-server
+systemctl enable rabbitmq-server
+#FIXME selinux should be in permessive mode otherwise rabbit will not start!
+setenforce 0
+sed -i s,SELINUX=enforcing,SELINUX=permessive, /etc/selinux/config
+systemctl start rabbitmq-server || systemctl start rabbitmq-server
 
 # start apache
 systemctl enable httpd.service
@@ -113,6 +135,16 @@ systemctl start httpd.service
 systemctl enable goferd.service
 systemctl start goferd.service
 
+#celery section
+#enable pulp workers to perform ditributed tasks
+systemctl enable pulp_workers
+systemctl start pulp_workers
+systemctl enable pulp_celerybeat
+systemctl start pulp_celerybeat
+# this process acts as a task router, deciding which worker should perform certain types of tasks.
+systemctl enable pulp_resource_manager
+systemctl start pulp_resource_manager
+
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
@@ -121,8 +153,8 @@ yum groupinstall -y 'development tools'
 yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto python-coverage
 
 # automation dependencies
-yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.3.0git40daa0c6-2.fc18.noarch.rpm \
-		https://rhuiqerpm.s3.amazonaws.com/python-plumbum-1.1.0_gitebe4cc4-2.fc18.noarch.rpm \
+yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.2.3-1.fc21.noarch.rpm \
+		https://rhuiqerpm.s3.amazonaws.com/python-plumbum-1.4.0-1.fc21.noarch.rpm \
 		https://rhuiqerpm.s3.amazonaws.com/python-patchwork-0.4-1.git.28.2936d6a.fc19.noarch.rpm
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
@@ -170,7 +202,7 @@ ROLES:
     pulp: *PULP
 INVENTORY_EOF
 # make .coveragerc available for buildbot
-cp -f /usr/share/pulp_auto/tests/.coveragerc /usr/share/pulp_auto/
+#cp -f /usr/share/pulp_auto/tests/.coveragerc /usr/share/pulp_auto/
 
 # pipe the rest of this script via a sudo call
 tail -n +$[LINENO+2] $0 | exec sudo -i -u buildbot bash
