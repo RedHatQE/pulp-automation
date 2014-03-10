@@ -29,10 +29,10 @@ class Item(HasData):
         return cls(data=data)
 
     @classmethod
-    def get(cls, pulp, id):
+    def get(cls, pulp, id, params={}):
         '''create an instance from pulp_auto id'''
         with pulp.asserting(True):
-            response = pulp.send(Request('GET', path_join(cls.path, id)))
+            response = pulp.send(Request('GET', path_join(cls.path, id), params=params))
         return cls.from_response(response)
 
     @classmethod
