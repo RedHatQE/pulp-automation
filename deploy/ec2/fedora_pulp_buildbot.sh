@@ -123,6 +123,7 @@ RABBIT_CONF
 # enable rabbitmq-server
 systemctl enable rabbitmq-server
 #FIXME selinux should be in permessive mode otherwise rabbit will not start!
+# for more details see bz https://bugzilla.redhat.com/show_bug.cgi?id=1032595
 setenforce 0
 sed -i s,SELINUX=enforcing,SELINUX=permessive, /etc/selinux/config
 systemctl start rabbitmq-server || systemctl start rabbitmq-server
