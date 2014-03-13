@@ -103,22 +103,6 @@ class Task(TaskDetails, AbstractTask, Item):
                     Task.wait_for_report(pulp, task_resp)
 
 
-class GroupTask(TaskDetails, AbstractTask, GroupItem):
-    '''task view from a task_group'''
-    path = '/task_groups/'
-    required_data_keys = TaskDetails.required_data_keys + ['task_group_id']
-
-    @property
-    def group_id(self):
-        '''map to different field name'''
-        return self.data['task_group_id']
-
-    @group_id.setter
-    def group_id(self, other):
-        '''map to different field name'''
-        return self.data['task_group_id']
-
-
 TASK_DATA_EXAMPLE = {
     "_href": "/pulp/api/v2/tasks/7744e2df-39b9-46f0-bb10-feffa2f7014b/",
     "response": "postponed",
