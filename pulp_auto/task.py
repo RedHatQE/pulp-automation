@@ -1,6 +1,7 @@
 import item, time, hasdata
 from item import (Item, GroupItem)
-
+from pulp_auto.pulp import Request
+from pulp_auto import strip_url
 
 class TaskFailure(RuntimeError):
     def __init__(self, *args, **kvs):
@@ -86,6 +87,20 @@ class Task(TaskDetails, AbstractTask, Item):
                 task.wait(pulp)
         else:
             ret.wait(pulp)
+
+    @classmethod
+    def wait_for_report(cls, pulp, response):
+        # now every asyncronous call returns a call report object
+        # call report has 'spawned_tasks' that contains list of tasks
+        # meanwhile every tasks can have its own spawned tasks
+        ret = response.json()['spawned_tasks']
+        if isinstance(ret, list):
+            for task in ret:
+                task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
+                Task.wait_for_response(pulp, task_resp)
+                task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
+                if 'spawned_tasks' in Task.from_response(task_resp).data:
+                    Task.wait_for_report(pulp, task_resp)
 
 
 class GroupTask(TaskDetails, AbstractTask, GroupItem):
