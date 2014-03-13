@@ -104,18 +104,18 @@ class Task(TaskDetails, AbstractTask, Item):
 
 
 TASK_DATA_EXAMPLE = {
-    "_href": "/pulp/api/v2/tasks/7744e2df-39b9-46f0-bb10-feffa2f7014b/",
-    "response": "postponed",
-    "reasons": [{"resource_type": "repository", "resource_id": "test-repo", "operation": "update"}],
-    "state": "running",
-    "task_id": "7744e2df-39b9-46f0-bb10-feffa2f7014b",
-    "task_group_id": None,
-    "schedule_id": None,
-    "progress": {},
-    "result": None,
-    "exception": None,
-    "traceback": None,
-    "start_time": "2012-05-13T23:00:02Z",
-    "finish_time": None,
-    "tags": ["pulp:repository:test-repo"],
+ "_href": "/pulp/api/v2/tasks/0fe4fcab-a040-11e1-a71c-00508d977dff/",
+ "state": "running",
+ "task_id": "0fe4fcab-a040-11e1-a71c-00508d977dff",
+ "progress": {}, # contents depend on the operation
+ "result": null,
+ "start_time": "2012-05-17T16:48:00Z",
+ "finish_time": null,
+ "tags": [
+   "pulp:repository:f16",
+   "pulp:action:sync"
+ ],
+ "spawned_tasks": [{"href": "/pulp/api/v2/tasks/7744e2df-39b9-46f0-bb10-feffa2f7014b/",
+                    "task_id": "7744e2df-39b9-46f0-bb10-feffa2f7014b" }],
+ "error": null
 }
