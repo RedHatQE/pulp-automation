@@ -54,7 +54,7 @@ class SimpleRepoTest(RepoTest):
         Task.wait_for_report(self.pulp, response)
         #https://bugzilla.redhat.com/show_bug.cgi?id=1076225
         self.assertEqual({
-                'id': 'yum_importer1',
+                'id': 'yum_importer',
                 'importer_type_id': 'yum_importer',
                 'repo_id': self.repo.id,
                 'config': {

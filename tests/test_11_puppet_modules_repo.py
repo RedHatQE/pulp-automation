@@ -93,7 +93,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         be removed from the Pulp repository as well.'''
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
-        task = Task.wait_for_report(self.pulp, response)
+        Task.wait_for_report(self.pulp, response)
 
     def test_05_publish_repo(self):
         response = self.repo.publish(
@@ -104,7 +104,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.wait_for_report(self.pulp, response)
+        Task.wait_for_report(self.pulp, response)
 
     def test_06_update_query_repo(self):
         #adding another query
