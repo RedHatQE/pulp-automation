@@ -29,6 +29,11 @@ class Item(HasData):
         return cls(data=data)
 
     @classmethod
+    @logged(log.debug)
+    def from_report(cls, response):
+        return response.json()
+
+    @classmethod
     def get(cls, pulp, id, params={}):
         '''create an instance from pulp_auto id'''
         with pulp.asserting(True):
