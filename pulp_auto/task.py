@@ -93,7 +93,7 @@ class Task(TaskDetails, AbstractTask, Item):
         # now every asyncronous call returns a call report object
         # call report has 'spawned_tasks' that contains list of tasks
         # meanwhile every tasks can have its own spawned tasks
-        ret = response.json()['spawned_tasks']
+        ret = cls.from_report(response)['spawned_tasks']
         if isinstance(ret, list):
             for task in ret:
                 task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
@@ -108,14 +108,14 @@ TASK_DATA_EXAMPLE = {
  "state": "running",
  "task_id": "0fe4fcab-a040-11e1-a71c-00508d977dff",
  "progress": {}, # contents depend on the operation
- "result": null,
+ "result": None,
  "start_time": "2012-05-17T16:48:00Z",
- "finish_time": null,
+ "finish_time": None,
  "tags": [
    "pulp:repository:f16",
    "pulp:action:sync"
  ],
  "spawned_tasks": [{"href": "/pulp/api/v2/tasks/7744e2df-39b9-46f0-bb10-feffa2f7014b/",
                     "task_id": "7744e2df-39b9-46f0-bb10-feffa2f7014b" }],
- "error": null
+ "error": None
 }
