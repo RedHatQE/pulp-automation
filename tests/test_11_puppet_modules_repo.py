@@ -1,7 +1,7 @@
 import pulp_test, json
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task
 from pulp_auto.units import PuppetModuleOrphan
 
 
@@ -37,9 +37,9 @@ class SimplePuppetRepoTest(PuppetRepoTest):
                 }
             }
         )
-        self.assertPulp(code=201)
-        importer = Importer.from_response(response)
-        importer.reload(self.pulp)
+        self.assertPulp(code=202)
+        importer = Repo.from_report(response)['result']
+        Task.wait_for_report(self.pulp, response)
         self.assertEqual(
             importer,
             {
@@ -70,7 +70,6 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         )
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
-        distributor.reload(self.pulp)
         self.assertEqual(
             distributor,
             {
@@ -94,8 +93,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         be removed from the Pulp repository as well.'''
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
-        task = Task.from_response(response)[0]
-        task.wait(self.pulp)
+        task = Task.wait_for_report(self.pulp, response)
 
     def test_05_publish_repo(self):
         response = self.repo.publish(
@@ -106,8 +104,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        task = Task.wait_for_report(self.pulp, response)
 
     def test_06_update_query_repo(self):
         #adding another query
@@ -118,8 +115,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         x = Repo.get(self.pulp, self.repo.id).data['content_unit_counts']['puppet_module']
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
-        task = Task.from_response(response)[0]
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
         y = Repo.get(self.pulp, self.repo.id).data['content_unit_counts']['puppet_module']
         #FIXME result can change with time as number of modules is not constant!
         #check that the second i.e. updated query was also processed.
@@ -134,11 +130,10 @@ class SimplePuppetRepoTest(PuppetRepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_09_delete_repo(self):
-        Task.wait_for_response(self.pulp, self.repo.delete(self.pulp))
+        Task.wait_for_report(self.pulp, self.repo.delete(self.pulp))
 
     def test_10_delete_orphans(self):
         PuppetModuleOrphan.delete_all(self.pulp)

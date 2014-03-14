@@ -1,7 +1,7 @@
 import pulp_test, json
 from pulp_test import PulpTest
 from pulp_auto.repo import Repo, create_yum_repo
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task
 from pulp_auto import ResponseLike, login, format_response
 from . import ROLES
 
@@ -38,7 +38,7 @@ class RaceRepoTest(PulpTest):
         not_responses = filter(lambda response: response == ResponseLike(status_code=404), self.pulp.last_response)
         self.assertEqual(len(task_responses), 1, "There should be just a single task response")
         for response in task_responses:
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
     def test_03_race_delete_published(self):
         # repos with associated importers/distributors are deleted asynchronously; a 409 may happen
@@ -56,4 +56,4 @@ class RaceRepoTest(PulpTest):
         not_responses = filter(lambda response: response == ResponseLike(status_code=409), self.pulp.last_response)
         self.assertEqual(len(task_responses), 1, "There should be just a single task response")
         for response in task_responses:
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)

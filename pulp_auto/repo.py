@@ -1,6 +1,7 @@
 import item, json
 from pulp_auto import (Request, )
 from . import (path_join, format_response)
+from pulp_auto.task import Task
 
 
 class Repo(item.Item):
@@ -158,8 +159,9 @@ def create_yum_repo(
     if relative_url is None:
         relative_url = id
     with pulp.asserting(True):
+        #https://bugzilla.redhat.com/show_bug.cgi?id=1076225
         repo = Repo.from_response(repo.create(pulp))
-        importer = Importer.from_response(repo.associate_importer(
+        response = repo.associate_importer(
             pulp,
             data={
                 'importer_type_id': 'yum_importer',
@@ -168,7 +170,9 @@ def create_yum_repo(
                     'feed': feed
                 }
             }
-        ))
+        )
+        importer = Repo.from_report(response)['result']
+        Task.wait_for_report(pulp, response)
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
@@ -205,7 +209,7 @@ def create_puppet_repo(
     )
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
-        importer = Importer.from_response(repo.associate_importer(
+        response = repo.associate_importer(
             pulp,
             data={
                 'importer_type_id': 'puppet_importer',
@@ -214,7 +218,9 @@ def create_puppet_repo(
                     'queries': queries
                 }
             }
-        ))
+        )
+        importer = Repo.from_report(response)['result']
+        Task.wait_for_report(pulp, response)
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
@@ -240,7 +246,7 @@ def create_iso_repo(
     https=True,
     **kvs
 ):
-    '''create an almost default io repo'''
+    '''create an almost default iso repo'''
     repo = Repo(
         {
             'id': id,
@@ -253,7 +259,7 @@ def create_iso_repo(
         relative_url = id
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
-        importer = Importer.from_response(repo.associate_importer(
+        response = repo.associate_importer(
             pulp,
             data={
                 'importer_type_id': 'iso_importer',
@@ -262,7 +268,9 @@ def create_iso_repo(
                     'feed': feed
                 }
             }
-        ))
+        )
+        importer = Repo.from_report(response)['result']
+        Task.wait_for_report(pulp, response)
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={

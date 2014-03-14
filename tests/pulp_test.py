@@ -111,7 +111,7 @@ class ConsumerAgentPulpTest(PulpTest):
             cls.agent.catching(False), \
             cls.agent.running(cls.qpid_handle, frequency=10) \
         :
-            Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
+            Task.wait_for_report(cls.pulp, cls.repo.delete(cls.pulp))
             cls.consumer.delete(cls.pulp)
         super(ConsumerAgentPulpTest, cls).tearDownClass()
 

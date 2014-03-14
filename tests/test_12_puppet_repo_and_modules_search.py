@@ -2,7 +2,7 @@ import pulp_test, json, pulp_auto
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task
 from pulp_auto.units import PuppetModuleOrphan
 
 
@@ -18,8 +18,7 @@ class PuppetSearchRepoTest(pulp_test.PulpTest):
         queries = ['tomcat']
         cls.repo, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
         cls.repo1, _, _ = create_puppet_repo(cls.pulp, repo_id + '1', queries)
-        sync_task = Task.from_response(cls.repo.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
 
 
 class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
@@ -81,7 +80,7 @@ class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
             self.repo.delete(self.pulp)
             self.repo1.delete(self.pulp)
         for response in list(self.pulp.last_response):
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
     def test_07_delete_puppet_orphans(self):
         PuppetModuleOrphan.delete_all(self.pulp)

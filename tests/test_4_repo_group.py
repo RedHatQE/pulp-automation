@@ -99,7 +99,7 @@ class SimpleRepoGroupTest(RepoGroupTest):
     def test_14_check_delete_group(self):
         self.repo_group.delete(self.pulp)
         # https://bugzilla.redhat.com/show_bug.cgi?id=1074426
-        self.assertPulp(code=202)
+        self.assertPulp(code=200)
         #check you cannot delete twice same repo group
         self.repo_group.delete(self.pulp)
         self.assertPulp(code=404)
@@ -107,5 +107,6 @@ class SimpleRepoGroupTest(RepoGroupTest):
     def test_15_rest_of_clean_up(self):
         self.repo_group2.delete(self.pulp)
         self.repo_group3.delete(self.pulp)
-        self.repo.delete(self.pulp)
+        response = self.repo.delete(self.pulp)
         self.assertPulp(code=202)
+        Task.wait_for_report(self.pulp, response)

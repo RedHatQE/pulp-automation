@@ -20,7 +20,8 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_02_bind_distributor(self):
         with self.pulp.asserting(True):
-            Task.wait_for_response(self.pulp, self.consumer.bind_distributor(self.pulp, self.binding_data))
+            response = self.consumer.bind_distributor(self.pulp, self.binding_data)
+            Task.wait_for_report(self.pulp, response)
 
     def test_03_get_repo_bindings(self):
         with self.pulp.asserting(True):
@@ -59,7 +60,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_06_unbind_distributor(self):
         with self.pulp.asserting(True):
-            Task.wait_for_response(self.pulp, self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id))
+            Task.wait_for_report(self.pulp, self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id))
             
     ### consumer info
     

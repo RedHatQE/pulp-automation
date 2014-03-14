@@ -1,6 +1,6 @@
 import pulp_test, json
 from pulp_auto.repo import Repo, Importer, Distributor
-from pulp_auto.task import Task, GroupTask, TaskFailure
+from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import Orphans
 
 
@@ -49,21 +49,20 @@ class SimpleRepoTest(RepoTest):
                 }
             }
         )
-        self.assertPulp(code=201)
-        importer = Importer.from_response(response)
-        importer.reload(self.pulp)
-        self.assertEqual(
-            importer,
-            {
-                'id': 'yum_importer',
+        self.assertPulp(code=202)
+        importer = Repo.from_report(response)['result']
+        Task.wait_for_report(self.pulp, response)
+        #https://bugzilla.redhat.com/show_bug.cgi?id=1076225
+        self.assertEqual({
+                'id': 'yum_importer1',
                 'importer_type_id': 'yum_importer',
                 'repo_id': self.repo.id,
                 'config': {
                     'feed': self.feed
                 },
                 'last_sync': None
-            }
-        )
+            },
+            importer)
 
     def test_06_associate_distributor(self):
         response = self.repo.associate_distributor(
@@ -81,7 +80,6 @@ class SimpleRepoTest(RepoTest):
         )
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
-        distributor.reload(self.pulp)
         self.assertEqual(
             distributor,
             {
@@ -101,8 +99,7 @@ class SimpleRepoTest(RepoTest):
     def test_07_sync_repo(self):
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
-        task = Task.from_response(response)[0]
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_08_publish_repo(self):
         response = self.repo.publish(
@@ -113,11 +110,11 @@ class SimpleRepoTest(RepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_09_delete_repo(self):
-        Task.wait_for_response(self.pulp, self.repo.delete(self.pulp))
+        response = self.repo.delete(self.pulp)
+        Task.wait_for_report(self.pulp, response)
         #check you cannot delete it twice
         self.repo.delete(self.pulp)
         self.assertPulp(code=404)
@@ -125,5 +122,4 @@ class SimpleRepoTest(RepoTest):
     def test_10_delete_orphans(self):
         delete_response = Orphans.delete(self.pulp)
         self.assertPulpOK()
-        task = Task.from_response(delete_response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, delete_response)

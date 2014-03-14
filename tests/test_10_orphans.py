@@ -20,10 +20,9 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         repo.delete(cls.pulp)
         # create and sync repo
         cls.repo, _, _ = create_yum_repo(cls.pulp, **repo_config)
-        sync_task = Task.from_response(cls.repo.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         # this is where orphans appear
-        Task.wait_for_response(cls.pulp, cls.repo.delete(cls.pulp))
+        Task.wait_for_report(cls.pulp, cls.repo.delete(cls.pulp))
 
     def test_00_get_orphan_info(self):
         Orphans.info(self.pulp)
@@ -60,8 +59,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
     def test_03_delete_orphans(self):
         delete_response = Orphans.delete(self.pulp)
         self.assertPulpOK()
-        delete_task = Task.from_response(delete_response)
-        delete_task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, delete_response)
         info = Orphans.info(self.pulp)
         orphans = Orphans.get(self.pulp)
         self.assertPulpOK()

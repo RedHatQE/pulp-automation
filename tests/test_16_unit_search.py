@@ -2,7 +2,7 @@ import pulp_test, json, pulp_auto
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo, create_yum_repo
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task
 from pulp_auto.units import Orphans, UnitFactory, AbstractUnit, PuppetModuleUnit, RpmUnit, ErratumUnit, PackageGroupUnit
 from . import ROLES
 
@@ -21,15 +21,13 @@ class UnitSearchTest(pulp_test.PulpTest):
         # make sure we run clean
         response = Repo({'id': repo_id}).delete(cls.pulp)
         if response == ResponseLike(202):
-            Task.wait_for_response(cls.pulp, response)
+            Task.wait_for_report(cls.pulp, response)
         cls.repo1, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
-        sync_task = Task.from_response(cls.repo1.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.repo1.sync(cls.pulp))
         # create and sync rpm repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
         cls.repo2, _, _ = create_yum_repo(cls.pulp, **repo_config)
-        sync_task = Task.from_response(cls.repo2.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.repo2.sync(cls.pulp))
 
 
 class SimpleUnitSearchTest(UnitSearchTest):
@@ -70,9 +68,8 @@ class SimpleUnitSearchTest(UnitSearchTest):
             self.repo1.delete(self.pulp)
             self.repo2.delete(self.pulp)
         for response in list(self.pulp.last_response):
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
     def test_07_delete_orphans(self):
         response = Orphans.delete(self.pulp)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
