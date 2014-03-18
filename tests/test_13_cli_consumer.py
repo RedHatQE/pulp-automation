@@ -21,8 +21,8 @@ class CliConsumerTest(PulpTest):
         with cls.pulp.asserting(True):
             cls.repos = [create_yum_repo(cls.pulp, **repo) for repo in consumer_config.repos if repo.type == 'rpm']
             for repo, _, distributor in cls.repos:
-                Task.wait_for_response(cls.pulp, repo.sync(cls.pulp))
-                Task.wait_for_response(cls.pulp, repo.publish(cls.pulp, data={'id': distributor.id}))
+                Task.wait_for_report(cls.pulp, repo.sync(cls.pulp))
+                Task.wait_for_report(cls.pulp, repo.publish(cls.pulp, data={'id': distributor.id}))
         cls.consumer_cli = Cli.ready_instance(**consumer_config)
         cls.consumer = Consumer(consumer_config)
 
@@ -40,7 +40,7 @@ class CliConsumerTest(PulpTest):
                     'repo_id': repo.id,
                     'distributor_id': distributor.id
                 }
-                Task.wait_for_response(self.pulp, self.consumer.bind_distributor(self.pulp, binding_data))
+                Task.wait_for_report(self.pulp, self.consumer.bind_distributor(self.pulp, binding_data))
 
         # assert all bound repos are available on consumer
         rpm_repo_ids = set([repo.id for repo in RpmRepo.list(self.consumer_cli)])
@@ -56,7 +56,7 @@ class CliConsumerTest(PulpTest):
         unit = {
             'name': 'zebra'
         }
-        Task.wait_for_response(
+        Task.wait_for_report(
             self.pulp,
             self.consumer.install_unit(
                 self.pulp,
@@ -77,7 +77,7 @@ class CliConsumerTest(PulpTest):
             RpmUnit(unit, relevant_data_keys=unit.keys()),
             RpmUnit.list(self.consumer_cli)
         )
-        Task.wait_for_response(
+        Task.wait_for_report(
             self.pulp,
             self.consumer.uninstall_unit(
                 self.pulp,
@@ -95,7 +95,7 @@ class CliConsumerTest(PulpTest):
             'name': '__NO_SUCH_UNIT__'
         }
         with self.assertRaises(TaskFailure):
-            Task.wait_for_response(
+            Task.wait_for_report(
                 self.pulp,
                 self.consumer.install_unit(
                     self.pulp,
@@ -109,7 +109,7 @@ class CliConsumerTest(PulpTest):
             'name': '__NO_SUCH_UNIT__'
         }
         with self.assertRaises(TaskFailure):
-            Task.wait_for_response(
+            Task.wait_for_report(
                 self.pulp,
                 self.consumer.uninstall_unit(
                     self.pulp,
@@ -122,7 +122,7 @@ class CliConsumerTest(PulpTest):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
-                Task.wait_for_response(self.pulp, self.consumer.unbind_distributor(self.pulp, repo.id, distributor.id))
+                Task.wait_for_report(self.pulp, self.consumer.unbind_distributor(self.pulp, repo.id, distributor.id))
 
     @classmethod
     def tearDownClass(cls):

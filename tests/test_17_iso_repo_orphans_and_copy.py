@@ -2,7 +2,7 @@ import pulp_test, json, pulp_auto
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_iso_repo
-from pulp_auto.task import Task, GroupTask, TaskFailure
+from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import IsoOrphan, Orphans
 
 
@@ -18,8 +18,7 @@ class IsoCopyRepoTest(pulp_test.PulpTest):
         feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/'
         # create source repo and sync it to have modules fetched
         cls.source_repo, _, _ = create_iso_repo(cls.pulp, repo_id,feed)
-        sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
         # create two destinations repos for copy purpose
         cls.dest_repo1, _, _ = create_iso_repo(cls.pulp, repo_id + '1', feed=None)
         cls.dest_repo2, _, _ = create_iso_repo(cls.pulp, repo_id + '2', feed=None)
@@ -30,8 +29,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
     def test_01_copy_all_iso(self):
         response = self.dest_repo1.copy(self.pulp, self.source_repo.id, data={})
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_02_check_all_iso_copied(self):
         source_repo = Repo.get(self.pulp, self.source_repo.id)
@@ -52,8 +50,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_04_check_that_one_iso(self):
         # check that there is precisly one module
@@ -76,8 +73,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
             data={"criteria": {"type_ids": ["iso"], "filters": {"unit": {"name": "test.iso"}}}}
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_06_check_iso_was_unassociated(self):
         #perform a search within the repo
@@ -97,7 +93,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
         )
         self.assertPulp(code=202)
         with self.assertRaises(TaskFailure):
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
     def test_08_check_no_orphan_appeared(self):
         #check that after unassociation of module it did not appered among orphans as it is still referenced to other repo
@@ -116,8 +112,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
             data={"criteria": {"type_ids": ["iso"], "filters": {"unit": {"name": "test.iso"}}}}
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
         #check 1 orphan appeared
         orphan_info = Orphans.info(self.pulp)
         self.assertEqual(orphan_info['iso']['count'], 1)
@@ -128,7 +123,7 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
         self.assertPulp(code=202)
         with self.assertRaises(TaskFailure):
             with self.pulp.asserting(True):
-                Task.wait_for_response(self.pulp, response)
+                Task.wait_for_report(self.pulp, response)
 
     def test_11_delete_repos(self):
         self.dest_repo1.delete(self.pulp)

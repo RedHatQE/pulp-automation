@@ -1,6 +1,6 @@
 import pulp_test, json, pulp_auto
 from pulp_auto.repo import Repo, Importer, Distributor,Association, create_yum_repo
-from pulp_auto.task import Task, GroupTask
+from pulp_auto.task import Task
 from pulp_auto.units import Orphans
 from . import ROLES
 
@@ -35,14 +35,12 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         source_repo = Repo({'id': source_repo_name})
         source_repo.delete(cls.pulp)
         cls.source_repo, _, _ = create_yum_repo(cls.pulp, source_repo_name, default_repo_config.feed)
-        sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
 
     def test_01_copy_repo_all(self):
         response = self.dest_repo1.copy(self.pulp, self.source_repo.id, data={})
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_02_copy_1_rpm(self):
         # copy 1 rpm
@@ -57,8 +55,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_03_check_that_one_rpm(self):
         # check that there is precisly one module
@@ -81,8 +78,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             data={"criteria": {"type_ids": ["rpm"], "filters": {"unit": {"name": "cow"}}}}
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_05_check_rpm_was_unassociated(self):
         #perform a search within the repo
@@ -106,8 +102,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_07_copy_category(self):
         response = self.dest_repo2.copy(
@@ -120,8 +115,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_08_copy_group(self):
         response = self.dest_repo2.copy(
@@ -134,8 +128,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_09_copy_distribution(self):
         response = self.dest_repo2.copy(
@@ -148,8 +141,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_10_copy_erratum(self):
         response = self.dest_repo2.copy(
@@ -162,8 +154,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_11_copy_srpm(self):
         response = self.dest_repo2.copy(
@@ -176,8 +167,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     @classmethod
     def tearDownClass(cls):
@@ -185,8 +175,7 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
             for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
                 Repo({'id': repo_id}).delete(cls.pulp)
         for response in list(cls.pulp.last_response):
-            Task.wait_for_response(cls.pulp, response)
+            Task.wait_for_report(cls.pulp, response)
         #orphans also should be deleted in cleanup
         delete_response = Orphans.delete(cls.pulp)
-        delete_task = Task.from_response(delete_response)
-        delete_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, delete_response)

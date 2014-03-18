@@ -2,7 +2,7 @@ import pulp_test, json, pulp_auto
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo
-from pulp_auto.task import Task, GroupTask, TaskFailure
+from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import PuppetModuleOrphan, Orphans
 
 
@@ -18,8 +18,7 @@ class PuppetCopyRepoTest(pulp_test.PulpTest):
         queries = ['tomcat']
         # create source repo and sync it to have modules fetched
         cls.source_repo, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
-        sync_task = Task.from_response(cls.source_repo.sync(cls.pulp))[0]
-        sync_task.wait(cls.pulp)
+        Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
         # create two destinations repos for copy purpose
         cls.dest_repo1, _, _ = create_puppet_repo(cls.pulp, repo_id + '1', feed=None)
         cls.dest_repo2, _, _ = create_puppet_repo(cls.pulp, repo_id + '2', feed=None)
@@ -30,8 +29,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
     def test_01_copy_all_modules(self):
         response = self.dest_repo1.copy(self.pulp, self.source_repo.id, data={})
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_02_check_all_modules_copied(self):
         source_repo = Repo.get(self.pulp, self.source_repo.id)
@@ -52,8 +50,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
             }
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_04_check_that_one_module(self):
         # check that there is precisly one module
@@ -71,13 +68,13 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
 
     def test_05_unassociate_module_from_copied_repo(self):
         # unassociate unit from a copied repo
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1076628
         response = self.dest_repo1.unassociate_units(
             self.pulp,
             data={"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
     def test_06_check_module_was_unassociated(self):
         #perform a search within the repo
@@ -97,7 +94,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         )
         self.assertPulp(code=202)
         with self.assertRaises(TaskFailure):
-            Task.wait_for_response(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
     def test_08_check_no_orphan_appered(self):
         #check that after unassociation of module it did not appered among orphans as it is still referenced to other repo
@@ -108,15 +105,14 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
 
     def test_09_check_orphan_appears(self):
         #delete source repo
-        Task.wait_for_response(self.pulp, self.source_repo.delete(self.pulp))
+        Task.wait_for_report(self.pulp, self.source_repo.delete(self.pulp))
         #unasosciate same module that was unassocited in dest_repo1
         response = self.dest_repo2.unassociate_units(
             self.pulp,
             data={"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
         )
         self.assertPulp(code=202)
-        task = Task.from_response(response)
-        task.wait(self.pulp)
+        Task.wait_for_report(self.pulp, response)
         #check 1 orphan appeared
         orphan_info = Orphans.info(self.pulp)
         self.assertEqual(orphan_info['puppet_module']['count'], 1)
@@ -127,7 +123,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         self.assertPulp(code=202)
         with self.assertRaises(TaskFailure):
             with self.pulp.asserting(True):
-                Task.wait_for_response(self.pulp, response)
+                Task.wait_for_report(self.pulp, response)
 
     def test_11_delete_repos(self):
         self.dest_repo1.delete(self.pulp)

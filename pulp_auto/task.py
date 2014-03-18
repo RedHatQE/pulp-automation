@@ -25,13 +25,15 @@ class AbstractTask(object):
              - self.state not in self.end_states
              - timeout not elapsed yet
         '''
+        if self.state in self.error_state:
+            raise TaskFailure('Task failed: %r' % self.data['error'], task=self)
         delta = time.time() + timeout
         while self.state not in self.end_states and self.state in self.active_states and time.time() <= delta:
             time.sleep(frequency)
             try:
                 self.reload(pulp)
                 if self.state in self.error_state:
-                    raise TaskFailure('Task failed: %r' % self.data['reasons'], task=self)
+                    raise TaskFailure('Task failed: %r' % self.data['error'], task=self)
             except AssertionError as e:
                 # task gone --- no need to wait anymore
                 # FIXME: doesn't work with group-tasks, dunno why they can't be accessed via
@@ -41,13 +43,10 @@ class AbstractTask(object):
 
 class TaskDetails(hasdata.HasData):
     relevant_data_keys = [
-        "response",
-        "reasons",
+        "error",
         "state",
         "task_id",
-        "task_group_id",
-        "schedule_id",
-        "progress",
+        "progress_report",
         "result",
         "exception",
         "traceback",
