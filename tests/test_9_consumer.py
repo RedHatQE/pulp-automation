@@ -20,7 +20,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_02_bind_distributor(self):
         with self.pulp.asserting(True):
-            response = self.consumer.bind_distributor(self.pulp, self.binding_data)
+            response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
             Task.wait_for_report(self.pulp, response)
 
     def test_03_get_repo_bindings(self):
@@ -95,6 +95,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_12_event_history_filter_limit(self):
         with self.pulp.asserting(True):
             events = self.consumer.get_history(self.pulp, {'limit': '5'})
+            events = self.consumer.get_history(self.pulp, limit=5)
         self.assertEqual(len(events), 5, "limit fail") 
     
     def test_13_event_history_filter_sort(self):

@@ -34,8 +34,13 @@ class Consumer(item.Item):
             ).create(pulp)
         return cls.from_response(response)
 
-    def bind_distributor(self, pulp, data):
+    def bind_distributor(self, pulp, repo_id, distributor_id, config=None):
         '''bind this consumer to a repo distributor'''
+        data = {
+            'repo_id': repo_id,
+            'distributor_id': distributor_id,
+            'config': config
+        }
         return pulp.send(self.request('POST', path=Binding.path, data=data))
 
     def unbind_distributor(self, pulp, repo_id, distributor_id):

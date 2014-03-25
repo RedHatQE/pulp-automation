@@ -19,7 +19,6 @@ class ConsumerGroup(item.Item):
         },
         path='/actions/associate/'
     ):
-        print 
         return pulp.send(self.request('POST', path=path, data=data))
         
     def unassociate_consumer(
