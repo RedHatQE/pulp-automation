@@ -26,8 +26,8 @@ class SimpleUserPermissionTest(UserPermissionTest):
         self.assertPulpOK()
 
     def test_02_grant_user_permission(self):
-        self.user.grant_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["READ", "EXECUTE"]})
-        self.user.grant_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
+        self.user.grant_permission(self.pulp, self.user.id, "/", ["READ", "EXECUTE"])
+        self.user.grant_permission(self.pulp, self.user.id, "/repositories/", ["READ", "EXECUTE"])
         self.assertPulpOK()
 
     def test_03_check_user_permission(self):
@@ -41,8 +41,8 @@ class SimpleUserPermissionTest(UserPermissionTest):
         self.assertIn(self.user.data['login'], permissions[0].data['users'])
 
     def test_05_revoke_user_permission(self):
-        self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["READ", "EXECUTE"]})
-        self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
+        self.user.revoke_permission(self.pulp, self.user.id, "/", ["READ", "EXECUTE"])
+        self.user.revoke_permission(self.pulp, self.user.id, "/repositories/", ["READ", "EXECUTE"])
         self.assertPulpOK()
 
     def test_06_check_user_permission(self):
@@ -62,19 +62,19 @@ class SimpleUserPermissionTest(UserPermissionTest):
                 self.permission.create(self.pulp)
 
     def test_09_grant_unexistant_user_permission(self):
-        self.user.grant_permission(self.pulp, data={"login": "UnexistantLogin", "resource": "/", "operations": ["EXECUTE"]})
+        self.user.grant_permission(self.pulp, "UnexistantLogin", "/", ["EXECUTE"])
         self.assertPulp(code=404)
 
     def test_10_grant_invalid_params(self):
-        self.user.grant_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["INVALID"]})
+        self.user.grant_permission(self.pulp, self.user.id, "/", ["INVALID"])
         self.assertPulp(code=400)
 
     def test_11_revoke_unexistant_user_permis(self):
-        self.user.revoke_permission(self.pulp, data={"login": "UnexistantLogin", "resource": "/", "operations": ["EXECUTE"]})
+        self.user.revoke_permission(self.pulp, "UnexistantLogin", "/", ["EXECUTE"])
         self.assertPulp(code=404)
 
     def test_12_revoke_invalid_params(self):
-        self.user.revoke_permission(self.pulp, data={"login": self.user.data['login'], "resource": "/", "operations": ["INVALID"]})
+        self.user.revoke_permission(self.pulp, self.user.id, "/", ["INVALID"])
         self.assertPulp(code=400)
 
     def test_13_list_permissions(self):

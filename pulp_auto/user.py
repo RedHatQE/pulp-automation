@@ -36,15 +36,29 @@ class User(item.Item):
     def grant_permission(
         self,
         pulp,
-        data,
+        login,
+        resource,
+        operations,
         path='/actions/grant_to_user/'
     ):
+        data = {
+            "login": login,
+            "resource": resource, 
+            "operations": operations
+        }
         return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
 
     def revoke_permission(
         self,
         pulp,
-        data,
+        login,
+        resource,
+        operations,
         path='/actions/revoke_from_user/'
     ):
+        data = {
+            "login": login,
+            "resource": resource, 
+            "operations": operations
+        }
         return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
