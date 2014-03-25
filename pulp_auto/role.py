@@ -15,9 +15,12 @@ class Role(item.Item):
     def add_user(
         self,
         pulp,
-        data,
+        login,
         path='/users/'
     ):
+        data = {
+            "login": login
+        }
         return pulp.send(self.request('POST', path=path, data=data))
 
     def remove_user(
@@ -31,17 +34,31 @@ class Role(item.Item):
     def grant_permission(
         self,
         pulp,
-        data,
+        role_id,
+        resource,
+        operations,
         path='/actions/grant_to_role/'
     ):
+        data = {
+            "role_id": role_id,
+            "resource": resource, 
+            "operations": operations
+        }
         return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
 
     def revoke_permission(
         self,
         pulp,
-        data,
+        role_id,
+        resource,
+        operations,
         path='/actions/revoke_from_role/'
     ):
+        data = {
+            "role_id": role_id,
+            "resource": resource, 
+            "operations": operations
+        }
         return pulp.send(Request('POST', data=data, path=path_join(Permission.path, path)))
 
 

@@ -88,16 +88,16 @@ class SimpleRoleTest(RoleTest):
         # add user to the role
         self.role.add_user(
             self.pulp,
-            data={'login': self.user.data['login']}
+            self.user.id
         )
         self.assertPulp(code=200)
-        self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.data['login']])
+        self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.id])
 
     def test_08_add_unexistant_user(self):
         # add user to the role
         self.role.add_user(
             self.pulp,
-            data={'login': "Unexistant_user"}
+            "Unexistant_user"
         )
         self.assertPulp(code=404)
 
@@ -105,7 +105,7 @@ class SimpleRoleTest(RoleTest):
         # remove user from the role
         self.role.remove_user(
             self.pulp,
-            self.user.data['login']
+            self.user.id
         )
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [])
@@ -118,20 +118,20 @@ class SimpleRoleTest(RoleTest):
         # add users to the role
         self.role.add_user(
             self.pulp,
-            data={'login': self.user.data['login']}
+            self.user.id
         )
         self.assertPulp(code=200)
 
         self.role.add_user(
             self.pulp,
-            data={'login': self.user2.data['login']}
+            self.user2.id
         )
         self.assertPulp(code=200)
-        self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.data['login'], self.user2.data['login']])
+        self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.id, self.user2.id])
 
     def test_11_add_role_perm(self):
-        self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/", "operations": ["READ", "EXECUTE"]})
-        self.role.grant_permission(self.pulp, data={"role_id": self.role.data['id'], "resource": "/repositories/", "operations": ["READ", "EXECUTE"]})
+        self.role.grant_permission(self.pulp, self.role.id, "/", ["READ", "EXECUTE"])
+        self.role.grant_permission(self.pulp, self.role.id, "/repositories/", ["READ", "EXECUTE"])
         self.assertPulpOK()
 
     def test_12_check_user_perm(self):
@@ -145,7 +145,7 @@ class SimpleRoleTest(RoleTest):
         # remove user from the role
         self.role.remove_user(
             self.pulp,
-            self.user2.data['login']
+            self.user2.id
         )
         self.assertPulp(code=200)
 
