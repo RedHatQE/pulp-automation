@@ -98,7 +98,7 @@ class ConsumerAgentPulpTest(PulpTest):
         from . import ROLES as inventory_roles
         cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **[repo for repo in inventory_roles.repos if repo.type == 'rpm'][0])
         cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer')
-        cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
+        #cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
         cls.log.info('instantiating agent')
         cls.agent = Agent(pulp_auto.handler, PROFILE=pulp_auto.handler.profile.PROFILE)
         cls.log.info('instantiating qpid handle')
