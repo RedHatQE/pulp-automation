@@ -45,7 +45,7 @@ class RaceRepoTest(PulpTest):
         # see also: https://bugzilla.redhat.com/show_bug.cgi?id=1065455
         repo, _, distributor = create_yum_repo(self.pulp, **self.repo_config)
         repo.sync(self.pulp)
-        repo.publish(self.pulp, {'distributor_id': distributor.id})
+        repo.publish(self.pulp, distributor.id)
         with self.pulp.async():
             repo.delete(self.pulp)
             repo.delete(self.pulp)

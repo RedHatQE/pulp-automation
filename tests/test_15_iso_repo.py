@@ -104,10 +104,7 @@ class SimpleIsoRepoTest(IsoRepoTest):
     def test_08_publish_repo(self):
         response = self.repo.publish(
             self.pulp,
-            data={
-                'id': 'dist_1',
-                'override_config': None
-            }
+            'dist_1'
         )
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)

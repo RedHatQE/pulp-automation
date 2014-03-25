@@ -36,7 +36,7 @@ class Repo(item.Item):
     def sync(
         self,
         pulp,
-        data={
+        data = {
             'override_config': {
             }
         },
@@ -47,9 +47,14 @@ class Repo(item.Item):
     def publish(
         self,
         pulp,
-        data,
+        distributor_id,
+        config = None,
         path='/actions/publish/'
     ):
+        data={
+            'id': distributor_id,
+            'override_config': config
+        }        
         return pulp.send(self.request('POST', path=path, data=data))
 
     def list_importers(

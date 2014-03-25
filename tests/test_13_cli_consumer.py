@@ -22,7 +22,7 @@ class CliConsumerTest(PulpTest):
             cls.repos = [create_yum_repo(cls.pulp, **repo) for repo in consumer_config.repos if repo.type == 'rpm']
             for repo, _, distributor in cls.repos:
                 Task.wait_for_report(cls.pulp, repo.sync(cls.pulp))
-                Task.wait_for_report(cls.pulp, repo.publish(cls.pulp, data={'id': distributor.id}))
+                Task.wait_for_report(cls.pulp, repo.publish(cls.pulp, distributor.id))
         cls.consumer_cli = Cli.ready_instance(**consumer_config)
         cls.consumer = Consumer(consumer_config)
 
