@@ -61,26 +61,24 @@ class Repo(item.Item):
         self,
         pulp,
     ):
-        path = path_join(self.path, self.id, Importer.path)
+        path = Importer.path
         with pulp.asserting(True):
-            response = pulp.send(self.request('GET', path=path)).json()
-        return map(lambda x: Importer(data=x, path_prefix=path_join(self.path, self.id)), response)
-
+            return pulp.send(self.request('GET', path=path)).json()
+)
     def list_distributors(
         self,
         pulp,
     ):
-        path = path_join(self.path, self.id, Distributor.path)
+        path = Distributor.path
         with pulp.asserting(True):
-            response = pulp.send(self.request('GET', path=path)).json()
-        return map(lambda x: Distributor(data=x, path_prefix=path_join(self.path, self.id)), response)
+            return pulp.send(self.request('GET', path=path)).json()
 
     def get_importer(
         self,
         pulp,
         id,
     ):
-        path = path_join(self.path, self.id, Importer.path)
+        path = path_join(Importer.path, id)
         with pulp.asserting(True):
             return Importer.from_response(pulp.send(self.request('GET', path=path)))
 
@@ -89,7 +87,7 @@ class Repo(item.Item):
         pulp,
         id,
     ):
-        path = path_join(self.path, self.id, Distributor.path)
+        path = path_join(Distributor.path, id)
         with pulp.asserting(True):
             return Distributor.from_response(pulp.send(self.request('GET', path=path)))
 
