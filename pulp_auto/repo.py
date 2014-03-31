@@ -2,6 +2,7 @@ import item, json
 from pulp_auto import (Request, )
 from . import (path_join, format_response)
 from pulp_auto.task import Task
+from pulp_auto.item import ScheduledAction
 
 
 class Repo(item.Item):
@@ -64,7 +65,7 @@ class Repo(item.Item):
         path = Importer.path
         with pulp.asserting(True):
             return pulp.send(self.request('GET', path=path)).json()
-)
+
     def list_distributors(
         self,
         pulp,
@@ -131,10 +132,55 @@ class Importer(item.AssociatedItem):
     path = '/importers/'
     relevant_data_keys = ['id', 'importer_type_id', 'repo_id', 'config', 'last_sync']
 
+    def schedule_sync(
+        self,
+        pulp,
+        schedule,
+        override_config=None
+    ):
+        data = {"override_config": override_config}
+        return self.create_scheduled_action(pulp, action='/sync/', schedule=schedule, data=data)
+
+    def get_scheduled_sync(
+        self,
+        pulp,
+        id
+    ):
+        return self.get_scheduled_action(pulp, action='/sync/', id=id)
+
+    def list_scheduled_sync(
+        self,
+        pulp,
+    ):
+        return self.list_scheduled_action(pulp, action='/sync/')
+
 
 class Distributor(item.AssociatedItem):
     path = '/distributors/'
     relevant_data_keys = ['id', 'distributor_type_id', 'repo_id', 'config', 'last_publish', 'auto_publish']
+
+    def schedule_publish(
+        self,
+        pulp,
+        schedule,
+        override_config=None
+    ):
+        data = {"override_config": override_config}
+        return self.create_scheduled_action(pulp, action='/publish/', schedule=schedule, data=data)
+
+    def get_scheduled_publish(
+        self,
+        pulp,
+        id
+    ):
+        return self.get_scheduled_action(pulp, action='/publish/', id=id)
+
+    def list_scheduled_publish(
+        self,
+        pulp,
+    ):
+        return self.list_scheduled_action(pulp, action='/publish/')
+
 
 
 class Association(item.AssociatedItem):
