@@ -138,6 +138,29 @@ class AssociatedItem(Item):
         raise TypeError("can't instantiate %s from pulp_auto get response" % cls.__name__)
 
 
+class ScheduledAction(AssociatedItem):
+    path='/schedules/'
+    required_data_keys = ["_id"]
+    relevant_data_keys = []
+
+    @property
+    def id(self):
+        '''shortcut for self.data['id']; all items should give one'''
+        return self.data['_id']
+
+    @id.setter
+    def id(self, other):
+        self.data['_id'] = other
+
+    def update(
+        self,
+        pulp,
+        data
+    ):
+        path = ""
+        return pulp.send(self.request('PUT', path=path, data=data))
+
+
 class GroupItem(Item):
     '''an Item that is bound to a Group'''
     required_data_keys = ['id', 'group_id']
