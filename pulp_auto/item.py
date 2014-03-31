@@ -110,6 +110,8 @@ class AssociatedItem(Item):
         # adjust path
         if '_href' in self.data:
             self.path = self.strip_path(self.data['_href'])
+            # getting rid of 'id'
+            self.path = self.path[0:self.path.rfind("/",0,-1)]+"/"
         else:
             # make sure there is exactly one type(self).path in the path
             self.path = path_join("/".join(path.rsplit(type(self).path)[:-1]), type(self).path)
