@@ -102,6 +102,47 @@ class Item(HasData):
     def request(self, method, path='', data={}, params={}):
         return Request(method, data=data, path=path_join(self.path, self.id, path), params=params)
 
+    def create_scheduled_action(
+        self,
+        pulp,
+        action,
+        schedule,
+        failure_threshold=3,
+        enabled=True,
+        data=None
+    ):
+        data_sample ={
+            "schedule": schedule,
+            "failure_threshold": failure_threshold,
+            "enabled": enabled}
+        if data is None:
+            data = {}
+        data.update(data_sample)
+
+        path = path_join(ScheduledAction.path, action)
+        return pulp.send(self.request('POST', path=path, data=data))
+
+    def get_scheduled_action(
+        self,
+        pulp,
+        action,
+        id
+    ):
+        path = path_join(ScheduledAction.path, action, id)
+        with pulp.asserting(True):
+            response = pulp.send(self.request('GET', path=path))
+        return ScheduledAction.from_response(response)
+
+    def list_scheduled_action(
+        self,
+        pulp,
+        action,
+    ):
+        path = path_join(ScheduledAction.path, action)
+        with pulp.asserting(True):
+            response = pulp.send(self.request('GET', path=path))
+        return ScheduledAction.from_response(response)
+
 
 class AssociatedItem(Item):
     '''an Item that can't exist without previous association to another Item'''
