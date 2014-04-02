@@ -16,14 +16,15 @@ class ScheduledPublishTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(ScheduledPublishTest, cls).setUpClass()
-        # create and sync rpm repo
+        # create and sync and publish rpm repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
         cls.repo, _, cls.distributor = create_yum_repo(cls.pulp, **repo_config)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         Task.wait_for_report(cls.pulp, cls.repo.publish(cls.pulp, cls.distributor.id))
         # create a schedule publish
         cls.distributor = cls.repo.get_distributor(cls.pulp, cls.distributor.id)
-        response = cls.distributor.schedule_publish(cls.pulp, "PT10M")
+        # publish will be done every minute
+        response = cls.distributor.schedule_publish(cls.pulp, "PT1M")
         cls.action = ScheduledAction.from_response(response)
 
 
@@ -32,7 +33,9 @@ class SimpleScheduledPublishTest(ScheduledPublishTest):
     def test_01_check_scheduled_publish_works(self):
         time.sleep(65)
         self.action.reload(self.pulp)
-        self.assertTrue(self.action.data["total_run_count"] == 1)
+        # total_run_count will be 2 as 'enabled' field is True by default
+        # means that the scheduled publish is initially enabled
+        self.assertTrue(self.action.data["total_run_count"] == 2)
 
     def test_02_get_scheduled_publish(self):
         schedule = self.distributor.get_scheduled_publish(self.pulp, self.action.id)

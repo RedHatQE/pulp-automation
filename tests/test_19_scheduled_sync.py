@@ -22,7 +22,8 @@ class ScheduledSyncTest(pulp_test.PulpTest):
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         # create a schedule sync
         cls.importer = cls.repo.get_importer(cls.pulp, "yum_importer")
-        response = cls.importer.schedule_sync(cls.pulp, "PT10M")
+        # sync will be done every minute
+        response = cls.importer.schedule_sync(cls.pulp, "PT1M")
         cls.action = ScheduledAction.from_response(response)
 
 
@@ -31,7 +32,9 @@ class SimpleScheduledSyncTest(ScheduledSyncTest):
     def test_01_check_scheduled_sync_works(self):
         time.sleep(65)
         self.action.reload(self.pulp)
-        self.assertTrue(self.action.data["total_run_count"] == 1)
+        # total_run_count will be 2 as 'enabled' field is True by default
+        # means that the scheduled sync is initially enabled
+        self.assertTrue(self.action.data["total_run_count"] == 2)
 
     def test_02_get_scheduled_sync(self):
         schedule = self.importer.get_scheduled_sync(self.pulp, self.action.id)
