@@ -95,7 +95,6 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_12_event_history_filter_limit(self):
         with self.pulp.asserting(True):
             events = self.consumer.get_history(self.pulp, {'limit': '5'})
-            events = self.consumer.get_history(self.pulp, limit=5)
         self.assertEqual(len(events), 5, "limit fail") 
     
     def test_13_event_history_filter_sort(self):
