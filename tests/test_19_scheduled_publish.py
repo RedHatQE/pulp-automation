@@ -55,14 +55,19 @@ class SimpleScheduledPublishTest(ScheduledPublishTest):
         self.action.delete(self.pulp)
         self.assertPulpOK()
 
-   # def test_06_publish_history(self):
-   #TODO Retrieving Publish History
+    def test_06_publish_history(self):
+        #Retrieving Publish History
+        history = self.repo.get_publish_history(self.pulp, self.distributor.id)
+        self.assertTrue(len(history) == 3)
+        #cheking that limit filter works
+        history = self.repo.get_publish_history(self.pulp, self.distributor.id, params={'limit': 1})
+        self.assertTrue(len(history) == 1)
 
-    def test_06_delete_repo(self):
+    def test_07_delete_repo(self):
         response = self.repo.delete(self.pulp)
         Task.wait_for_report(self.pulp, response)
 
-    def test_07_delete_orphans(self):
+    def test_08_delete_orphans(self):
         delete_response = Orphans.delete(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, delete_response)

@@ -45,6 +45,16 @@ class Repo(item.Item):
     ):
         return pulp.send(self.request('POST', path=path, data=data))
 
+    def get_sync_history(
+        self,
+        pulp,
+        params={},
+        path='/history/sync/'
+    ):
+        with pulp.asserting(True):
+            response = pulp.send(self.request('GET', path=path, params=params))
+        return response.json()
+
     def publish(
         self,
         pulp,
@@ -57,6 +67,17 @@ class Repo(item.Item):
             'override_config': config
         }        
         return pulp.send(self.request('POST', path=path, data=data))
+
+    def get_publish_history(
+        self,
+        pulp,
+        dist_id,
+        params={},
+        path='/history/publish/'
+    ):
+        with pulp.asserting(True):
+            response = pulp.send(self.request('GET', path_join(path, dist_id), params=params))
+        return response.json()
 
     def list_importers(
         self,

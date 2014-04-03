@@ -54,14 +54,19 @@ class SimpleScheduledSyncTest(ScheduledSyncTest):
         self.action.delete(self.pulp)
         self.assertPulpOK()
 
-   # def test_06_sync_history(self):
-   #TODO Retrieving Sync History
+    def test_06_sync_history(self):
+        # Retrieving Sync History
+        history = self.repo.get_sync_history(self.pulp)
+        self.assertTrue(len(history) == 3)
+        #cheking that limit filter works
+        history = self.repo.get_sync_history(self.pulp, params={'limit': 1})
+        self.assertTrue(len(history) == 1)
 
-    def test_06_delete_repo(self):
+    def test_07_delete_repo(self):
         response = self.repo.delete(self.pulp)
         Task.wait_for_report(self.pulp, response)
 
-    def test_07_delete_orphans(self):
+    def test_08_delete_orphans(self):
         delete_response = Orphans.delete(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, delete_response)
