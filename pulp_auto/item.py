@@ -87,7 +87,7 @@ class Item(HasData):
         '''remove self from pulp_auto '''
         return pulp.send(self.request('DELETE'))
 
-    def update(self, pulp):
+    def delta_update(self, pulp):
         '''update pulp with self.data'''
         item = self.get(pulp, self.id)
         # update call requires a delta-data dict; computing one based on data differences
@@ -98,6 +98,14 @@ class Item(HasData):
         return pulp.send(
             self.request('PUT', data=delta)
         )
+
+    def update(
+        self,
+        pulp,
+        data
+    ):
+        ''' in the data can be present delta-data dict and/or some other information)'''
+        return pulp.send(self.request('PUT', data=data))
 
     def request(self, method, path='', data={}, params={}):
         return Request(method, data=data, path=path_join(self.path, self.id, path), params=params)
