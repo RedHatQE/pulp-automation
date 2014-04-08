@@ -43,31 +43,24 @@ class SimpleRepoTest(RepoTest):
     def test_04_update_repo(self):
         display_name = 'A %s repo' % self.__class__.__name__
         self.repo |= {'display_name': display_name}
-        self.repo.update(self.pulp)
+        self.repo.delta_update(self.pulp)
         self.assertPulp(code=200)
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
-    def test_05_list_importer(self):
-        importer = self.repo.list_importers(self.pulp)
-        self.assertPulp(code=200)
-        self.assertEqual(importer, [])
+    def test_05_associate_importer_with_invalid_type(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1084064
+        self.repo.associate_importer(
+            self.pulp,
+            data={
+                'importer_type_id': 'invalid_importer',
+                'importer_config': {
+                    'feed': self.feed
+                }
+            }
+        )
+        self.assertPulp(code=400)
 
-    def test_05_list_importer_of_unexistant_repo(self):
-        with self.assertRaises(AssertionError):
-            self.repo2.list_importers(self.pulp)
-        self.assertPulp(code=404)
-
-    def test_06_list_distributors(self):
-        distributors = self.repo.list_distributors(self.pulp)
-        self.assertPulp(code=200)
-        self.assertEqual(distributors, [])
-
-    def test_06_list_distributors_of_unexistant_repo(self):
-        with self.assertRaises(AssertionError):
-            self.repo2.list_distributors(self.pulp)
-        self.assertPulp(code=404)
-
-    def test_07_associate_importer(self):
+    def test_06_associate_importer(self):
         response = self.repo.associate_importer(
             self.pulp,
             data={
@@ -92,10 +85,35 @@ class SimpleRepoTest(RepoTest):
             },
             importer)
 
-    def test_08_get_single_importer(self):
-        importer=self.repo.get_importer(self.pulp, "yum_importer")
-        importers = self.repo.list_importers(self.pulp)
-        self.assertEqual(importer,importers[0])
+    def test_07_associate_importer_to_unexistant_repo(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1078833
+        self.repo2.associate_importer(
+            self.pulp,
+            data={
+                'importer_type_id': 'yum_importer',
+                'importer_config': {
+                    'feed': self.feed
+                }
+            }
+        )
+        self.assertPulp(code=404)
+
+    def test_08_associate_distributor_with_invalid_type(self):
+        self.repo.associate_distributor(
+            self.pulp,
+            data={
+                'distributor_type_id': 'invalid_distributor',
+                'distributor_config': {
+                    'http': False,
+                    'https': False,
+                    'relative_url': '/zoo/'
+                },
+                'distributor_id': 'dist_1',
+                'auto_publish': False
+            }
+        )
+
+        self.assertPulp(code=400)
 
     def test_09_associate_distributor(self):
         response = self.repo.associate_distributor(
@@ -129,10 +147,22 @@ class SimpleRepoTest(RepoTest):
             }
         )
 
-    def test_10_get_single_distributor(self):
-        distributor = self.repo.get_distributor(self.pulp, "dist_1")
-        distributors = self.repo.list_distributors(self.pulp)
-        self.assertIn(distributor, distributors)
+    def test_10_associate_distributor_to_unexistant_repo(self):
+        self.repo2.associate_distributor(
+            self.pulp,
+            data={
+                'distributor_type_id': 'yum_distributor',
+                'distributor_config': {
+                    'http': False,
+                    'https': False,
+                    'relative_url': '/zoo/'
+                },
+                'distributor_id': 'dist_1',
+                'auto_publish': False
+            }
+        )
+
+        self.assertPulp(code=404)
 
     def test_11_sync_repo(self):
         response = self.repo.sync(self.pulp)
