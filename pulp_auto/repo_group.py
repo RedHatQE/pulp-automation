@@ -5,10 +5,6 @@ from . import (path_join, format_response)
 class RepoGroup(item.Item):
     path = '/repo_groups/'
     relevant_data_keys = ['id', 'display_name', 'description', 'repo_ids', 'notes']
-
-    def update(self, pulp, data):
-        item = self.get(pulp, self.id)
-        return pulp.send(self.request('PUT', data=data))
     
     def associate_repo(
         self,

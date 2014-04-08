@@ -68,7 +68,7 @@ class SimpleRoleTest(RoleTest):
     def test_05_update_role(self):
         display_name = 'A %s role' % self.__class__.__name__
         self.role |= {'display_name': display_name}
-        self.role.update(self.pulp)
+        self.role.delta_update(self.pulp)
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['display_name'], display_name)
 
@@ -77,7 +77,7 @@ class SimpleRoleTest(RoleTest):
         display_name = 'A %s role' % self.__class__.__name__
         self.role3 |= {'display_name': display_name}
         with self.assertRaises(AssertionError):
-            self.role3.update(self.pulp)
+            self.role3.delta_update(self.pulp)
         self.assertPulp(code=404)
 
     def test_07_add_user(self):

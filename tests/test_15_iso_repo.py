@@ -35,7 +35,7 @@ class SimpleIsoRepoTest(IsoRepoTest):
     def test_04_update_repo(self):
         display_name = 'A %s repo' % self.__class__.__name__
         self.repo |= {'display_name': display_name}
-        self.repo.update(self.pulp)
+        self.repo.delta_update(self.pulp)
         self.assertPulp(code=200)
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 

@@ -12,7 +12,7 @@ class TestConsumer(ConsumerAgentPulpTest):
         # update causes private key loss; do not change self.consumer 
         consumer = self.consumer | {'display_name': "A %s consumer" % type(self).__name__}
         with self.pulp.asserting(True):
-            consumer.update(self.pulp)
+            consumer.delta_update(self.pulp)
             self.assertEqual(Consumer.get(self.pulp, consumer.id), consumer)
     
     ### binding

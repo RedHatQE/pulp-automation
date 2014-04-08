@@ -201,14 +201,6 @@ class ScheduledAction(AssociatedItem):
     def id(self, other):
         self.data['_id'] = other
 
-    def update(
-        self,
-        pulp,
-        data
-    ):
-        path = ""
-        return pulp.send(self.request('PUT', path=path, data=data))
-
 
 class GroupItem(Item):
     '''an Item that is bound to a Group'''

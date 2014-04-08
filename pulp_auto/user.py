@@ -17,7 +17,7 @@ class User(item.Item):
     def id(self, other):
         self.data['login'] = other
 
-    def update(self, pulp):
+    def delta_update(self, pulp):
         item = self.get(pulp, self.id)
         # update call requires a delta-data dict; computing one based on data differences
         # note that id shouldn't appear in the delta since the get is using it

@@ -57,7 +57,7 @@ class SimpleUserTest(UserTest):
         self.user3.create(self.pulp)
         self.assertPulpOK()
         self.user3 |= {"roles": ['super-users']}
-        self.user3.update(self.pulp)
+        self.user3.delta_update(self.pulp)
         self.assertPulp(code=200)
 
     def test_09_search_super_user(self):
@@ -68,7 +68,7 @@ class SimpleUserTest(UserTest):
     def test_10_update_user(self):
         name = 'name %s' % self.__class__.__name__
         self.user |= {'name': name}
-        self.user.update(self.pulp)
+        self.user.delta_update(self.pulp)
         self.assertPulp(code=200)
         self.assertEqual(User.get(self.pulp, self.user.id).data['name'], name)
 
@@ -76,13 +76,13 @@ class SimpleUserTest(UserTest):
         name = 'name %s' % self.__class__.__name__
         self.user2 |= {'name': name}
         with self.assertRaises(AssertionError):
-            self.user2.update(self.pulp)
+            self.user2.delta_update(self.pulp)
         self.assertPulp(code=404)
 
     def test_12_update_password_user(self):
         password = 'password'
         self.user.data["password"] = password
-        self.user.update(self.pulp)
+        self.user.delta_update(self.pulp)
         self.assertPulp(code=200)
         # checking if user cannot login with old password
         with self.assertRaises(AssertionError):
