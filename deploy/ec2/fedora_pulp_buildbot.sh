@@ -35,7 +35,7 @@ gpgcheck=0
 # Version 2.x Beta Builds
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.3/fedora-\$releasever/\$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.4/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -67,8 +67,8 @@ sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
 grep url:.*:5672 /etc/pulp/server.conf
 
 #configure borker_url
-sed -i s,broker_url:.*amqp://.*:5673/,broker_url:amqp://guest:guest@`hostname`:5673/, /etc/pulp/server.conf
-grep broker_url:.*:5673/ /etc/pulp/server.conf
+sed -i s,broker_url:.*qpid://guest@localhost/,broker_url:qpid://`hostname`:5672/, /etc/pulp/server.conf
+grep broker_url:.*:5672/ /etc/pulp/server.conf
 
 # configure qpidd
 grep auth= /etc/qpidd.conf || echo auth=no >> /etc/qpidd.conf
@@ -113,20 +113,6 @@ systemctl start qpidd.service
 
 # init db
 su - apache -s /bin/sh -c pulp-manage-db
-
-# rabbitmq config
-yum -y install rabbitmq-server
-cat <<RABBIT_CONF > /etc/rabbitmq/rabbitmq-env.conf
-NODE_PORT=5673
-RABBIT_CONF
-
-# enable rabbitmq-server
-systemctl enable rabbitmq-server
-#FIXME selinux should be in permessive mode otherwise rabbit will not start!
-# for more details see bz https://bugzilla.redhat.com/show_bug.cgi?id=1032595
-setenforce 0
-sed -i s,SELINUX=enforcing,SELINUX=permessive, /etc/selinux/config
-systemctl start rabbitmq-server || systemctl start rabbitmq-server
 
 # start apache
 systemctl enable httpd.service
