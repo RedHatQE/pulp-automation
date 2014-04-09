@@ -12,12 +12,18 @@ class ConsumerGroupTest(ConsumerAgentPulpTest):
     def setUpClass(cls):
         super(ConsumerGroupTest, cls).setUpClass()
         cls.consumer_group = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group"})
+        cls.consumer_group1 = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group", "consumer_ids":["some_consumer"]})
 
 class SimpleConsumerGroupTest(ConsumerGroupTest):
 
     def test_01_create_group(self):
         self.consumer_group.create(self.pulp)
         self.assertPulpOK()
+
+    def test_01_create_group_with_invalid_consumer(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1074661
+        self.consumer_group1.create(self.pulp)
+        self.assertPulp(code=400)
         
     def test_02_update_group(self):
         display_name = 'A %s group' % self.__class__.__name__
