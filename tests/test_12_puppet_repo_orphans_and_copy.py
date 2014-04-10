@@ -86,26 +86,35 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         result = Association.from_response(response)
         self.assertTrue(result == [])
 
-    def test_07_no_unassociation_within_repo_with_feed(self):
-        # repos with feed cannot delete partial content inside it
+    def test_07_unassociate_module_from_repo_with_feed(self):
+        # repos with feed can delete partial content inside it
+        # but after next sync it will be in the initial state
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1063778
         response = self.source_repo.unassociate_units(
             self.pulp,
             data={"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
         )
         self.assertPulp(code=202)
-        with self.assertRaises(TaskFailure):
-            Task.wait_for_report(self.pulp, response)
+        Task.wait_for_report(self.pulp, response)
 
-    def test_08_check_no_orphan_appered(self):
+    def test_08_check_module_was_unassociated(self):
+        #perform a search within the repo
+        response = self.source_repo.within_repo_search(
+            self.pulp,
+            data={"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
+        )
+        self.assertPulp(code=200)
+        result = Association.from_response(response)
+        self.assertTrue(result == [])
+
+    def test_09_check_no_orphan_appered(self):
         #check that after unassociation of module it did not appered among orphans as it is still referenced to other repo
         orphans = Orphans.get(self.pulp)
         self.assertEqual(orphans['puppet_module'], [])
         orphan_info = Orphans.info(self.pulp)
         self.assertEqual(orphan_info['puppet_module']['count'], 0)
 
-    def test_09_check_orphan_appears(self):
-        #delete source repo
-        Task.wait_for_report(self.pulp, self.source_repo.delete(self.pulp))
+    def test_10_check_orphan_appears(self):
         #unasosciate same module that was unassocited in dest_repo1
         response = self.dest_repo2.unassociate_units(
             self.pulp,
@@ -117,23 +126,23 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         orphan_info = Orphans.info(self.pulp)
         self.assertEqual(orphan_info['puppet_module']['count'], 1)
 
-    def test_10_repos_no_feed_cannot_be_synced(self):
+    def test_11_repos_no_feed_cannot_be_synced(self):
         # check that repos without feed cannot be synced
         response = self.dest_repo2.sync(self.pulp)
         self.assertPulp(code=202)
         with self.assertRaises(TaskFailure):
-            with self.pulp.asserting(True):
-                Task.wait_for_report(self.pulp, response)
+            Task.wait_for_report(self.pulp, response)
 
-    def test_11_delete_repos(self):
-        self.dest_repo1.delete(self.pulp)
-        self.dest_repo2.delete(self.pulp)
+    def test_12_delete_repos(self):
+        for repo_id in [self.dest_repo1.id, self.dest_repo2.id, self.source_repo.id]:
+            response = Repo({'id': repo_id}).delete(self.pulp)
+            Task.wait_for_report(self.pulp, response)
 
-    def test_12_delete_puppet_orphans(self):
+    def test_13_delete_puppet_orphans(self):
         PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_13_check_deleted_orphans(self):
+    def test_14_check_deleted_orphans(self):
         # check that all puppet_module orphans were successfully deleted
         orphans = Orphans.get(self.pulp)
         self.assertEqual(orphans['puppet_module'], [])
