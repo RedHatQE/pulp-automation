@@ -12,7 +12,7 @@ class ConsumerGroupTest(ConsumerAgentPulpTest):
     def setUpClass(cls):
         super(ConsumerGroupTest, cls).setUpClass()
         cls.consumer_group = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group"})
-        cls.consumer_group1 = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group", "consumer_ids":["some_consumer"]})
+        cls.consumer_group1 = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group1", "consumer_ids":["some_consumer"]})
 
 class SimpleConsumerGroupTest(ConsumerGroupTest):
 
