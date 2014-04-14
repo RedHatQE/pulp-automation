@@ -5,7 +5,7 @@ from permission import Permission
 
 
 class Role(item.Item):
-    relevant_data_keys = ['id', 'display_name', 'description']
+    relevant_data_keys = ['id', 'display_name', 'description', 'permissions']
     path = '/roles/'
 
     @classmethod

@@ -72,6 +72,12 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['display_name'], display_name)
 
+    def test_05_update_role_permission_bz1066040(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1066040 
+        self.role.data["permissions"] = {"/":["CREATE","DELETE"]}
+        self.role.delta_update(self.pulp)
+        self.assertPulp(code=400)
+
     def test_06_update_unexistant_role(self):
         self.role3.delete(self.pulp)
         display_name = 'A %s role' % self.__class__.__name__
