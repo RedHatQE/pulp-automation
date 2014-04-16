@@ -36,11 +36,7 @@ class CliConsumerTest(PulpTest):
         # bind all repos
         with self.pulp.asserting(True):
             for repo, _, distributor in self.repos:
-                binding_data = {
-                    'repo_id': repo.id,
-                    'distributor_id': distributor.id
-                }
-                Task.wait_for_report(self.pulp, self.consumer.bind_distributor(self.pulp, binding_data))
+                Task.wait_for_report(self.pulp, self.consumer.bind_distributor(self.pulp, repo.id, distributor.id))
 
         # assert all bound repos are available on consumer
         rpm_repo_ids = set([repo.id for repo in RpmRepo.list(self.consumer_cli)])
