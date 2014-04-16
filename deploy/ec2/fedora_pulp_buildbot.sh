@@ -63,11 +63,11 @@ yum -y groupinstall pulp-server
 
 
 # configure pulp
-sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
+sed -i s,^[#\ ]*url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
 grep url:.*:5672 /etc/pulp/server.conf
 
 #configure borker_url
-sed -i s,broker_url:.*qpid://guest@localhost/,broker_url:qpid://`hostname`:5672/, /etc/pulp/server.conf
+sed -i s,^[#\ ]*broker_url:.*qpid://guest@localhost/,broker_url:qpid://`hostname`:5672/, /etc/pulp/server.conf
 grep broker_url:.*:5672/ /etc/pulp/server.conf
 
 # configure qpidd
@@ -77,12 +77,12 @@ grep auth= /etc/qpidd.conf
 
 # configure pulp-admin
 yum -y groupinstall pulp-admin
-sed -i s,host.*=.*,host=`hostname`, /etc/pulp/admin/admin.conf
+sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/admin/admin.conf
 grep host= /etc/pulp/admin/admin.conf
 
 # configure local consumer
 yum -y groupinstall pulp-consumer
-sed -i s,host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
+sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
 grep host= /etc/pulp/consumer/consumer.conf
 
 # generate ssl certs
