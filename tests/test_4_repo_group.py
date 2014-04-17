@@ -44,9 +44,8 @@ class SimpleRepoGroupTest(RepoGroupTest):
     def test_04_add_unexistant_repo_in_creation_call(self):
         #check that you can not add unexistant repo id during repo group creation call
         #https://bugzilla.redhat.com/show_bug.cgi?id=1073997
-        with self.assertRaises(AssertionError):
-            self.repo_group3.create(self.pulp)
-        self.assertPulp(code=400)
+        self.repo_group3.create(self.pulp)
+        self.assertPulp(code=404)
 
     def test_05_update_group(self):
         display_name = 'A %s group' % self.__class__.__name__
@@ -62,8 +61,7 @@ class SimpleRepoGroupTest(RepoGroupTest):
 
     def test_07_update_unexistant_group(self):
         display_name = 'A %s group' % self.__class__.__name__
-        with self.assertRaises(AssertionError):
-            self.repo_group1.update(self.pulp, {'display_name': display_name})
+        self.repo_group1.update(self.pulp, {'display_name': display_name})
         self.assertPulp(code=404)
 
     def test_08_get_repo_group(self):
@@ -99,6 +97,7 @@ class SimpleRepoGroupTest(RepoGroupTest):
     def test_14_check_delete_group(self):
         self.repo_group.delete(self.pulp)
         # https://bugzilla.redhat.com/show_bug.cgi?id=1074426
+        # seems that it is a doc bug only
         self.assertPulp(code=200)
         #check you cannot delete twice same repo group
         self.repo_group.delete(self.pulp)
@@ -110,3 +109,6 @@ class SimpleRepoGroupTest(RepoGroupTest):
         response = self.repo.delete(self.pulp)
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
+
+    # TODO https://pulp-dev-guide.readthedocs.org/en/latest/integration/rest-api/repo/groups/distributors.html
+    # when it will be ready
