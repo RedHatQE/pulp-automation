@@ -232,8 +232,8 @@ def create_yum_repo(
                 }
             }
         )
-        importer = Repo.from_report(response)['result']
         Task.wait_for_report(pulp, response)
+        importer = repo.get_importer(pulp, "yum_importer")
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
@@ -280,8 +280,8 @@ def create_puppet_repo(
                 }
             }
         )
-        importer = Repo.from_report(response)['result']
         Task.wait_for_report(pulp, response)
+        importer = repo.get_importer(pulp, "puppet_importer")
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={
@@ -330,8 +330,8 @@ def create_iso_repo(
                 }
             }
         )
-        importer = Repo.from_report(response)['result']
         Task.wait_for_report(pulp, response)
+        importer = repo.get_importer(pulp, "iso_importer")
         distributor = Distributor.from_response(repo.associate_distributor(
             pulp,
             data={

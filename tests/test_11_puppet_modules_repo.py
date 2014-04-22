@@ -38,8 +38,8 @@ class SimplePuppetRepoTest(PuppetRepoTest):
             }
         )
         self.assertPulp(code=202)
-        importer = Repo.from_report(response)['result']
         Task.wait_for_report(self.pulp, response)
+        importer = self.repo.get_importer(self.pulp, "puppet_importer")
         self.assertEqual(
             importer,
             {

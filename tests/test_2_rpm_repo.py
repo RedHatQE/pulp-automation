@@ -71,9 +71,9 @@ class SimpleRepoTest(RepoTest):
             }
         )
         self.assertPulp(code=202)
-        importer = Repo.from_report(response)['result']
         Task.wait_for_report(self.pulp, response)
-        #https://bugzilla.redhat.com/show_bug.cgi?id=1076225
+        importer = self.repo.get_importer(self.pulp, "yum_importer")
+        # fixed as a doc bug https://bugzilla.redhat.com/show_bug.cgi?id=1076225
         self.assertEqual({
                 'id': 'yum_importer',
                 'importer_type_id': 'yum_importer',
