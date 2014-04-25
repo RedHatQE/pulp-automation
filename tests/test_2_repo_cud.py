@@ -120,7 +120,7 @@ class CUD(RepoCudTest):
                                                                            }
                                                     }
                                    )
-        # TODO see whether it is a doc bug https://bugzilla.redhat.com/show_bug.cgi?id=1084043
+        # in this case when repo is not bound to a consumer the response code will be 200)
         self.assertPulp(code=200)
 
     def test_04_check_update_was_correct(self):

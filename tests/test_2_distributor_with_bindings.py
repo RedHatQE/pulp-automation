@@ -13,6 +13,21 @@ class DistributorBindings(ConsumerAgentPulpTest):
             response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
             Task.wait_for_report(self.pulp, response)
 
+    def test_03_update_distributor_config_via_repo_call(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1078305
+        # in this custom update you can update repo's info + importer/distributor
+        response = self.repo.update(self.pulp, data={
+                                                   "delta": {"display_name": "NewName"},
+                                                   "importer_config": {"num_units": 6},
+                                                   "distributor_configs": {
+                                                   "yum_distributor": {"relative_url": "my_url"}
+                                                                           }
+                                                    }
+                                   )
+        # in this case when repo is bound to a consumer the response code will be 202)
+        self.assertPulp(code=202)
+
+
     def test_02_delete_distributor(self):
         response = self.distributor.delete(self.pulp)
         Task.wait_for_report(self.pulp, response)
