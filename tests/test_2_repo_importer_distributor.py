@@ -79,7 +79,8 @@ class DistributorTest(ImporterDistributorTest):
         self.assertEqual(self.distributor.id, distributor.id)
 
     def test_04_distributor_update(self):
-        self.distributor.update(self.pulp, data={"distributor_config": {"relative_url": "my_url"}})
+        response = self.distributor.update(self.pulp, data={"distributor_config": {"relative_url": "my_url"}})
+        Task.wait_for_report(self.pulp, response)
         self.distributor.reload(self.pulp)
         self.assertEqual(self.distributor.data["config"]["relative_url"], "my_url")
 
