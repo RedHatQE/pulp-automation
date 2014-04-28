@@ -145,6 +145,14 @@ yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.2.3-1.fc21.noarc
 		https://rhuiqerpm.s3.amazonaws.com/python-patchwork-0.4-1.git.28.2936d6a.fc19.noarch.rpm
 easy_install pip
 pip install moncov
+cat <<MONCOV_CONF > /etc/moncov.yaml
+dbhost: localhost
+dbport: 27017
+events_count: 100000
+blacklist: []
+whitelist: ['.*pulp/.*']
+
+MONCOV_CONF
 
 cat <<LOCAL_PULP_REPO_EOF > /etc/yum.repos.d/pulp-local.repo
 [pulp-local-build]
@@ -221,6 +229,8 @@ wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/mas
 wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/jenkins_feed.py
 # FIXME disable the jenkins feed
 sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
+
+moncov update -s -t 0.3
 
 buildbot start master
 buildslave start slave
