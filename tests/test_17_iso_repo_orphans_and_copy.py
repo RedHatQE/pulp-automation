@@ -86,14 +86,13 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
         self.assertTrue(result == [])
 
     def test_07_no_unassociation_within_repo_with_feed(self):
-        # repos with feed cannot delete partial content inside it
+        # repos with feed now can delete partial content inside it
         response = self.source_repo.unassociate_units(
             self.pulp,
             data={"criteria": {"type_ids": ["iso"], "filters": {"unit": {"name": "test.iso"}}}}
         )
         self.assertPulp(code=202)
-        with self.assertRaises(TaskFailure):
-            Task.wait_for_report(self.pulp, response)
+        Task.wait_for_report(self.pulp, response)
 
     def test_08_check_no_orphan_appeared(self):
         #check that after unassociation of module it did not appered among orphans as it is still referenced to other repo
