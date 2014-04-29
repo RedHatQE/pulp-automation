@@ -137,7 +137,7 @@ systemctl start pulp_resource_manager
 ### tracking pulp & pulp_auto repos
 
 yum groupinstall -y 'development tools'
-yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto python-coverage libxml2-devel libxslt-devel
+yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto python-coverage libxml2-devel libxslt-devel mongodb
 
 # automation dependencies
 yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.2.3-1.fc21.noarch.rpm \
