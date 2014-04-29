@@ -1,7 +1,7 @@
 import pulp_test, json, pulp_auto
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo
+from pulp_auto.repo import create_puppet_repo, create_yum_repo
 from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import PuppetModuleOrphan, Orphans
 
@@ -22,6 +22,10 @@ class PuppetCopyRepoTest(pulp_test.PulpTest):
         # create two destinations repos for copy purpose
         cls.dest_repo1, _, _ = create_puppet_repo(cls.pulp, repo_id + '1', feed=None)
         cls.dest_repo2, _, _ = create_puppet_repo(cls.pulp, repo_id + '2', feed=None)
+        # create data for repo
+        cls.invalid_repo = Repo(data={'id': cls.__name__ + "_invalidrepo"})
+        # create yum repo
+        cls.yumrepo, _, _ = create_yum_repo(cls.pulp, repo_id + 'yum', feed=None)
 
 
 class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
@@ -30,6 +34,14 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         response = self.dest_repo1.copy(self.pulp, self.source_repo.id, data={})
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
+
+    def test_01_copy_all_modules_from_invalid_repo(self):
+        response = self.dest_repo1.copy(self.pulp, "some_repo", data={})
+        self.assertPulp(code=400)
+
+    def test_01_copy_all_modules_to_invalid_repo(self):
+        response = self.invalid_repo.copy(self.pulp, self.source_repo.id, data={})
+        self.assertPulp(code=404)
 
     def test_02_check_all_modules_copied(self):
         source_repo = Repo.get(self.pulp, self.source_repo.id)
@@ -52,6 +64,21 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
 
+    def test_03_copy_1_module_with_different_importers(self):
+        # the destination repository must be configured with an importer that supports the type of units being copied.
+        response = self.yumrepo.copy(
+            self.pulp,
+            self.source_repo.id,
+            data={
+                'criteria': {
+                'type_ids': ['puppet_module'],
+                'filters': {"unit": {"name": "tomcat7_rhel"}}
+                },
+            }
+        )
+        with self.assertRaises(TaskFailure):
+            Task.wait_for_report(self.pulp, response)
+
     def test_04_check_that_one_module(self):
         # check that there is precisly one module
         dest_repo2 = Repo.get(self.pulp, self.dest_repo2.id)
@@ -65,6 +92,15 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         result = Association.from_response(response)
         # this means that only one module found with that name
         self.assertTrue(len(result) == 1)
+
+    def test_05_unassociate_module_from_invalid_repo(self):
+        # unassociate unit from a nonexistant repo
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1092417
+        response = self.invalid_repo.unassociate_units(
+            self.pulp,
+            data={"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
+        )
+        self.assertPulp(code=404)
 
     def test_05_unassociate_module_from_copied_repo(self):
         # unassociate unit from a copied repo
@@ -134,7 +170,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
             Task.wait_for_report(self.pulp, response)
 
     def test_12_delete_repos(self):
-        for repo_id in [self.dest_repo1.id, self.dest_repo2.id, self.source_repo.id]:
+        for repo_id in [self.dest_repo1.id, self.dest_repo2.id, self.source_repo.id, self.yumrepo.id]:
             response = Repo({'id': repo_id}).delete(self.pulp)
             Task.wait_for_report(self.pulp, response)
 
