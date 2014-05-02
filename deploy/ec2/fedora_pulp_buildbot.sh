@@ -144,7 +144,7 @@ yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.2.3-1.fc21.noarc
 		https://rhuiqerpm.s3.amazonaws.com/python-plumbum-1.4.0-1.fc21.noarch.rpm \
 		https://rhuiqerpm.s3.amazonaws.com/python-patchwork-0.4-1.git.28.2936d6a.fc19.noarch.rpm
 easy_install pip
-pip install moncov
+pip install -U moncov gevent
 cat <<MONCOV_CONF > /etc/moncov.yaml
 dbhost: localhost
 dbport: 27017
