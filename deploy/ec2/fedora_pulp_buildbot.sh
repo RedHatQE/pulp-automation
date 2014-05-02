@@ -150,7 +150,7 @@ dbhost: localhost
 dbport: 27017
 events_count: 100000
 blacklist: []
-whitelist: ['.*pulp/.*']
+whitelist: ['.*pulp/.*', '.*pulp_rpm/.*', '.*pulp_puppet/.*', '.*nectar/.*', '.*gofer/.*']
 
 MONCOV_CONF
 
