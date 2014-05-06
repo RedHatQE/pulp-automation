@@ -87,32 +87,32 @@ class CliConsumerTest(PulpTest):
         )
 
     def test_06_assert_nonexisten_unit_install(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1062725
+        # TODO parse callreport,taskreport and assert that in progress report result is false
         unit = {
             'name': '__NO_SUCH_UNIT__'
         }
-        with self.assertRaises(TaskFailure):
-            Task.wait_for_report(
+        Task.wait_for_report(
+            self.pulp,
+            self.consumer.install_unit(
                 self.pulp,
-                self.consumer.install_unit(
-                    self.pulp,
-                    unit,
-                    'rpm'
-                )
+                unit,
+                'rpm'
             )
+        )
 
     def test_07_assert_nonexisten_unit_uninstall(self):
         unit = {
             'name': '__NO_SUCH_UNIT__'
         }
-        with self.assertRaises(TaskFailure):
-            Task.wait_for_report(
+        Task.wait_for_report(
+            self.pulp,
+            self.consumer.uninstall_unit(
                 self.pulp,
-                self.consumer.uninstall_unit(
-                    self.pulp,
-                    unit,
-                    'rpm'
-                )
+                unit,
+                'rpm'
             )
+        )
 
     def test_08_unbind_repos(self):
         # assert unbinding distributors works
