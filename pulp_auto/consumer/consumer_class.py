@@ -1,6 +1,7 @@
 import json, requests, contextlib
-from .. import (namespace, normalize_url, path_join, path_split, strip_url, item, Request)
-
+from .. import (namespace, normalize_url, path_join, path_split, strip_url, item, Request, handler)
+import logging
+log = logging.getLogger(__name__)
 
 class Binding(item.AssociatedItem):
     path='/bindings/'
@@ -16,6 +17,7 @@ class Consumer(item.Item):
     relevant_data_keys = ['id', 'display_name']
 
     @classmethod
+    @handler.logged(log.debug)
     def register(cls, pulp, id, display_name=None, description=None, notes=None):
         '''register new consumer
         return a Consumer instance made out of pulp response
@@ -33,6 +35,20 @@ class Consumer(item.Item):
                 }
             ).create(pulp)
         return cls.from_response(response)
+
+    @classmethod
+    @handler.logged(log.debug)
+    def from_response(cls, response):
+        '''first ever (creating) response requires custom handling'''
+        data = response.json()
+        if 'consumer' in data:
+            # first ever response; custom handling
+            log.info('new consumer registered: %s' % data['consumer']['display_name'])
+            consumer_data = data['consumer']
+            assert 'certificate' in data, "certificate key missing in first ever consumer response"
+            consumer_data['certificate'] = data['certificate']
+            return cls(data=consumer_data)
+        return super(Consumer, cls).from_response(response)
 
     def bind_distributor(self, pulp, repo_id, distributor_id, config=None):
         '''bind this consumer to a repo distributor'''
