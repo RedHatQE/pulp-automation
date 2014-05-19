@@ -20,7 +20,7 @@ class RepoCudTest(pulp_test.PulpTest):
                                             {
                                              "distributor_id": "yum_distributor",
                                              "auto_publish": False,
-                                             "distributor_type": "yum_distributor",
+                                             "distributor_type_id": "yum_distributor",
                                              "distributor_config": {"http": False, "relative_url": cls.__name__ + "_repo", "https": True}
                                             }
                                         ],
@@ -36,7 +36,7 @@ class RepoCudTest(pulp_test.PulpTest):
                                                  {
                                                   "distributor_id": "yum_distributor",
                                                   "auto_publish": False,
-                                                  "distributor_type": "yum_distributor",
+                                                  "distributor_type_id": "yum_distributor",
                                                   "distributor_config": {"http": False, "relative_url": cls.__name__ + "_repo1", "https": True}
                                                  }
                                              ],
@@ -53,7 +53,7 @@ class RepoCudTest(pulp_test.PulpTest):
                                                  {
                                                   "distributor_id": "yum_distributor",
                                                   "auto_publish": False,
-                                                  "distributor_type": "yum_distributor",
+                                                  "distributor_type_id": "yum_distributor",
                                                   "distributor_config": {"http": False, "https": True}
                                                  }
                                              ],
