@@ -95,7 +95,7 @@ chmod go+r certs/localhost.crt
 popd
 
 # insecure qpidd is required
-cat <<QPIDD_CONF > /etc/qpidd.conf
+cat <<QPIDD_CONF > /etc/qpid/qpidd.conf
 ssl-require-client-authentication=no
 auth=no
 log-to-syslog=yes
