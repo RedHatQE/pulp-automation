@@ -1,10 +1,10 @@
-from patchwork import Connection as PatchworkConnection
+from stitches import Connection as StitchesConnection
 
 class Connection(object):
     def __init__(self, hostname='localhost', ssh_key=None):
         self.hostname = hostname
         self.ssh_key = ssh_key
-        self.connection = PatchworkConnection(instance=hostname, key_filename=ssh_key)
+        self.connection = StitchesConnection(instance=hostname, key_filename=ssh_key)
 
     def remote(self, command):
         '''return a Plubmub bound remote command instance of a command'''

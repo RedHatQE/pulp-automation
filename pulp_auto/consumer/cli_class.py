@@ -1,4 +1,4 @@
-from patchwork import (Connection, Expect)
+from stitches import (Connection, Expect)
 from ConfigParser import ConfigParser
 from command import Command
 from connection import Connection
