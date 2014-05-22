@@ -36,11 +36,20 @@ class SimpleConsumerGroupTest(ConsumerGroupTest):
         response = self.consumer_group.associate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
         self.assertPulp(code=200)
         self.assertIn(self.consumer.id, response.json())
+
+    @agent_test(catching=True)
+    def test_03_associate_consumer_to_nonexistent_group(self):
+        response = self.consumer_group1.associate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
+        self.assertPulp(code=404)
         
     def test_04_unassociate_consumer(self):
         response = self.consumer_group.unassociate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
         self.assertPulp(code=200)
         self.assertEqual(response.json(), [])
+
+    def test_04_unassociate_consumer_from_nonexistent_group(self):
+        response = self.consumer_group1.unassociate_consumer(self.pulp, data={"criteria": {"filters": {"id": self.consumer.id}}})
+        self.assertPulp(code=404)
 
     def test_05_delete_goup(self):
         self.consumer_group.delete(self.pulp)
