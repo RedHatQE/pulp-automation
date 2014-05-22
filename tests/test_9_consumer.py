@@ -23,6 +23,12 @@ class TestConsumer(ConsumerAgentPulpTest):
             response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
             Task.wait_for_report(self.pulp, response)
 
+
+    @agent_test(catching=True)
+    def test_02_bind_non_existant_distributor(self):
+        self.consumer.bind_distributor(self.pulp, self.repo.id, 'some_dist')
+        self.assertPulp(code=404)
+
     def test_03_get_repo_bindings(self):
         with self.pulp.asserting(True):
             bindings = self.consumer.get_repo_bindings(self.pulp, self.repo.id)
@@ -33,6 +39,11 @@ class TestConsumer(ConsumerAgentPulpTest):
             'id': '123'
         })
         self.assertIn(binding, bindings)
+
+    def test_03_get_nonexistant_repo_bindings_bz1094264(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1094264
+        self.consumer.get_repo_bindings(self.pulp, 'some_repo')
+        self.assertPulp(code=404)
         
     def test_04_get_single_binding(self):
         with self.pulp.asserting(True):
@@ -44,6 +55,11 @@ class TestConsumer(ConsumerAgentPulpTest):
             'id': '123'
         })
         self.assertEqual(binding, single_binding)
+
+    def test_04_get_nonexistant_binding(self):
+        with self.assertRaises(AssertionError):
+            self.consumer.get_single_binding(self.pulp, self.repo.id, 'some_dist')
+            self.assertPulp(code=404)
 
 
     def test_05_list_bindings(self):
@@ -61,13 +77,23 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_06_unbind_distributor(self):
         with self.pulp.asserting(True):
             Task.wait_for_report(self.pulp, self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id))
+
+    @agent_test(catching=True)
+    def test_06_unbind_non_existant_distributor(self):
+        self.consumer.unbind_distributor(self.pulp, self.repo.id, 'some_dist')
+        self.assertPulp(code=404)
             
     ### consumer info
-    
+
     def test_07_get_consumer_info(self):
         consumer = Consumer.get(self.pulp, self.consumer.id)
         self.assertEqual(consumer.id, self.consumer.id)
-    
+
+    def test_07_get_nonesistant_consumer_info(self):
+        with self.assertRaises(AssertionError):
+            Consumer.get(self.pulp, 'some_consumer')
+            self.assertPulp(code=404)
+
     def test_08_get_list_consumers(self):
         self.assertIn(Consumer.get(self.pulp, self.consumer.id), Consumer.list(self.pulp))
     
@@ -94,8 +120,8 @@ class TestConsumer(ConsumerAgentPulpTest):
         
     def test_12_event_history_filter_limit(self):
         with self.pulp.asserting(True):
-            events = self.consumer.get_history(self.pulp, {'limit': '5'})
-        self.assertEqual(len(events), 5, "limit fail") 
+            events = self.consumer.get_history(self.pulp, {'limit': '2'})
+        self.assertEqual(len(events), 2, "limit fail")
     
     def test_13_event_history_filter_sort(self):
         with self.pulp.asserting(True):
@@ -104,10 +130,10 @@ class TestConsumer(ConsumerAgentPulpTest):
         
     def test_14_event_history_filter_all(self):
         with self.pulp.asserting(True):
-            events = self.consumer.get_history(self.pulp, {'event_type': 'consumer_registered', 'limit': '5', 'sort': 'descending'})
+            events = self.consumer.get_history(self.pulp, {'event_type': 'consumer_registered', 'limit': '2', 'sort': 'descending'})
         assert [event for event in events if event.data['type'] == "consumer_registered"], "consumer_registered event not found"
         assert [event for event in events if event.data['type'] != "repo_bound"], "repo_bound event found"
-        self.assertEqual(len(events), 5, "limit fail")
+        self.assertEqual(len(events), 2, "limit fail")
         self.assertEqual(events, sorted(events, key = lambda event: event.data['timestamp'], reverse=True))
     
     ### profiles
