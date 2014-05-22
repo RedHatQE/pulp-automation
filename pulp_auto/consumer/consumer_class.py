@@ -50,11 +50,12 @@ class Consumer(item.Item):
             return cls(data=consumer_data)
         return super(Consumer, cls).from_response(response)
 
-    def bind_distributor(self, pulp, repo_id, distributor_id, config=None):
+    def bind_distributor(self, pulp, repo_id, distributor_id, notify_agent=True, config=None):
         '''bind this consumer to a repo distributor'''
         data = {
             'repo_id': repo_id,
             'distributor_id': distributor_id,
+            'notify_agent': notify_agent,
             'config': config
         }
         return pulp.send(self.request('POST', path=Binding.path, data=data))
