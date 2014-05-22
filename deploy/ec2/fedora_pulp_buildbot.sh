@@ -137,14 +137,11 @@ systemctl start pulp_resource_manager
 ### tracking pulp & pulp_auto repos
 
 yum groupinstall -y 'development tools'
-yum install -y python-devel git tito createrepo ruby wget python-gevent python-nose checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave python-boto python-coverage libxml2-devel libxslt-devel mongodb
+yum install -y python-devel git tito createrepo ruby wget checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave libxml2-devel libxslt-devel mongodb python-nose
 
 # automation dependencies
-yum install -y https://rhuiqerpm.s3.amazonaws.com/python-rpyc-3.2.3-1.fc21.noarch.rpm \
-		https://rhuiqerpm.s3.amazonaws.com/python-plumbum-1.4.0-1.fc21.noarch.rpm \
-		https://rhuiqerpm.s3.amazonaws.com/python-patchwork-0.4-1.git.28.2936d6a.fc19.noarch.rpm
 easy_install pip
-pip install -U moncov gevent
+pip install -U moncov
 cat <<MONCOV_CONF > /etc/moncov.yaml
 dbhost: localhost
 dbport: 27017
