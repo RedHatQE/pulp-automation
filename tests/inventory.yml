@@ -1,3 +1,50 @@
+# Pulp Automation Invetory File
+# =============================
+#
+# About
+# -----
+# Pulp automation is a suite of test cases that examine REST API functionality of Pulp.
+# A bunch of test cases that verify E2E scenarios with both real and mocked Pulp consumers
+# is included. This file provides pulp automation with information necessary to run the
+# test cases.
+#
+# The Pulp Role
+# -------------
+# describes REST API endpoint the test cases should use:
+# - auth: [username, password] for the https REST client
+# - url:  the protocol&hots part of the pulp URL
+# - hostname: FQDN of the machine running pulp service
+#
+# The Qpid Role
+# -------------
+# describes the RMI Broker endbpoint of Pulp for mocked consumer to attach to
+# - url: the amqp url of the broker
+#
+# The Repos Role
+# lists various repositories to be used during testing. Test cases apply filter
+# criteria on the list to select best repos for testing based on repo attributes:
+# - id: mandatory ID field to use in Pulp when referring to the repo
+# - type: (importer) type ID to distinguish various repo kinds
+# - feed: data source of the repo; the URL
+# - display_name: to show in Pulp
+# - tags: a list of custom repo "descriptors"
+#
+# The Consumers Role
+# ------------------
+# lists consumers to run real Pulp Consumer Client suite on
+# Test cases apply filter criteria on the list to select best consumers
+# for testing based on consumer attributes:
+# - id: mandatory ID field to use in Pulp when referring to the repo
+# - hostname: for automation commands execution over ssh
+# - ssh_key: for automation commands execution over ssh; root access
+# - os
+#   - name: of the operating system
+#   - version: of the operating system
+# - repos: a list of repo pointers or repos to bind the consumer to
+# - tags: a list of custom consumer "descriptors"
+#
+#
+
 ROLES:
   pulp: &PULP
     auth: [admin, admin]
@@ -11,6 +58,7 @@ ROLES:
       type: rpm
       feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
       display_name: ZOo rEPO
+      tags: ['default', 'small', 'demo']
   consumers:
   - &MY_CONSUMER
     id: my_consumer
@@ -22,3 +70,4 @@ ROLES:
     repos:
     - *ZOO
     pulp: *PULP
+    tags: ['default']
