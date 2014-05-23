@@ -1,5 +1,6 @@
 import contextlib, logging, namespace, gevent
 from gevent.event import Event
+from handler import logged
 log = logging.getLogger(__name__)
 
 
@@ -16,11 +17,13 @@ class Agent(object):
         return type(self).__name__ + "(%(module)r, catching=%(_catching)r)" % self.__dict__
 
     @staticmethod
+    @logged(log.debug)
     def strip_request(request):
         '''strip the envelope from the request; return envelope and the request'''
         return {k: request[k] for k in request.keys() if k != 'request'}, request['request']
 
     @staticmethod
+    @logged(log.debug)
     def make_response(envelope, response):
         ret = envelope.copy()
         ret['result'] = {
@@ -29,6 +32,7 @@ class Agent(object):
         return ret
 
     @staticmethod
+    @logged(log.debug)
     def make_exception(envelope, error=Exception(), trace=None):
         ret = envelope.copy()
         ret['result'] = {
@@ -40,12 +44,14 @@ class Agent(object):
         return ret
 
     @staticmethod
+    @logged(log.debug)
     def make_status(envelope, status):
         ret = envelope.copy()
         ret['status'] = status
         return ret
 
     @staticmethod
+    @logged(log.debug)
     def invert_envelope(envelope):
         ''''return envelope copy suitable for request-to-response processing'''
         envelope = envelope.copy()
@@ -54,21 +60,25 @@ class Agent(object):
             # handle inverting of don't care messages
             replyto_fields = [None, None]
         else:
-            replyto_fields = envelope['replyto'].split(';')
+            assert "exchange" in envelope['replyto'] and "routing_key" in envelope['replyto'], \
+                "wrong replyto format: %s" % envelope['replyto']
+            replyto_fields = envelope['replyto']['exchange'], envelope['replyto']['routing_key']
         source = replyto_fields[0]
         destination = envelope['routing'][1]
         routing_id = envelope['routing'][0]
         queue_properties = replyto_fields[1]
 
         envelope['routing'] = [routing_id, source]
-        envelope['replyto'] = ";".join([str(destination), str(queue_properties)])
+        envelope['replyto'] = {'exchange': destination, 'routing_key': queue_properties}
         return envelope
 
     @staticmethod
+    @logged(log.debug)
     def forget_request_envelope(envelope):
         return envelope['routing'][1] == None
 
     @staticmethod
+    @logged(log.debug)
     def request_to_call(module, request, PROFILE):
         ''' return a lambda that performs instnatiating required class
         and calling required method upon execution'''
@@ -103,6 +113,7 @@ class Agent(object):
                 **dict(list(request['kws'].viewitems()) + [('PROFILE', PROFILE)])
             )
 
+    @logged(log.debug)
     def __call__(self, qpid_handle):
         '''dispatch a single RMI request--response'''
         # get the request
