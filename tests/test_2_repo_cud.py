@@ -112,6 +112,9 @@ class CUD(RepoCudTest):
 
     def test_03_update_repo(self):
         # in this custom update you can update repo's info + importer/distributor
+        # Seems that after fix of https://bugzilla.redhat.com/show_bug.cgi?id=1091348
+        # 202 code will be returned  even when repo is not bound to the consumer,
+        # but distributor config is being updated
         response = self.repo.update(self.pulp, data={
                                                    "delta": {"display_name": "NewName"},
                                                    "importer_config": {"num_units": 6},
@@ -120,8 +123,7 @@ class CUD(RepoCudTest):
                                                                            }
                                                     }
                                    )
-        # in this case when repo is not bound to a consumer the response code will be 200)
-        self.assertPulp(code=200)
+        self.assertPulp(code=202)
 
     def test_04_check_update_was_correct(self):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], "NewName")

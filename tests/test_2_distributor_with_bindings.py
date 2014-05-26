@@ -25,6 +25,9 @@ class DistributorBindings(ConsumerAgentPulpTest):
                                                     }
                                    )
         # in this case when repo is bound to a consumer the response code will be 202)
+        # Seems that after fix of https://bugzilla.redhat.com/show_bug.cgi?id=1091348
+        # 202 code will be returned  even when repo is not bound to the consumer, 
+        # but distributor config is being updated
         self.assertPulp(code=202)
 
 

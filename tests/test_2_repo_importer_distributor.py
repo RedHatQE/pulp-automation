@@ -79,6 +79,7 @@ class DistributorTest(ImporterDistributorTest):
         self.assertEqual(self.distributor.id, distributor.id)
 
     def test_04_distributor_update(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1091348
         response = self.distributor.update(self.pulp, data={"distributor_config": {"relative_url": "my_url"}})
         Task.wait_for_report(self.pulp, response)
         self.distributor.reload(self.pulp)
