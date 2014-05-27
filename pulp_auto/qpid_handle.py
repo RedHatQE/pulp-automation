@@ -7,7 +7,7 @@ from qpid.messaging.exceptions import (Timeout, Empty)
 class QpidHandle(object):
     '''qpid handle'''
 
-    def __init__(self, url, receiver_name, sender_name='pulp.task', asserting=False, **options):
+    def __init__(self, url, receiver_name, sender_name='pulp.task', asserting=False, auth=None, **options):
         '''establishes a connection to given url; initializes session, sender and receiver'''
         self.url = url
         self.receiver_name = receiver_name
@@ -19,6 +19,7 @@ class QpidHandle(object):
         self.receiver = self.session.receiver("pulp.agent.%s; {create: always}" % self.receiver_name)
         self.sender = self.session.sender(self.sender_name)
         self._timeout = None
+        self.auth = auth
 
     def send(self, message):
         '''shortcut for self.sender.send(Message(content=json.dumps(message))'''
@@ -61,13 +62,33 @@ class QpidHandle(object):
 
     @property
     def message(self):
-        '''shortcut for self.fetch()'''
-        return self.fetch()
+        '''shortcut for self.fetch() with some check-sums handling'''
+        content = self.fetch()
+        # TODO
+        if self.auth:
+            pass
+        else:
+            pass
+        # The second load of message is required because
+        # if the message was transported as a dict
+        # the checksum/signature might change upon the message
+        # deserialization (un-ordered-dict)??
+        return namespace.load_ns(json.loads(content.message))
 
     @message.setter
     def message(self, other):
         '''shortcut for self.send()'''
-        self.send(other)
+        # TODO
+        if self.auth:
+            pass
+        else:
+            pass
+
+        content = {
+            'message': json.dumps(other),
+            'signature': None
+        }
+        self.send(content)
 
     @contextlib.contextmanager
     def asserting(self, value=True):
