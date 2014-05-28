@@ -32,15 +32,17 @@ class SimpleBindingsRemovalTest(BindingsRemovalTest):
         bindings = self.consumer.list_bindings(self.pulp)
         self.assertTrue(len(bindings) == 1)
 
+    @agent_test(catching=True)
     def test_03_delete_repo(self):
-        response = self.repo.delete(self.pulp)
-        Task.wait_for_report(self.pulp, response)
+        with self.pulp.asserting(True):
+            response = self.repo.delete(self.pulp)
+            Task.wait_for_report(self.pulp, response)
 
     def test_04_check_binding_removed(self):
         #https://bugzilla.redhat.com/show_bug.cgi?id=1080626
         # Consumers are not unbounded when repository is deleted
         consumer = Consumer.get(self.pulp, self.consumer.id, params={"bindings": True})
-        self.assertTrue(consumer.data["bindings"] is None)
+        self.assertEqual(consumer.data["bindings"], [])
 
     def test_05_list_bindings(self):
         #https://bugzilla.redhat.com/show_bug.cgi?id=1080642
