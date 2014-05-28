@@ -91,10 +91,11 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         # first a repo created, synced and then deleted
         self.setUpClass()
 
-    def test_05_delete_orphan_by_invalid_type(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1092460
-        self.pulp.send(Request('DELETE', path_join(Orphans.path, 'invalid_type')))
-        self.assertPulp(code=404)
+    # Closed Wontfix
+    #def test_05_delete_orphan_by_invalid_type(self):
+    #    # https://bugzilla.redhat.com/show_bug.cgi?id=1092460
+    #    self.pulp.send(Request('DELETE', path_join(Orphans.path, 'invalid_type')))
+    #    self.assertPulp(code=404)
 
     def test_05_delete_individual_orphan(self):
         rpm_orphans = RpmOrphan.list(self.pulp)
@@ -103,10 +104,11 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    def test_05_delete_individual_non_exitent_orphan(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1092460
-        self.pulp.send(Request('DELETE', path_join(RpmOrphan.path, 'some_unit_id')))
-        self.assertPulp(code=404)
+    # Closed Wontfix
+    #def test_05_delete_individual_non_exitent_orphan(self):
+    #    # https://bugzilla.redhat.com/show_bug.cgi?id=1092460
+    #    self.pulp.send(Request('DELETE', path_join(RpmOrphan.path, 'some_unit_id')))
+    #    self.assertPulp(code=404)
 
     def test_05_delete_orphan_by_type_and_id(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1092467
