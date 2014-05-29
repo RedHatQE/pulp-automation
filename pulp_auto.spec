@@ -10,7 +10,7 @@ Source0:	%{name}-%{version}.tar.gz
 BuildArch:  	noarch
 
 BuildRequires:	python-devel
-Requires:	python-nose, python-gevent, python-qpid, PyYAML, python-stitches
+Requires:	python-nose, python-gevent, python-qpid, PyYAML, python-stitches, m2crypto
 
 %description
 %{summary}
