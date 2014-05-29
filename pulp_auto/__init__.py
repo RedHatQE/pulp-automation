@@ -2,6 +2,7 @@
 from gevent import monkey; monkey.patch_all(aggressive=False, thread=True)
 
 path = '/pulp/api/v2/'
+static_path = '/pulp/static/'
 
 
 def normalize_url(url):
