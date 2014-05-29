@@ -1,7 +1,8 @@
 import requests, json, contextlib, gevent, logging
 from requests.adapters import HTTPAdapter
-from . import (normalize_url, path_join, path as pulp_path)
+from . import (normalize_url, path_join, path as pulp_path, static_path as pulp_static_path)
 from handler import logged
+from M2Crypto import (RSA, BIO)
 log = logging.getLogger(__name__)
 
 
@@ -38,6 +39,7 @@ class Pulp(object):
         self.last_request = None
         self._asserting = asserting
         self._async = False
+        self._pubkey = None
 
         try:
             from gevent.coros import BoundedSemaphore
@@ -106,8 +108,21 @@ class Pulp(object):
         finally:
             self._async = False
 
+    @property
+    def pubkey(self):
+        '''fetch pulp's public key'''
+        if self._pubkey:
+            return self._pubkey
+        with self.asserting(True):
+            response = self.send(StaticRequest('GET', 'rsa_pub.key'))
+        assert response.content, "got empty content: %s" % format_response(response)
+        self._pubkey = RSA.load_pub_key_bio(BIO.MemoryBuffer(response.content))
+        return self._pubkey
+
+
 
 class Request(object):
+    pulp_path = pulp_path
     '''a callable request compatible with Pulp.send''' 
     def __init__(self, method, path, data={}, headers={'Content-Type': 'application/json'}, params={}):
         self.method = method
@@ -119,7 +134,7 @@ class Request(object):
     def __call__(self, url, auth):
         return requests.Request(
             self.method,
-            normalize_url(path_join(url, pulp_path, self.path)),
+            normalize_url(path_join(url, self.pulp_path, self.path)),
             params=self.params,
             auth=auth,
             data=self.data,
@@ -128,6 +143,21 @@ class Request(object):
 
     def __repr__(self):
         return self.__class__.__name__ + "(%r, %r, data=%r, headers=%r)" % (self.method, self.path, self.data, self.headers)
+
+
+class StaticRequest(Request):
+    '''a request into different pulp path'''
+    pulp_path = pulp_static_path
+
+    def __call__(self, url, auth):
+        return requests.Request(
+            self.method,
+            normalize_url(path_join(url, self.pulp_path, self.path)).strip('/'),
+            params=self.params,
+            auth=auth,
+            data=self.data,
+            headers=self.headers
+        ).prepare()
 
 
 class ResponseLike(object):
