@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import OrderedDict
 
 def key_parts(key):
     '''
@@ -80,6 +81,17 @@ def dump_ns(ns, leaf_processor=lambda x: x):
         return [dump_ns(item) for item in ns]
     if isinstance(ns, dict) or isinstance(ns, Namespace):
         return {k: dump_ns(v) for k, v in ns.items()}
+
+    return leaf_processor(ns)
+
+def dump_ns_sorted(ns, leaf_processor=lambda x: x):
+    '''a recursive namespace-to-dict dumper with in-place sorting'''
+    if isinstance(ns, tuple):
+        return tuple([dump_ns_sorted(item) for item in sorted(ns)])
+    if isinstance(ns, list):
+        return [dump_ns_sorted(item) for item in sorted(ns)]
+    if isinstance(ns, dict) or isinstance(ns, Namespace):
+        return OrderedDict([(k, dump_ns_sorted(v)) for k, v in sorted(ns.items(), key=lambda pair: pair[0])])
 
     return leaf_processor(ns)
 
