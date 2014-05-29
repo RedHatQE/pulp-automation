@@ -1,8 +1,8 @@
 import contextlib, json, namespace
 from qpid.messaging import Connection
 from qpid.messaging import Message
+from base64 import b64encode, b64decode
 from qpid.messaging.exceptions import (Timeout, Empty)
-
 
 class QpidHandle(object):
     '''qpid handle'''
@@ -64,11 +64,14 @@ class QpidHandle(object):
     def message(self):
         '''shortcut for self.fetch() with some check-sums handling'''
         content = self.fetch()
-        # TODO
         if self.auth:
-            pass
-        else:
-            pass
+            assert 'signature' in content, 'no signature in message: %s' % content
+            try:
+                signature = b64decode(content.signature)
+            except TypeError as e:
+                # rethrow as assertion failure
+                raise AssertionError(e)
+            self.auth.verify(content.message, signature)
         # The second load of message is required because
         # if the message was transported as a dict
         # the checksum/signature might change upon the message
@@ -78,15 +81,17 @@ class QpidHandle(object):
     @message.setter
     def message(self, other):
         '''shortcut for self.send()'''
-        # TODO
+        # need to keep ordering so that everyone computes correct sha256 digest;
+        # sorting based on key names
+        message = json.dumps(namespace.dump_ns_sorted(other))
         if self.auth:
-            pass
+            signature = b64encode(self.auth.sign(message))
         else:
-            pass
+            signature = None
 
         content = {
-            'message': json.dumps(other),
-            'signature': None
+            'message': message,
+            'signature': signature
         }
         self.send(content)
 
