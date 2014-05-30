@@ -3,11 +3,12 @@ from qpid.messaging import Connection
 from qpid.messaging import Message
 from base64 import b64encode, b64decode
 from qpid.messaging.exceptions import (Timeout, Empty)
+from authenticator import (Authenticator, AuthenticationError)
 
 class QpidHandle(object):
     '''qpid handle'''
 
-    def __init__(self, url, receiver_name, sender_name='pulp.task', asserting=False, auth=None, **options):
+    def __init__(self, url, receiver_name, sender_name='pulp.task', asserting=False, auth=Authenticator(), **options):
         '''establishes a connection to given url; initializes session, sender and receiver'''
         self.url = url
         self.receiver_name = receiver_name
@@ -64,14 +65,13 @@ class QpidHandle(object):
     def message(self):
         '''shortcut for self.fetch() with some check-sums handling'''
         content = self.fetch()
-        if self.auth:
-            assert 'signature' in content, 'no signature in message: %s' % content
-            try:
-                signature = b64decode(content.signature)
-            except TypeError as e:
-                # rethrow as assertion failure
-                raise AssertionError(e)
-            self.auth.verify(content.message, signature)
+        assert 'signature' in content, 'no signature in message: %s' % content
+        try:
+            signature = b64decode(content.signature)
+        except TypeError as e:
+            # rethrow as assertion failure
+            raise AssertionError(e)
+        self.auth.verify(content.message, signature)
         # The second load of message is required because
         # if the message was transported as a dict
         # the checksum/signature might change upon the message
@@ -83,15 +83,9 @@ class QpidHandle(object):
         '''shortcut for self.send()'''
         # need to keep ordering so that everyone computes correct sha256 digest;
         # sorting based on key names
-        message = json.dumps(namespace.dump_ns_sorted(other))
-        if self.auth:
-            signature = b64encode(self.auth.sign(message))
-        else:
-            signature = None
-
         content = {
-            'message': message,
-            'signature': signature
+            'message':  json.dumps(namespace.dump_ns_sorted(other)),
+            'signature': b64encode(self.auth.sign(other) or '') # empty string in case no signature
         }
         self.send(content)
 
