@@ -31,7 +31,7 @@ class Authenticator(object):
         '''
         sha256_hash = sha256()
         sha256_hash.update(data)
-        return sha256_hash.digest()
+        return sha256_hash.hexdigest()
 
     @handler.logged(log.debug)
     def sign(self, data):
