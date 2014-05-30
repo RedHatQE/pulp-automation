@@ -1,6 +1,7 @@
 from hashlib import sha256
 from M2Crypto import RSA, BIO
 from pulp import StaticRequest
+import handler
 import logging
 log = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ class Authenticator(object):
         sha256_hash.update(data)
         return sha256_hash.digest()
 
+    @handler.logged(log.debug)
     def sign(self, data):
         '''
         sign the data with self.signing_key
@@ -41,6 +43,7 @@ class Authenticator(object):
             return None
         return self.signing_key.sign(Authenticator.digest(data))
 
+    @handler.logged(log.debug)
     def verify(self, data, signature):
         '''
         verify data against signature using self.verifying_key
@@ -49,10 +52,12 @@ class Authenticator(object):
         if not self.verifying_key:
             return
         try:
-            result = self.verifying_key.verify(Authenticator.digest(data), signature)
+            result = self.verifying_key.verify(self.digest(data), signature)
         except RSA.RSAError as e:
             # rethrow as assertion-authentication failure
-            raise AuthenticationError(e)
+            import traceback
+            t = traceback.format_exc(e)
+            raise AuthenticationError(t)
         if not result:
             raise AuthenticationError("Verification failed for: %s, %s, %s" % (self, data, signature))
 
