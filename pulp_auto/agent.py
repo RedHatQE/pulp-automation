@@ -178,8 +178,13 @@ class Agent(object):
                 except (Timeout, Empty) as e:
                     log.debug('no messages %r' % self)
 
+        def exception_handler(greenlet):
+            gevent.get_hub().parent.throw(greenlet.exception)
+
         stop = Event()
         agent = gevent.spawn(job, stop)
+        agent.link_exception(exception_handler)
+
         try:
             yield self
         finally:
