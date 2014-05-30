@@ -9,7 +9,6 @@ class Distributor(object):
 
     @staticmethod
     def bind(unit, PROFILE):
-        assert Distributor.list(unit, PROFILE) == [], 'unit %s already bound' % unit
         PROFILE.details.yum_distributor.append(unit)
 
     @staticmethod
