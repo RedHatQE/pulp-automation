@@ -13,6 +13,7 @@ class DistributorBindings(ConsumerAgentPulpTest):
             response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
             Task.wait_for_report(self.pulp, response)
 
+    @agent_test(catching=True)
     def test_02_update_distributor_config_via_repo_call(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1078305
         # in this custom update you can update repo's info + importer/distributor
