@@ -18,7 +18,7 @@ class Consumer(item.Item):
 
     @classmethod
     @handler.logged(log.debug)
-    def register(cls, pulp, id, display_name=None, description=None, notes=None):
+    def register(cls, pulp, id, display_name=None, description=None, notes=None, rsa_pub=None):
         '''register new consumer
         return a Consumer instance made out of pulp response
         '''
@@ -31,7 +31,8 @@ class Consumer(item.Item):
                     'id': id,
                     'display_name': display_name,
                     'description': description,
-                    'notes': notes
+                    'notes': notes,
+                    'rsa_pub': rsa_pub
                 }
             ).create(pulp)
         return cls.from_response(response)
