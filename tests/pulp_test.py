@@ -10,6 +10,8 @@ from pulp_auto.agent import Agent
 from pulp_auto.qpid_handle import QpidHandle
 import pulp_auto.handler
 from pulp_auto.namespace import (locate_ns_item,)
+from pulp_auto.authenticator import Authenticator
+from M2Crypto import (RSA, BIO)
 
 
 def requires(*things):
@@ -97,12 +99,16 @@ class ConsumerAgentPulpTest(PulpTest):
         cls.PROFILE = PROFILE
         from . import ROLES as inventory_roles
         cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **[repo for repo in inventory_roles.repos if repo.type == 'rpm'][0])
-        cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer')
+        cls.rsa = RSA.load_key('./tests/data/fake-consumer.pem')
+        bio_fd = BIO.MemoryBuffer()
+        cls.rsa.save_pub_key_bio(bio_fd)
+        cls.rsa_pub_pem = bio_fd.getvalue()
+        cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer', rsa_pub=cls.rsa_pub_pem)
         #cls.binding_data = {'repo_id': cls.repo.id, 'distributor_id': cls.distributor.id}
         cls.log.info('instantiating agent')
         cls.agent = Agent(pulp_auto.handler, PROFILE=pulp_auto.handler.profile.PROFILE)
         cls.log.info('instantiating qpid handle')
-        cls.qpid_handle = QpidHandle(ROLES.qpid.url, cls.consumer.id)
+        cls.qpid_handle = QpidHandle(ROLES.qpid.url, cls.consumer.id, auth=Authenticator(signing_key=cls.rsa, verifying_key=cls.pulp.pubkey))
 
     @classmethod
     def tearDownClass(cls):
