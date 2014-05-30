@@ -83,9 +83,10 @@ class QpidHandle(object):
         '''shortcut for self.send()'''
         # need to keep ordering so that everyone computes correct sha256 digest;
         # sorting based on key names
+        message = json.dumps(namespace.dump_ns_sorted(other))
         content = {
-            'message':  json.dumps(namespace.dump_ns_sorted(other)),
-            'signature': b64encode(self.auth.sign(other) or '') # empty string in case no signature
+            'message': message,
+            'signature': b64encode(self.auth.sign(message) or '') # empty string in case no signature
         }
         self.send(content)
 
