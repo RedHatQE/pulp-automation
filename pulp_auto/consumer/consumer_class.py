@@ -101,6 +101,32 @@ class Consumer(item.Item):
             )
         )
 
+
+    def update_unit(
+        self,
+        pulp,
+        unit_key,
+        type_id,
+        options = {
+            "apply": True,
+            "reboot": False,
+            "importkeys": False
+        }
+    ):
+        '''update single unit'''
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options" : options
+        }
+        return pulp.send(
+            self.request(
+                'POST',
+                path='/actions/content/update/',
+                data=data
+            )
+        )
+
+
     def uninstall_unit(
         self,
         pulp,
