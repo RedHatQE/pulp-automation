@@ -21,6 +21,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_02_bind_distributor(self):
         with self.pulp.asserting(True):
             response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
+            self.assertPulp(code=202)
             Task.wait_for_report(self.pulp, response)
 
 
@@ -28,6 +29,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     def test_02_bind_non_existant_distributor(self):
         self.consumer.bind_distributor(self.pulp, self.repo.id, 'some_dist')
         self.assertPulp(code=404)
+
 
     def test_03_get_repo_bindings(self):
         with self.pulp.asserting(True):
@@ -76,7 +78,9 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_06_unbind_distributor(self):
         with self.pulp.asserting(True):
-            Task.wait_for_report(self.pulp, self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id))
+            response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id)
+            self.assertPulp(code=202)
+            Task.wait_for_report(self.pulp, response)
 
     @agent_test(catching=True)
     def test_06_unbind_non_existant_distributor(self):

@@ -31,7 +31,7 @@ class TestConsumer1080462(ConsumerAgentPulpTest):
 
     def test_04_check_binding_present(self):
         consumer = Consumer.get(self.pulp, self.consumer.id, params={"bindings": True})
-        self.assertTrue(consumer.data["bindings"] is not None)
+        self.assertTrue(consumer.data["bindings"] != [])
 
 
 
