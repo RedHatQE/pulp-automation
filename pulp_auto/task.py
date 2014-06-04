@@ -3,17 +3,28 @@ from item import (Item, GroupItem)
 from pulp_auto.pulp import Request
 from pulp_auto import strip_url
 
-class TaskFailure(RuntimeError):
-    def __init__(self, *args, **kvs):
+class TaskError(RuntimeError):
+   '''super class for task failures'''
+   def __init__(self, *args, **kvs):
+        '''save the task for reference'''
         self.task = kvs.pop('task', None)
-        super(TaskFailure, self).__init__(*args, **kvs)
+        super(TaskError, self).__init__(*args, **kvs)
 
+   def __str__(self):
+        return super(TaskError, self).__str__() + ": %s" % self.task
+
+
+class TaskFailure(TaskError):
+    '''task failed'''
+
+class TaskTimeoutError(TaskError):
+    '''task timed out'''
 
 class AbstractTask(object):
     state = None
     active_states = []
     end_states = []
-    error_state = []
+    error_states = []
 
     def update(self, pulp):
         '''an abstract update does nothing'''
@@ -36,8 +47,8 @@ class AbstractTask(object):
             if self.state in self.end_states:
                 break
         else:
-            raise TaskFailure('Timeout') 
-        if self.state in 'error':
+            raise TaskTimeoutError('Waiting exceeded %r second(s)' % timeout, task=self)
+        if self.state in self.error_states:
             raise TaskFailure('Task failed: %r' % self.data['error'], task=self)
 
 class TaskDetails(hasdata.HasData):
@@ -56,6 +67,7 @@ class TaskDetails(hasdata.HasData):
     required_data_keys = ['task_id', 'state']
     active_states = ['running', 'waiting']
     end_states = ['finished', 'error', 'canceled', 'cancelled']
+    error_states = ['error']
 
     @property
     def state(self):
@@ -75,18 +87,18 @@ class Task(TaskDetails, AbstractTask, Item):
     path = '/tasks/'
 
     @classmethod
-    def wait_for_response(cls, pulp, response):
+    def wait_for_response(cls, pulp, response, timeout=60):
         '''a shortcut for wait & from_response'''
         ret = cls.from_response(response)
         if isinstance(ret, list):
             # more than one task pending
             for task in ret:
-                task.wait(pulp)
+                task.wait(pulp, timeout=timeout)
         else:
-            ret.wait(pulp)
+            ret.wait(pulp, timeout=timeout)
 
     @classmethod
-    def wait_for_report(cls, pulp, response):
+    def wait_for_report(cls, pulp, response, timeout=60):
         # now every asyncronous call returns a call report object
         # call report has 'spawned_tasks' that contains list of tasks
         # meanwhile every tasks can have its own spawned tasks
@@ -94,10 +106,10 @@ class Task(TaskDetails, AbstractTask, Item):
         if isinstance(ret, list):
             for task in ret:
                 task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
-                Task.wait_for_response(pulp, task_resp)
+                Task.wait_for_response(pulp, task_resp, timeout=timeout)
                 task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
                 if 'spawned_tasks' in Task.from_response(task_resp).data:
-                    Task.wait_for_report(pulp, task_resp)
+                    Task.wait_for_report(pulp, task_resp, timeout=timeout)
 
 
 TASK_DATA_EXAMPLE = {
