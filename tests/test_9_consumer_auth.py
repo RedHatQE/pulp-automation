@@ -4,7 +4,7 @@ from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE
 from pulp_auto.repo import create_yum_repo
 from pulp_auto.consumer import (Consumer, Binding)
-from pulp_auto.task import Task
+from pulp_auto.task import (Task, TaskFailure, TaskTimeoutError)
 from pulp_auto.agent import Agent
 from pulp_auto.qpid_handle import QpidHandle
 from pulp_auto.authenticator import Authenticator
@@ -59,8 +59,16 @@ class ConsumerAuthTest(PulpTest):
         with self.pulp.asserting(True) :
             report = self.consumer.bind_distributor(self.pulp,self.repo.id, self.distributor.id)
             self.assertPulp(code=202)
-            Task.wait_for_report(self.pulp, report)
+            Task.wait_for_report(self.pulp, report, timeout=5)
 
     def test_01_valid_consumer_auth(self):
         with self.agent.catching(True), self.agent.running(self.qpid_handle, frequency=10):
             self.bindRepo()
+
+    # bz: 1104788
+    @unittest.expectedFailure
+    def test_02_invalid_consumer_auth(self):
+        invalid_qpid_handle = QpidHandle(self.ROLES.qpid.url, self.consumer.id, auth=Authenticator(signing_key=self.rsa_secondary, verifying_key=self.pulp.pubkey))
+        with self.agent.catching(True), self.agent.running(invalid_qpid_handle, frequency=10):
+            with self.assertRaises(TaskFailure):
+                self.bindRepo()
