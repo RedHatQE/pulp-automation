@@ -24,7 +24,8 @@ app = aaargh.App(description='Fake pulp consumer')
 @app.cmd_arg('-f', '--polling-frequency', help='polling frequency', type=float, default=3.0)
 @app.cmd_arg('-k', '--key-file', help='path to a key fille', default="")
 @app.cmd_arg('-p', '--pulp-url', help='pulp url to use', default="")
-def run(url, consumer_name, reporting, polling_frequency, key_file, pulp_url):
+@app.cmd_arg('-g', '--register', help='perform consumer registration', default=False, action='store_true')
+def run(url, consumer_name, reporting, polling_frequency, key_file, pulp_url, register):
     from gevent import monkey
     monkey.patch_all(select=False, thread=False)
 
@@ -43,11 +44,13 @@ def run(url, consumer_name, reporting, polling_frequency, key_file, pulp_url):
         pem = bio_fd.getvalue()
 
     pulp = Pulp(pulp_url)
-    consumer = Consumer.register(pulp, consumer_name, rsa_pub=pem)
-    log.info("registered: " + str(consumer))
-    a = Agent(pulp_auto.handler, PROFILE=PROFILE)
+    consumer = None
+    if register:
+        consumer = Consumer.register(pulp, consumer_name, rsa_pub=pem)
+        log.info("registered: " + str(consumer))
     qh = QpidHandle(url, consumer_name, authenticator=Authenticator(signing_key=rsa, verifying_key=pulp.pubkey))
 
+    a = Agent(pulp_auto.handler, PROFILE=PROFILE)
     ###
     try:
         with a.catching(reporting), a.running(qh):
@@ -55,7 +58,8 @@ def run(url, consumer_name, reporting, polling_frequency, key_file, pulp_url):
                 try:
                     time.sleep(1.0/polling_frequency)
                 except KeyboardInterrupt:
-                    log.info("unregistered: " + str(consumer.delete(pulp)))
+                    if consumer:
+                        log.info("unregistered: " + str(consumer.delete(pulp)))
                     break
     except Exception as e:
         pass
