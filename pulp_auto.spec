@@ -39,6 +39,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644, root, root) %{_datadir}/%{name}/tests/inventory.yml
 %attr(0644, root, root) %{_datadir}/%{name}/tests/.coveragerc
 %attr(0644, root, root) %{_datadir}/%{name}/tests/data/fake-consumer.pem
+%attr(0644, root, root) %{_datadir}/%{name}/tests/data/fake-consumer-secondary.pem
 %exclude %{_datadir}/%name/tests/*.py?
 
 %changelog
