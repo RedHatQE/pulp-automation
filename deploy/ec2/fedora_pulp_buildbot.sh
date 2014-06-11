@@ -61,6 +61,8 @@ yum -y install qpid-cpp-server
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
 
+yum groupinstall -y 'development tools'
+yum install -y python-devel git tito createrepo ruby wget checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave libxml2-devel libxslt-devel mongodb python-nose
 
 # configure pulp
 sed -i s,^[#\ ]*url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
@@ -135,9 +137,6 @@ systemctl start pulp_resource_manager
 ### BUILDBOT SECTION
 ### jsut a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
-
-yum groupinstall -y 'development tools'
-yum install -y python-devel git tito createrepo ruby wget checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave libxml2-devel libxslt-devel mongodb python-nose
 
 # automation dependencies
 easy_install pip
