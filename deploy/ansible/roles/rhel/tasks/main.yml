@@ -1,0 +1,6 @@
+- name: install epel repo
+  shell: rpm -Uvh 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
+    creates=/etc/yum.repos.d/epel.repo
+
+- name: install custom qpid repo
+  copy: src=qpid-cpp.repo dest=/etc/yum.repos.d/qpid-cpp.repo mode=0644

@@ -1,0 +1,25 @@
+
+# Place this file in your /etc/yum.repos.d/ directory
+[qpid-cpp-x86_64]
+name=Qpid packages for epel-6 $basearch
+baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/$basearch
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[qpid-cpp-noarch]
+name=Qpid packages for epel-6 noarch
+baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/noarch
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+
+
+
+[qpid-cpp-source]
+name=Qpid packages for epel-6 - Source
+baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/SRPMS
+enabled=0
+skip_if_unavailable=1
+gpgcheck=0

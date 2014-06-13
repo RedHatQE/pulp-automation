@@ -4,6 +4,11 @@
   roles:
   - { role: cloud}
 
+- name: RHEL nodes setup
+  hosts: RHEL*
+  roles:
+  - { role: rhel }
+
 - name: pulp deployment
   hosts: pulp
   roles:
