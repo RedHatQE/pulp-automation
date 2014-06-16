@@ -7,8 +7,8 @@
 - name: install pulp admin tools
   yum: name="@pulp-admin" state=latest
 
-- name: enable https port
-  firewalld: service=https state=enabled permanent=true
+#- name: enable https port
+#  firewalld: service=https state=enabled permanent=true
 
 - name: generate ssl certs
   shell: openssl req -new -x509 -nodes -out /etc/pki/tls/certs/localhost.crt -keyout /etc/pki/tls/private/localhost.key -subj "/C=US/ST=NC/L=Raleigh/CN=`hostname`"
@@ -19,17 +19,26 @@
 - name: assert proper public key permissions
   file: path=/etc/pki/tls/certs/localhost.crt mode=0444
 
-- name: enable amqp port
-  firewalld: service=amqp state=enabled permanent=true
+#- name: enable amqp port
+#  firewalld: service=amqp state=enabled permanent=true
 
-- name: enable amqps port
-  firewalld: service=amqps state=enabled permanent=true
+#- name: enable amqps port
+#  firewalld: service=amqps state=enabled permanent=true
 
+- name: mk qpid conf directory
+  file: path=/etc/qpid state=directory owner=root group=root mode=0755
+ 
 - name: configure qpidd
   copy: src=qpidd.conf dest=/etc/qpid/qpidd.conf owner=root group=root mode=0644
 
+- name: link qpid conf file
+  file: src=/etc/qpid/qpidd.conf dest=/etc/qpid.conf state=link
+
 - name: stop hddpt
   service: name=httpd state=stopped
+
+- name: install mongodb
+  yum: name=mongodb-server state=latest
 
 - name: restart and enable mongod
   service: name=mongod state=restarted enabled=yes
@@ -37,13 +46,22 @@
   until: result|success
   retries: 5
 
+- name: wait for mongod port
+  action: wait_for
+    port=27017
+    delay=10
+
+- name: install qpid
+  yum: name=qpid-cpp-server state=latest
+
+- name: install qpid tools lib
+  yum: name=python-qpid-qmf 
+
 - name: restart and enable qpidd
   service: name=qpidd state=restarted enabled=yes
 
 - name: init pulp db
-  shell: pulp-manage-db
-  sudo: yes
-  sudo_user: apache
+  shell: sudo -u apache pulp-manage-db
 
 - name: start and enable pulp workers
   service: name=pulp_workers state=started enabled=yes
@@ -56,4 +74,4 @@
 
 - name: start and enable httpd
   service: name=httpd state=started enabled=yes
- 
+
