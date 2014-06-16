@@ -1,4 +1,4 @@
-import pulp_test, json
+import pulp_test, json, unittest
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task
@@ -91,7 +91,7 @@ class SimplePuppetRepoTest(PuppetRepoTest):
         modules and new versions of existing modules will be downloaded. Any
         modules that were once present in the feed but have been removed will
         be removed from the Pulp repository as well.'''
-        response = self.repo.sync(self.pulp)
+        response = self.repo.sync(self.pulp) 
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
 
@@ -129,6 +129,8 @@ class SimplePuppetRepoTest(PuppetRepoTest):
     def test_09_delete_repo(self):
         Task.wait_for_report(self.pulp, self.repo.delete(self.pulp))
 
-    def test_10_delete_orphans(self):
+    @unittest.expectedFailure
+    def test_10_delete_orphans_1109870(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
         PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()

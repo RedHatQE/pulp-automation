@@ -1,4 +1,4 @@
-import pulp_test, json, pprint, pulp_auto
+import pulp_test, json, pprint, pulp_auto, unittest
 from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
 from pulp_auto.pulp import Request
@@ -36,7 +36,8 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         all_orphans = Orphans.info(self.pulp)
         self.assertEqual(len(rpm_orphans), all_orphans['rpm']['count'])
 
-    def test_01_view_orphaned_content_invalid_type(self):
+    @unittest.expectedFailure
+    def test_01_view_orphaned_content_invalid_type_1092450(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1092450
         self.pulp.send(Request('GET', path_join(Orphans.path, 'invalid_type')))
         self.assertPulp(code=404)        
@@ -110,50 +111,61 @@ class SimpleOrphanTest(pulp_test.PulpTest):
     #    self.pulp.send(Request('DELETE', path_join(RpmOrphan.path, 'some_unit_id')))
     #    self.assertPulp(code=404)
 
-    def test_05_delete_orphan_by_type_and_id(self):
+    def test_05_delete_orphan_by_type_and_id_1092467(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1092467
         response = Orphans.delete_by_type_id(self.pulp, data=[{'content_type_id': 'rpm', 'unit_id': 'd0dc2044-1edc-4298-bf10-a472ea943fe1'}]
                                             )
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    def test_05_delete_orphan_rpm(self):
+    @unittest.expectedFailure
+    def test_05_delete_orphan_rpm_1109870(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
         RpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_06_delete_orphan_pkggroup(self):
+    @unittest.expectedFailure
+    def test_06_delete_orphan_pkggroup_1109870(self):
         PackageGroupOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_07_delete_orphan_pkgcategory(self):
+    @unittest.expectedFailure
+    def test_07_delete_orphan_pkgcategory_1109870(self):
         PackageCategoryOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_08_delete_orphan_erratum(self):
+    @unittest.expectedFailure
+    def test_08_delete_orphan_erratum_1109870(self):
         ErratumOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_09_delete_orphan_distribution(self):
+    @unittest.expectedFailure
+    def test_09_delete_orphan_distribution_1109870(self):
         DistributionOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_09_delete_orphan_drpm(self):
+    @unittest.expectedFailure
+    def test_09_delete_orphan_drpm_1109870(self):
         DrpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_09_delete_orphan_srpm(self):
+    @unittest.expectedFailure
+    def test_09_delete_orphan_srpm_1109870(self):
         SrpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_09_delete_orphan_yum_repo_metadata(self):
+    @unittest.expectedFailure
+    def test_09_delete_orphan_yum_repo_metadata_1109870(self):
         YumRepoMetadataFileOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_10_delete_orphan_puppet_module(self):
+    @unittest.expectedFailure
+    def test_10_delete_orphan_puppet_module_1109870(self):
         PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 
-    def test_10_delete_orphan_ISO(self):
+    @unittest.expectedFailure
+    def test_10_delete_orphan_ISO_1109870(self):
         IsoOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 

@@ -1,4 +1,4 @@
-import pulp_test, json, pulp_auto
+import pulp_test, json, pulp_auto, unittest
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo
@@ -82,6 +82,8 @@ class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
         for response in list(self.pulp.last_response):
             Task.wait_for_report(self.pulp, response)
 
+    @unittest.expectedFailure
     def test_07_delete_puppet_orphans(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
         PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()

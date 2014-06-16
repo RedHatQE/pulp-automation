@@ -1,4 +1,4 @@
-import pulp_test, json, pulp_auto
+import pulp_test, json, pulp_auto, unittest
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo, create_yum_repo
@@ -93,7 +93,8 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         # this means that only one module found with that name
         self.assertTrue(len(result) == 1)
 
-    def test_05_unassociate_module_from_invalid_repo(self):
+    @unittest.expectedFailure
+    def test_05_unassociate_module_from_invalid_repo_1092417(self):
         # unassociate unit from a nonexistant repo
         # https://bugzilla.redhat.com/show_bug.cgi?id=1092417
         response = self.invalid_repo.unassociate_units(
@@ -102,7 +103,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         )
         self.assertPulp(code=404)
 
-    def test_05_unassociate_module_from_copied_repo(self):
+    def test_05_unassociate_module_from_copied_repo_1076628(self):
         # unassociate unit from a copied repo
         # https://bugzilla.redhat.com/show_bug.cgi?id=1076628
         response = self.dest_repo1.unassociate_units(
@@ -122,7 +123,7 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
         result = Association.from_response(response)
         self.assertTrue(result == [])
 
-    def test_07_unassociate_module_from_repo_with_feed(self):
+    def test_07_unassociate_module_from_repo_with_feed_1063778(self):
         # repos with feed can delete partial content inside it
         # but after next sync it will be in the initial state
         # https://bugzilla.redhat.com/show_bug.cgi?id=1063778
@@ -174,7 +175,9 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
             response = Repo({'id': repo_id}).delete(self.pulp)
             Task.wait_for_report(self.pulp, response)
 
-    def test_13_delete_puppet_orphans(self):
+    @unittest.expectedFailure
+    def test_13_delete_puppet_orphans_1109870(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
         PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 

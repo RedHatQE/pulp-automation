@@ -1,4 +1,4 @@
-import pulp_test, json
+import pulp_test, json, unittest
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task
@@ -72,7 +72,8 @@ class Bug1078296(RepoCudTest):
         self.repo1.create(self.pulp)
         self.assertPulpOK()
 
-    def test_02_update_importer_config(self):
+    @unittest.expectedFailure
+    def test_02_update_importer_config_1078296(self):
         response = self.repo1.update(self.pulp, data={"importer_config": {"num_units": 6}})
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
@@ -89,7 +90,8 @@ class Bug1078340(RepoCudTest):
         self.repo2.create(self.pulp)
         self.assertPulpOK()
 
-    def test_02_associate_importer(self):
+    @unittest.expectedFailure
+    def test_02_associate_importer_1078340(self):
         # importer_config should be a required key
         self.repo2.associate_importer(self.pulp, data={'importer_type_id': 'yum_importer'})
         self.assertPulp(code=400)
@@ -110,7 +112,7 @@ class CUD(RepoCudTest):
         self.repo3.create(self.pulp)
         self.assertPulp(code=400)
 
-    def test_03_update_repo(self):
+    def test_03_update_repo_1091348(self):
         # in this custom update you can update repo's info + importer/distributor
         # Seems that after fix of https://bugzilla.redhat.com/show_bug.cgi?id=1091348
         # 202 code will be returned  even when repo is not bound to the consumer,

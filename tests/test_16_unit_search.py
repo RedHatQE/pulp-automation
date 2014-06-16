@@ -1,4 +1,4 @@
-import pulp_test, json, pulp_auto
+import pulp_test, json, pulp_auto, unittest
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_puppet_repo, create_yum_repo
@@ -53,7 +53,8 @@ class SimpleUnitSearchTest(UnitSearchTest):
         unit = PackageGroupUnit.search(self.pulp, data={"criteria": {"filters": {'_id': '111111'}, "fields": ["name", "_content_type_id"]}})
         self.assertEqual([], unit)
 
-    def test_05_get_single_unit(self):
+    @unittest.expectedFailure
+    def test_05_get_single_unit_1064934(self):
         #FIXME this will fail, see bz#1064934
         #retrieve unit's id
         unit_result = PuppetModuleUnit.search(self.pulp, data={"criteria": {"filters": {'name': 'jenkins'}, "fields": ["name", "_content_type_id"]}})

@@ -7,7 +7,7 @@ class TestConsumer1080462(ConsumerAgentPulpTest):
 
 
     @agent_test(catching=True)
-    def test_01_bind_distributor(self):
+    def test_01_bind_distributor_1080462(self):
     # https://bugzilla.redhat.com/show_bug.cgi?id=1080462
     # "An unhandled exception is raised when notify_agent set to false in consumer bind to the repo call"
         with self.pulp.asserting(True):

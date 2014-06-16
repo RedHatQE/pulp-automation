@@ -14,7 +14,7 @@ class DistributorBindings(ConsumerAgentPulpTest):
             Task.wait_for_report(self.pulp, response)
 
     @agent_test(catching=True)
-    def test_02_update_distributor_config_via_repo_call(self):
+    def test_02_update_distributor_config_via_repo_call_1078305(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1078305
         # in this custom update you can update repo's info + importer/distributor
         response = self.repo.update(self.pulp, data={
@@ -38,7 +38,7 @@ class DistributorBindings(ConsumerAgentPulpTest):
             response = self.distributor.delete(self.pulp)
             Task.wait_for_report(self.pulp, response)
 
-    def test_04_check_binding_removed(self):
+    def test_04_check_binding_removed_1081030(self):
         #https://bugzilla.redhat.com/show_bug.cgi?id=1081030
         # Consumers are not unbounded from distributor in case of distributor's removal
         consumer = Consumer.get(self.pulp, self.consumer.id, params={"bindings": True})

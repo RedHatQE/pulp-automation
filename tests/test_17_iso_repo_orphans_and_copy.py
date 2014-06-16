@@ -1,4 +1,4 @@
-import pulp_test, json, pulp_auto
+import pulp_test, json, pulp_auto, unittest
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.repo import create_iso_repo
@@ -128,7 +128,9 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
         self.dest_repo1.delete(self.pulp)
         self.dest_repo2.delete(self.pulp)
 
-    def test_12_delete_iso_orphans(self):
+    @unittest.expectedFailure
+    def test_12_delete_iso_orphans_1109870(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
         IsoOrphan.delete_all(self.pulp)
         self.assertPulpOK()
 

@@ -35,7 +35,7 @@ class SimpleUserTest(UserTest):
         user = User.get(self.pulp, self.user.id)
         self.assertEqual(self.user, user)
 
-    def test_03_check_password_not_shown(self):
+    def test_03_check_password_not_shown_1020300(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1020300
         user = User.get(self.pulp, self.user.id)
         self.assertTrue("password" not in user.data)

@@ -41,7 +41,7 @@ class SimpleRepoGroupTest(RepoGroupTest):
         self.repo_group2.create(self.pulp)
         self.assertPulp(code=201)
 
-    def test_04_add_unexistant_repo_in_creation_call(self):
+    def test_04_add_unexistant_repo_in_creation_call_1073997(self):
         #check that you can not add unexistant repo id during repo group creation call
         #https://bugzilla.redhat.com/show_bug.cgi?id=1073997
         self.repo_group3.create(self.pulp)

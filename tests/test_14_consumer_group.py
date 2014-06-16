@@ -20,7 +20,7 @@ class SimpleConsumerGroupTest(ConsumerGroupTest):
         self.consumer_group.create(self.pulp)
         self.assertPulpOK()
 
-    def test_01_create_group_with_invalid_consumer(self):
+    def test_01_create_group_with_invalid_consumer_1074661(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1074661
         self.consumer_group1.create(self.pulp)
         self.assertPulp(code=400)

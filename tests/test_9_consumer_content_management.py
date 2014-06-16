@@ -65,7 +65,10 @@ class TestConsumer(ConsumerAgentPulpTest):
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
 
-
-
-
+    @agent_test(catching=True)
+    def test_05_unbind_distributor(self):
+        with self.pulp.asserting(True):
+            response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id)
+            self.assertPulp(code=202)
+            Task.wait_for_report(self.pulp, response)
 
