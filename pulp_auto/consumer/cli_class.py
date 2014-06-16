@@ -3,11 +3,12 @@ from ConfigParser import ConfigParser
 from command import Command
 from connection import Connection
 import contextlib, re
+import plumbum
 
 
 class ConsumerCommand(Command):
     '''represents an authorized pulp-consumer command to be executed in the plumbum fashion'''
-    consumer_command = '/bin/pulp-consumer' 
+    consumer_command = '/usr/bin/pulp-consumer'
 
     def __init__(self, *args, **kvs):
         super(ConsumerCommand, self).__init__(self.consumer_command, *args, **kvs)
@@ -42,7 +43,16 @@ class Cli(Connection):
         config.set('server', 'port', pulp_port)
         with self.connection.rpyc.builtin.open(config_filename, 'w+') as fp:
             config.write(fp)
-        Command('/bin/systemctl', 'restart', 'goferd.service')(self.connection.pbm)()
+        try:
+            # use systemctl or service
+            self.connection.pbm['systemctl']['--version']
+        except plumbum.CommandNotFound as e:
+            # rhel?
+            command = Command('/sbin/service', 'goferd', 'restart')(self.connection.pbm)
+        else:
+            # fedora?
+            command  = Command('/bin/systemctl', 'restart', 'goferd.service')(self.connection.pbm)
+        command()
 
     def register(self, consumer_id, pulp_auth=['admin', 'admin'], description=None, display_name=None, note=None):
         '''register the consumer to pulp with specified id'''
