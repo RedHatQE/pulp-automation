@@ -3,23 +3,34 @@
   hosts: CLOUD
   roles:
   - { role: cloud}
+  tags: cloud_nodes_setup
 
 - name: RHEL nodes setup
   hosts: RHEL*
   roles:
   - { role: rhel }
+  tags: rhel_nodes_setup
 
 - name: pulp deployment
   hosts: pulp
   roles:
   - { role: pulp }
+  tags: pulp_deployment
 
 - name: pulp consumer deployment
   hosts: consumer
   roles:
   - { role: consumer}
+  tags: pulp_consumer
 
 - name: build master deployment
   hosts: build_master
   roles:
   - { role: build_master}
+  tags: build_master
+
+- name: automation runner deployment
+  hosts: automation_runner
+  roles:
+  - { role: automation_runner }
+  tags: automation_runner
