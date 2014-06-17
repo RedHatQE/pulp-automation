@@ -70,6 +70,8 @@ class Handler(object):
         for unit in units:
             log.debug('asserting: %s' % unit)
             assert 'type_id' in unit, 'Unit %r lacks type_id field' % unit
+            if unit.type_id == None:
+                unit.type_id = 'general_distributor'
             assert unit.type_id in cls.unit_type_map, 'Unkown unit type: %r' % unit
 
     @classmethod

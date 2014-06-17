@@ -6,9 +6,11 @@ log = logging.getLogger(__name__)
 
 class Consumer(Handler):
     '''consumer tasks handler'''
-
+    # temporary workaround because of type_id:None
+    # need to fix when other content_types will be introduced in the automation
     unit_type_map = {
-        'yum_distributor': yum_unit.Distributor
+        'yum_distributor': yum_unit.Distributor,
+        'general_distributor': yum_unit.Distributor
     }
 
     @logged(log.info)
