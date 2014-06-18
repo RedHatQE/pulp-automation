@@ -1,6 +1,7 @@
 # tasks to set up pulp automation runner environment
 - name: install git tools
   yum: name=git-all state=latest
+  sudo: yes
 
 - name: fetch pulp-automation
   git: repo=https://github.com/RedHatQE/pulp-automation.git dest=~/pulp-automation update=yes accept_hostkey=yes
@@ -8,6 +9,7 @@
 - name: install pulp automation
   shell: /usr/bin/python setup.py install
     chdir=~/pulp-automation
+  sudo: yes
 
 - name: generate inventory
   template: src=inventory.yml.j2 dest=~/pulp-automation/inventory.yml
