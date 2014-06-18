@@ -5,6 +5,10 @@
 - name: fetch pulp-automation
   git: repo=https://github.com/RedHatQE/pulp-automation.git dest=~/pulp-automation update=yes accept_hostkey=yes
 
+- name: install pulp automation
+  shell: /usr/bin/python setup.py install
+    chdir=~/pulp-automation
+
 - name: generate inventory
   template: src=inventory.yml.j2 dest=~/pulp-automation/inventory.yml
 
