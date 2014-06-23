@@ -41,7 +41,7 @@ class CliConsumerTest(PulpTest):
 
         # set up consumer cli & link repos
         for consumer in cls.consumers:
-            setattr(consumer, 'cli', Cli.ready_instance(**consumer_config))
+            setattr(consumer, 'cli', Cli.ready_instance(**consumer_configs[consumer.id]))
             setattr(
                 consumer,
                 'repos',
