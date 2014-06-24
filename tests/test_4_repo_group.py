@@ -109,6 +109,3 @@ class SimpleRepoGroupTest(RepoGroupTest):
         response = self.repo.delete(self.pulp)
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
-
-    # TODO https://pulp-dev-guide.readthedocs.org/en/latest/integration/rest-api/repo/groups/distributors.html
-    # when it will be ready
