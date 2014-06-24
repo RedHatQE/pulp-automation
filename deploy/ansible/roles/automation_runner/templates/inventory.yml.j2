@@ -1,0 +1,30 @@
+ROLES:
+  pulp: &PULP
+    auth: [admin, admin]
+    url: 'https://{{ groups.pulp | first }}/'
+    hostname: {{ groups.pulp | first }}
+  qpid:
+    url: {{ groups.pulp | first }}
+  repos:
+  - &ZOO
+    id: zoo
+    type: rpm
+    feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
+    display_name: ZOo rEPO
+    tags: [default, small, demo, rpm]
+{% if 'consumer' in groups %}
+  consumers:
+  {% for consumer in groups.consumer -%}
+  - &{{ hostvars[consumer].inventory_hostname_short }}
+    id: {{ hostvars[consumer].inventory_hostname_short }}
+    hostname: {{ consumer }}
+    ssh_key: {{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}
+    os:
+      name: {{ ansible_distribution }}
+      version: {{ ansible_distribution_version }}
+    repos:
+    - *ZOO
+    pulp: *PULP
+    tags: [default, {{ ansible_distribution }}, {{ ansible_distribution_release }}]
+  {%- endfor %}
+{% endif %}

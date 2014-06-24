@@ -43,10 +43,11 @@ class TestConsumer(ConsumerAgentPulpTest):
         })
         self.assertIn(binding, bindings)
 
-    @unittest.expectedFailure
+
     def test_03_get_nonexistant_repo_bindings_bz1094264(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1094264
-        self.consumer.get_repo_bindings(self.pulp, 'some_repo')
+        with self.assertRaises(AssertionError):
+            self.consumer.get_repo_bindings(self.pulp, 'some_repo')
         self.assertPulp(code=404)
         
     def test_04_get_single_binding(self):

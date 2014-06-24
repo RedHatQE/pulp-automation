@@ -111,6 +111,14 @@ class Task(TaskDetails, AbstractTask, Item):
                 if 'spawned_tasks' in Task.from_response(task_resp).data:
                     Task.wait_for_report(pulp, task_resp, timeout=timeout)
 
+    @classmethod
+    def wait_for_reports(cls, pulp, responses, timeout=90):
+        # a wrapper for multiple task report waiting
+        # will take up to sum(tasks.time)
+        # single-exception breaks
+        for response in responses:
+            cls.wait_for_report(pulp, response, timeout)
+
 
 TASK_DATA_EXAMPLE = {
  "_href": "/pulp/api/v2/tasks/0fe4fcab-a040-11e1-a71c-00508d977dff/",
