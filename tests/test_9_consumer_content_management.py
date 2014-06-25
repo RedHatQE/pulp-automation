@@ -5,6 +5,10 @@ from pulp_test import (ConsumerAgentPulpTest, agent_test)
 
 class TestConsumer(ConsumerAgentPulpTest):
 
+    def test_00_sync_repo(self):
+        response = self.repo.sync(self.pulp)
+        self.assertPulp(code=202)
+        Task.wait_for_report(self.pulp, response)
 
     @agent_test(catching=True)
     def test_01_bind_distributor(self):
