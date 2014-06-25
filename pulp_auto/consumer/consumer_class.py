@@ -1,6 +1,7 @@
 import json, requests, contextlib
 from .. import (namespace, normalize_url, path_join, path_split, strip_url, item, Request, handler)
 import logging
+from pulp_auto.item import ScheduledAction
 log = logging.getLogger(__name__)
 
 class Binding(item.AssociatedItem):
@@ -149,6 +150,49 @@ class Consumer(item.Item):
                 data=data
             )
         )
+
+
+    def schedule_install(
+        self,
+        pulp,
+        schedule,
+        type_id,
+        unit_key,
+        options=None
+    ):
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options": options
+        }
+        return self.create_scheduled_action(pulp, action='/content/install/', schedule=schedule, data=data)
+
+    def schedule_update(
+        self,
+        pulp,
+        schedule,
+        type_id,
+        unit_key,
+        options=None
+    ):
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options": options
+        }
+        return self.create_scheduled_action(pulp, action='/content/update/', schedule=schedule, data=data)
+
+    def schedule_uninstall(
+        self,
+        pulp,
+        schedule,
+        type_id,
+        unit_key,
+        options=None
+    ):
+        data = {
+            "units": [{"unit_key": unit_key, "type_id": type_id}],
+            "options": options
+        }
+        return self.create_scheduled_action(pulp, action='/content/uninstall/', schedule=schedule, data=data)
 
     @property
     def certificate(self):
