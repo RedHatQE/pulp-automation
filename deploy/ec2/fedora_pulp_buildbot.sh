@@ -46,7 +46,16 @@ name=Pulp v2 Testing Builds
 baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
-gpgcheck=0 
+gpgcheck=0
+
+# eu-west-1 pulp-mirror
+[pulp-v2-beta-mirror]
+name=Pulp v2 Beta Builds Mirror
+baseurl=http://ec2-54-74-186-187.eu-west-1.compute.amazonaws.com/pulp/repos/pulp/beta/2.4/fedora/\$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
 PULP_REPO_EOF
 popd
 
