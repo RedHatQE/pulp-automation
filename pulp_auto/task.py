@@ -30,7 +30,7 @@ class AbstractTask(object):
         '''an abstract update does nothing'''
         pass
 
-    def wait(self, pulp, timeout=60, frequency=0.5):
+    def wait(self, pulp, timeout=120, frequency=0.5):
         '''wait while all of these conditions hold:
              - self.state in self.active_states
              - self.state not in self.end_states
@@ -87,7 +87,7 @@ class Task(TaskDetails, AbstractTask, Item):
     path = '/tasks/'
 
     @classmethod
-    def wait_for_response(cls, pulp, response, timeout=60):
+    def wait_for_response(cls, pulp, response, timeout=120):
         '''a shortcut for wait & from_response'''
         ret = cls.from_response(response)
         if isinstance(ret, list):
@@ -98,7 +98,7 @@ class Task(TaskDetails, AbstractTask, Item):
             ret.wait(pulp, timeout=timeout)
 
     @classmethod
-    def wait_for_report(cls, pulp, response, timeout=90):
+    def wait_for_report(cls, pulp, response, timeout=180):
         # now every asyncronous call returns a call report object
         # call report has 'spawned_tasks' that contains list of tasks
         # meanwhile every tasks can have its own spawned tasks
@@ -112,7 +112,7 @@ class Task(TaskDetails, AbstractTask, Item):
                     Task.wait_for_report(pulp, task_resp, timeout=timeout)
 
     @classmethod
-    def wait_for_reports(cls, pulp, responses, timeout=90):
+    def wait_for_reports(cls, pulp, responses, timeout=180):
         # a wrapper for multiple task report waiting
         # will take up to sum(tasks.time)
         # single-exception breaks
