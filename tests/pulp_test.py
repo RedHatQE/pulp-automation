@@ -5,6 +5,7 @@ from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE
 from pulp_auto.consumer import (Consumer, Binding)
 from pulp_auto.repo import create_yum_repo
+from pulp_auto.units import Orphans
 from pulp_auto.task import Task
 from pulp_auto.agent import Agent
 from pulp_auto.qpid_handle import QpidHandle
@@ -118,6 +119,7 @@ class ConsumerAgentPulpTest(PulpTest):
             cls.agent.running(cls.qpid_handle, frequency=10) \
         :
             Task.wait_for_report(cls.pulp, cls.repo.delete(cls.pulp))
+            Task.wait_for_report(cls.pulp, Orphans.delete(cls.pulp))
             cls.consumer.delete(cls.pulp)
         super(ConsumerAgentPulpTest, cls).tearDownClass()
 
