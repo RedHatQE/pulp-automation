@@ -98,7 +98,7 @@ class Task(TaskDetails, AbstractTask, Item):
             ret.wait(pulp, timeout=timeout)
 
     @classmethod
-    def wait_for_report(cls, pulp, response, timeout=180):
+    def wait_for_report(cls, pulp, response, timeout=300):
         # now every asyncronous call returns a call report object
         # call report has 'spawned_tasks' that contains list of tasks
         # meanwhile every tasks can have its own spawned tasks
@@ -112,7 +112,7 @@ class Task(TaskDetails, AbstractTask, Item):
                     Task.wait_for_report(pulp, task_resp, timeout=timeout)
 
     @classmethod
-    def wait_for_reports(cls, pulp, responses, timeout=180):
+    def wait_for_reports(cls, pulp, responses, timeout=300):
         # a wrapper for multiple task report waiting
         # will take up to sum(tasks.time)
         # single-exception breaks
