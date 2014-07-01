@@ -152,15 +152,5 @@ class TestConsumer(ConsumerAgentPulpTest):
     #def test_17_list_profiles(self):
     
     #def test_18_get_profile(self):
-    
-    ### content
-    
-    #def test_19_install_content(self):
-    
-    #def test_20_update_content(self):
-    
-    #def test_21_unistall_content(self):
-    
-    ### schedules
         
     ### applicability
