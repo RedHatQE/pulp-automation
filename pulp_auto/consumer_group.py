@@ -1,8 +1,8 @@
-import item, json
+import item, json, common_consumer
 from pulp_auto import (Request, )
 from . import (path_join, format_response)
 
-class ConsumerGroup(item.Item):
+class ConsumerGroup(common_consumer.ProtoConsumer):
     path = '/consumer_groups/'
     relevant_data_keys = ['id', 'display_name', 'description', 'consumer_ids', 'notes']
 
