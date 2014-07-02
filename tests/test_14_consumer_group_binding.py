@@ -13,7 +13,7 @@ def setUpModule():
 class ConsumerGroupBindingTest(ConsumerAgentPulpTest):
     @classmethod
     def setUpClass(cls):
-        super(ConsumerGroupTest, cls).setUpClass()
+        super(ConsumerGroupBindingTest, cls).setUpClass()
         cls.consumer_group = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group"})
         cls.consumer_group1 = ConsumerGroup(data={'id': cls.__name__ + "_consumer_group1", "consumer_ids":["some_consumer"]})
 
