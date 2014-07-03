@@ -31,7 +31,7 @@ class ScheduledPublishTest(pulp_test.PulpTest):
 class SimpleScheduledPublishTest(ScheduledPublishTest):
 
     def test_01_check_scheduled_publish_works(self):
-        time.sleep(65)
+        time.sleep(90)
         self.action.reload(self.pulp)
         # total_run_count will be 2 as 'enabled' field is True by default
         # means that the scheduled publish is initially enabled

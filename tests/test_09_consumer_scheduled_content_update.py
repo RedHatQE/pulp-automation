@@ -42,7 +42,7 @@ class SimpleScheduledUpdate(ConsumerScheduledUpdate):
     
     @agent_test(catching=True)
     def test_01_check_scheduled_update_works(self):
-        time.sleep(90)
+        time.sleep(115)
         self.action.reload(self.pulp)
         # total_run_count will be 2 as 'enabled' field is True by default
         # means that the scheduled sync is initially enabled

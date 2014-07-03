@@ -42,7 +42,7 @@ class SimpleScheduledUninstall(ConsumerScheduledUninstall):
     
     @agent_test(catching=True)
     def test_01_check_scheduled_uninstall_works(self):
-        time.sleep(80)
+        time.sleep(115)
         self.action.reload(self.pulp)
         # total_run_count will be 2 as 'enabled' field is True by default
         # means that the scheduled sync is initially enabled

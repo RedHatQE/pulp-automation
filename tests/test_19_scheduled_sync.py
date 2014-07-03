@@ -30,7 +30,7 @@ class ScheduledSyncTest(pulp_test.PulpTest):
 class SimpleScheduledSyncTest(ScheduledSyncTest):
 
     def test_01_check_scheduled_sync_works(self):
-        time.sleep(65)
+        time.sleep(90)
         self.action.reload(self.pulp)
         # total_run_count will be 2 as 'enabled' field is True by default
         # means that the scheduled sync is initially enabled
