@@ -1,5 +1,5 @@
 from pulp_auto.consumer.consumer_class import (Consumer, Binding, Event)
-from pulp_auto.task import Task
+from pulp_auto.task import Task, TaskTimeoutError
 from pulp_test import (ConsumerAgentPulpTest, agent_test)
 from pulp_auto.item import  ScheduledAction
 import time, unittest
@@ -36,17 +36,22 @@ class ConsumerScheduledUpdate(ConsumerAgentPulpTest):
             # create scheduled update
             response=cls.consumer.schedule_update(cls.pulp,  schedule="PT1M", type_id='rpm', unit_key= 'zebra')
             cls.action = ScheduledAction.from_response(response)
+            cls.delta = time.time() + 120
 
 
 class SimpleScheduledUpdate(ConsumerScheduledUpdate):
     
     @agent_test(catching=True)
     def test_01_check_scheduled_update_works(self):
-        time.sleep(115)
-        self.action.reload(self.pulp)
-        # total_run_count will be 2 as 'enabled' field is True by default
-        # means that the scheduled sync is initially enabled
-        self.assertTrue(self.action.data["total_run_count"] == 2)
+        while time.time() <= self.delta:
+            time.sleep(1)
+            self.action.reload(self.pulp)
+            # total_run_count will be 2 as 'enabled' field is True by default
+            # means that the scheduled sync is initially enabled
+            if self.action.data["total_run_count"] == 2:
+               break
+        else:
+            raise TaskTimeoutError('Waiting exceeded 120 second(s)', self.action.data)
 
     def test_02_get_non_existent_scheduled_update_bz1094647(self):
         with self.assertRaises(AssertionError):

@@ -2,7 +2,7 @@ import pulp_test, json, pulp_auto, time
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer
 from pulp_auto.repo import create_yum_repo
-from pulp_auto.task import Task
+from pulp_auto.task import Task, TaskTimeoutError
 from pulp_auto.item import ScheduledAction
 from pulp_auto.units import Orphans
 from . import ROLES
@@ -25,16 +25,21 @@ class ScheduledSyncTest(pulp_test.PulpTest):
         # sync will be done every minute
         response = cls.importer.schedule_sync(cls.pulp, "PT1M")
         cls.action = ScheduledAction.from_response(response)
+        cls.delta = time.time() + 120
 
 
 class SimpleScheduledSyncTest(ScheduledSyncTest):
 
     def test_01_check_scheduled_sync_works(self):
-        time.sleep(90)
-        self.action.reload(self.pulp)
-        # total_run_count will be 2 as 'enabled' field is True by default
-        # means that the scheduled sync is initially enabled
-        self.assertTrue(self.action.data["total_run_count"] == 2)
+        while time.time() <= self.delta:
+            time.sleep(1)
+            self.action.reload(self.pulp)
+            # total_run_count will be 2 as 'enabled' field is True by default
+            # means that the scheduled sync is initially enabled
+            if self.action.data["total_run_count"] == 2:
+               break
+        else:
+            raise TaskTimeoutError('Waiting exceeded 120 second(s)', self.action.data)
 
     def test_02_get_scheduled_sync(self):
         schedule = self.importer.get_scheduled_sync(self.pulp, self.action.id)
