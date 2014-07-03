@@ -1,5 +1,5 @@
 # top-level stuff
-from gevent import monkey; monkey.patch_all(aggressive=True)
+from gevent import monkey; monkey.patch_all(aggressive=False, select=True)
 
 path = '/pulp/api/v2/'
 static_path = '/pulp/static/'
