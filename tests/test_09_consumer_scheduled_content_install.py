@@ -45,14 +45,11 @@ class SimpleScheduledInstall(ConsumerScheduledInstall):
     @agent_test(catching=True)
     def test_01_check_scheduled_install_works(self):
         while time.time() <= self.delta:
-            print time.time()
             time.sleep(1)
             self.action.reload(self.pulp)
-            print self.action.data["total_run_count"]
             # total_run_count will be 2 as 'enabled' field is True by default
             # means that the scheduled sync is initially enabled
             if self.action.data["total_run_count"] == 2:
-               print time.time()
                break
         else:
             raise TaskTimeoutError('Waiting exceeded 120 second(s)', self.action.data)
