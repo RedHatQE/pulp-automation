@@ -137,10 +137,12 @@ class TestConsumer(ConsumerAgentPulpTest):
         
     def test_14_event_history_filter_all(self):
         with self.pulp.asserting(True):
-            events = self.consumer.get_history(self.pulp, {'event_type': 'consumer_registered', 'limit': '2', 'sort': 'descending'})
+            events = self.consumer.get_history(self.pulp, {'event_type': 'consumer_registered', 'limit': '1', 'sort': 'descending'})
         assert [event for event in events if event.data['type'] == "consumer_registered"], "consumer_registered event not found"
         assert [event for event in events if event.data['type'] != "repo_bound"], "repo_bound event found"
-        self.assertEqual(len(events), 2, "limit fail")
+        # important! if this testcase is run for the first time there will be only one event_type history 'consumer_registered'
+        # next runs will just accumulate previous history of the consumer history untill data reaper will clean it up.
+        self.assertEqual(len(events), 1, "limit fail")
         self.assertEqual(events, sorted(events, key = lambda event: event.data['timestamp'], reverse=True))
     
     ### profiles
