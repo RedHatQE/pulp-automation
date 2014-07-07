@@ -1,3 +1,4 @@
+import unittest
 import pulp_test, json
 from pulp_auto import Pulp
 from pulp_auto.role import Role
@@ -99,13 +100,15 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.id])
 
-    def test_08_add_unexistant_user(self):
+    @unittest.expectedFailure
+    def test_08_add_unexistant_user_1116825(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1116825
         # add user to the role
         self.role.add_user(
             self.pulp,
             "Unexistant_user"
         )
-        self.assertPulp(code=404)
+        self.assertPulp(code=400)
 
     def test_09_remove_user(self):
         # remove user from the role

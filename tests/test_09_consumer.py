@@ -26,10 +26,12 @@ class TestConsumer(ConsumerAgentPulpTest):
             Task.wait_for_report(self.pulp, response)
 
 
+    @unittest.expectedFailure
     @agent_test(catching=True)
-    def test_02_bind_non_existant_distributor(self):
+    def test_02_bind_non_existant_distributor_1115528(self):
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1115528
         self.consumer.bind_distributor(self.pulp, self.repo.id, 'some_dist')
-        self.assertPulp(code=404)
+        self.assertPulp(code=400)
 
 
     def test_03_get_repo_bindings(self):
