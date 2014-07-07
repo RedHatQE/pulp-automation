@@ -152,8 +152,7 @@ easy_install pip
 pip install -U moncov
 cat <<MONCOV_CONF > /etc/moncov.yaml
 dbhost: localhost
-dbport: 27017
-events_count: 200000
+dbport: 6379
 blacklist: []
 whitelist: ['.*pulp/.*', '.*pulp_rpm/.*', '.*pulp_puppet/.*', '.*nectar/.*', '.*gofer/.*']
 
