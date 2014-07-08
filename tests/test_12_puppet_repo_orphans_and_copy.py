@@ -178,8 +178,9 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
     @unittest.expectedFailure
     def test_13_delete_puppet_orphans_1109870(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
-        PuppetModuleOrphan.delete_all(self.pulp)
+        response = PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
 
     def test_14_check_deleted_orphans(self):
         # check that all puppet_module orphans were successfully deleted
