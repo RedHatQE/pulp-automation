@@ -66,6 +66,7 @@ yum update -y
 # now need to install manually mongo and qpid as dependencies were removed
 yum -y install mongodb-server
 yum -y install qpid-cpp-server
+yum -y install redis
 
 # FIXME --- postinstall scriptlets failing...
 yum -y groupinstall pulp-server
@@ -117,6 +118,8 @@ log-function=yes
 QPIDD_CONF
 
 # enable services
+systemctl enable redis
+systemctl start redis
 systemctl enable mongod.service
 systemctl start mongod.service || systemctl start mongod.service ||systemctl start mongod.service # sometimes it just takes too long and gets killed the first time
 systemctl enable qpidd.service
@@ -233,8 +236,6 @@ wget -N -O master/master.cfg https://raw.github.com/RedHatQE/pulp-automation/mas
 wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automation/master/buildbot/jenkins_feed.py
 # FIXME disable the jenkins feed
 sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
-
-moncov update -s -t 0.3
 
 buildbot start master
 buildslave start slave
