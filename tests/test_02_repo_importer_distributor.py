@@ -23,7 +23,8 @@ class ImporterDistributorTest(pulp_test.PulpTest):
     def tearDownClass(cls):
         # delete repo
         with cls.pulp.asserting(True):
-            cls.repo.delete(cls.pulp)
+            response = cls.repo.delete(cls.pulp)
+            Task.wait_for_report(cls.pulp, response)
 
 
 class ImporterTest(ImporterDistributorTest):
