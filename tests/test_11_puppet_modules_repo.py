@@ -2,7 +2,7 @@ import pulp_test, json, unittest
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task
-from pulp_auto.units import PuppetModuleOrphan
+from pulp_auto.units import PuppetModuleOrphan, Orphans
 
 
 def setUpModule():
