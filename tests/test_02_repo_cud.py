@@ -126,6 +126,7 @@ class CUD(RepoCudTest):
                                                     }
                                    )
         self.assertPulp(code=202)
+        Task.wait_for_report(self.pulp, response)
 
     def test_04_check_update_was_correct(self):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], "NewName")

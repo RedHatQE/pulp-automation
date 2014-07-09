@@ -103,8 +103,9 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
 
     def test_09_check_orphan_appears(self):
         #delete source repo
-        self.source_repo.delete(self.pulp)
+        response = self.source_repo.delete(self.pulp)
         self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
         #unasosciate same module that was unassocited in dest_repo1
         response = self.dest_repo2.unassociate_units(
             self.pulp,
