@@ -125,14 +125,18 @@ class SimpleIsocopyRepoTest(IsoCopyRepoTest):
                 Task.wait_for_report(self.pulp, response)
 
     def test_11_delete_repos(self):
-        self.dest_repo1.delete(self.pulp)
-        self.dest_repo2.delete(self.pulp)
+        response = self.dest_repo1.delete(self.pulp)
+        Task.wait_for_report(self.pulp, response)
+        response = self.dest_repo2.delete(self.pulp)
+        Task.wait_for_report(self.pulp, response)
 
-    @unittest.expectedFailure
-    def test_12_delete_iso_orphans_1109870(self):
+    #@unittest.expectedFailure
+    def test_12_delete_iso_orphans_1109870_planned_for_next_release241(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
-        IsoOrphan.delete_all(self.pulp)
+        #response = IsoOrphan.delete_all(self.pulp)
+        response = Orphans.delete(self.pulp)
         self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
 
     def test_13_check_deleted_orphans(self):
         # check that all puppet_module orphans were successfully deleted

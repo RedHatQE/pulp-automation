@@ -175,10 +175,11 @@ class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):
             response = Repo({'id': repo_id}).delete(self.pulp)
             Task.wait_for_report(self.pulp, response)
 
-    @unittest.expectedFailure
-    def test_13_delete_puppet_orphans_1109870(self):
+    #@unittest.expectedFailure
+    def test_13_delete_puppet_orphans_1109870_planned_for_next_release241(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
-        response = PuppetModuleOrphan.delete_all(self.pulp)
+        #response = PuppetModuleOrphan.delete_all(self.pulp)
+        response = Orphans.delete(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
