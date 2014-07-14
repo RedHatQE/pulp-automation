@@ -31,6 +31,11 @@ class SimpleConsumerGroupBindingTest(ConsumerGroupBindingTest):
         self.assertIn(self.consumer.id, response.json())
 
     @agent_test(catching=True)
+    def test_03_bind_non_existant_repo_bz1110668(self):
+        response=self.consumer_group.bind_distributor(self.pulp, 'some-repo', self.distributor.id)
+        self.assertPulp(code=400)
+
+    @agent_test(catching=True)
     def test_03_bind_distributor(self):
         with self.pulp.asserting(True):
             response = self.consumer_group.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
