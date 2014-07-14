@@ -34,7 +34,7 @@ class SimpleConsumerGroupContentTest(ConsumerGroupContentTest):
     @agent_test(catching=True)
     def test_01_assert_unit_install(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer_group.install_unit(
                 self.pulp,
@@ -53,7 +53,7 @@ class SimpleConsumerGroupContentTest(ConsumerGroupContentTest):
     @agent_test(catching=True)
     def test_02_assert_unit_update(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer_group.update_unit(
                 self.pulp,
@@ -72,7 +72,7 @@ class SimpleConsumerGroupContentTest(ConsumerGroupContentTest):
     @agent_test(catching=True)
     def test_03_assert_unit_uninstall(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer_group.uninstall_unit(
                 self.pulp,

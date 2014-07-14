@@ -81,7 +81,7 @@ class CliConsumerTest(PulpTest):
 
     def test_04_assert_unit_install(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         rpm = RpmUnit(unit, relevant_data_keys=unit.keys())
         with self.pulp.asserting(True):
@@ -93,7 +93,7 @@ class CliConsumerTest(PulpTest):
 
     def test_05_assert_unit_uninstall(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         rpm = RpmUnit(unit, relevant_data_keys=unit.keys())
 

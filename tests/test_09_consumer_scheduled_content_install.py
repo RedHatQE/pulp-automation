@@ -19,7 +19,7 @@ class ConsumerScheduledInstall(ConsumerAgentPulpTest):
             response = cls.consumer.bind_distributor(cls.pulp, cls.repo.id, cls.distributor.id)
             Task.wait_for_report(cls.pulp, response)
             unit = {
-                'name': 'zebra'
+                'name': 'pike'
             }
             #install package on the consumer
             response = cls.consumer.install_unit(
@@ -35,7 +35,7 @@ class ConsumerScheduledInstall(ConsumerAgentPulpTest):
                 )
             Task.wait_for_report(cls.pulp, response)
             # create scheduled install
-            response=cls.consumer.schedule_install(cls.pulp,  schedule="PT1M", type_id='rpm', unit_key= 'zebra')
+            response=cls.consumer.schedule_install(cls.pulp,  schedule="PT1M", type_id='rpm', unit_key= 'pike')
             cls.action = ScheduledAction.from_response(response)
             cls.delta = time.time() + 120
 

@@ -20,7 +20,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_02_assert_unit_install(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer.install_unit(
                 self.pulp,
@@ -40,7 +40,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_03_assert_unit_update(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer.update_unit(
                 self.pulp,
@@ -59,7 +59,7 @@ class TestConsumer(ConsumerAgentPulpTest):
     @agent_test(catching=True)
     def test_04_assert_unit_uninstall(self):
         unit = {
-            'name': 'zebra'
+            'name': 'pike'
         }
         response = self.consumer.uninstall_unit(
                 self.pulp,
