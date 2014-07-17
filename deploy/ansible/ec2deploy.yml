@@ -3,36 +3,20 @@
   hosts: 127.0.0.1
   connection: local
   tasks:
-    - name: Create security group
-      local_action:
-        module: ec2_group
-        name: mminar-security-group
-        description: Access mminar-security-group
-        region: eu-west-1a
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: 0.0.0.0/0
-
     - name: Launch instances
       local_action:
         module: ec2
-        region: eu-west-1a
-        keypair: mminar-pulp
-        group: mminar-security-group
+        region: eu-west-1
+        keypair: mminar-eu-west-1
+        group: pulp
         instance_type: m3.large
         image: ami-a5ad56d2
         count: 3
         wait: yes
       register: ec2
 
-    - name: Add instances to host group
-      local_action: add_host hostname= groupname=my-security-group
-      with_items: ec2.instances
-
     - name: Tag instances
-      local_action: ec2_tag resource= region=eu-west-1a state=present
+      local_action: ec2_tag resource={{ item.id }} region=eu-west-1 state=present
       with_items: ec2.instances
       args:
         tags:
