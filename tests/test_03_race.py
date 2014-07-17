@@ -4,6 +4,7 @@ from pulp_auto.repo import Repo, create_yum_repo
 from pulp_auto.task import Task
 from pulp_auto import ResponseLike, login, format_response
 from . import ROLES
+from pulp_auto.task import TaskFailure
 
 @pulp_test.requires_any('repos', lambda repo: repo.type == 'rpm')
 class RaceRepoTest(PulpTest):
@@ -33,10 +34,18 @@ class RaceRepoTest(PulpTest):
         with self.pulp.async():
             repo.delete(self.pulp)
             repo.delete(self.pulp)
-        self.assertIn(ResponseLike(status_code=404), self.pulp.last_response)
-        self.assertIn(ResponseLike(status_code=202), self.pulp.last_response)
-        task_responses = filter(lambda response: response == ResponseLike(status_code=202), self.pulp.last_response)
-        not_responses = filter(lambda response: response == ResponseLike(status_code=404), self.pulp.last_response)
-        self.assertEqual(len(task_responses), 1, "There should be just a single task response")
-        for response in task_responses:
-            Task.wait_for_report(self.pulp, response)
+        responses = self.pulp.last_response
+        task_reports = [report for report in responses if ResponseLike(status_code=202) == report]
+        passed, failed = 0, 0
+        for report in task_reports:
+            try:
+                Task.wait_for_report(self.pulp, report)
+                passed += 1
+            except TaskFailure:
+                failed += 1
+        if ResponseLike(status_code=404) in responses:
+            self.assertEqual(passed, 1)
+            self.assertEqual(failed, 0)
+        else:
+            self.assertEqual(passed, 1)
+            self.assertEqual(failed, 1)
