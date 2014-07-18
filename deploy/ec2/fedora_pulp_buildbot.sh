@@ -105,6 +105,12 @@ openssl req -new -x509 -nodes -out certs/localhost.crt -keyout private/localhost
 umask $old_umask
 chmod go+r certs/localhost.crt
 popd
+# adding ca cert to the system trusted certs for pulp-admin and pulp-consumer
+ln -s /etc/pki/pulp/ca.crt `openssl x509 -noout -hash -in /etc/pki/pulp/ca.crt`.0
+pushd /etc/pki/tls/certs
+cp /etc/pki/pulp/ca.crt `openssl x509 -noout -hash -in /etc/pki/pulp/ca.crt`.0
+popd
+
 
 # insecure qpidd is required
 cat <<QPIDD_CONF > /etc/qpid/qpidd.conf
