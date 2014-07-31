@@ -15,6 +15,8 @@ Contents:
 Requirements for running:
 -------------------------
 
+Please make sure that before running setup.py you have `python2.7, python-devel, m2crypto and gcc installed`!
+
     python ./setup.py install
 
 

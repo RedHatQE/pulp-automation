@@ -25,7 +25,7 @@ setup(name='pulp_auto',
       author_email='vetrisko@gmail.com',
       url='https://github.com/RedHatQE/pulp-automation',
       license='GPLv3+',
-      install_requires=['nose', 'requests', 'PyYAML', 'qpid-python', 'gevent', 'stitches', 'M2Crypto'],
+      install_requires=['nose>=1.3.0', 'requests>=1.2.3', 'PyYAML', 'qpid-python>=0.24', 'gevent>=1.0.1', 'stitches', 'M2Crypto'],
       classifiers=[
           'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
           'Programming Language :: Python',
