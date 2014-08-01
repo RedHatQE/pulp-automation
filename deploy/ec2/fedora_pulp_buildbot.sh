@@ -65,11 +65,13 @@ yum update -y
 
 # now need to install manually mongo and qpid as dependencies were removed
 yum -y install mongodb-server
-yum -y install qpid-cpp-server
+# qpid-cpp-server-store package provides durability, a feature that saves broker state if the broker is restarted. This is a required feature for the correct operation of Pulp
+yum -y install qpid-cpp-server qpid-cpp-server-store
 yum -y install redis
 
 # FIXME --- postinstall scriptlets failing...
-yum -y groupinstall pulp-server
+# For Pulp installation that use Qpid, install Pulp server using:
+yum -y groupinstall pulp-server-qpid
 
 yum groupinstall -y 'development tools'
 yum install -y python-devel git tito createrepo ruby wget checkpolicy selinux-policy-devel qpid-tools buildbot-master buildbot-slave libxml2-devel libxslt-devel mongodb python-nose
@@ -91,11 +93,16 @@ grep auth= /etc/qpidd.conf
 yum -y groupinstall pulp-admin
 sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/admin/admin.conf
 grep host= /etc/pulp/admin/admin.conf
+#disable verification
+sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/admin/admin.conf
 
 # configure local consumer
-yum -y groupinstall pulp-consumer
+# For environments that use Qpid, install the Pulp consumer client, agent packages, and Qpid specific consumer dependencies with one command by running:
+yum -y groupinstall pulp-consumer-qpid
 sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
 grep host= /etc/pulp/consumer/consumer.conf
+#disable verification
+sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/consumer/consumer.conf
 
 # generate ssl certs
 pushd /etc/pki/tls
