@@ -1,0 +1,6 @@
+Command to run:
+   ansible-playbook --private-key <your_ec2_key> -i ec2.py <your_yml_file>
+
+* <your_yml_file> example is pulp.yml
+* If you want to have proper username and passwords set you need to set them in files in group_vars directory. Files should be named tag_<key>_<value>.yml where key/value pair is set in EC2 webui in tab "Tags" for machine. Example file is tag_os_fedora.yml.
+* If you want operation to be run on concreate machine, you should set hosts: tag_<key>_<value> and then set this tag for machine in EC2 webui.

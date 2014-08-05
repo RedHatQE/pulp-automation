@@ -12,10 +12,10 @@
   tags: rhel_nodes_setup
 
 - name: pulp deployment
-  hosts: pulp
+  hosts: tag_pulp_pulp24
   roles:
   - { role: pulp }
-  tags: pulp_deployment
+  tags: pulp
 
 - name: pulp consumer deployment
   hosts: consumer
