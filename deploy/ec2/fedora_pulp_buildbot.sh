@@ -130,6 +130,11 @@ log-source=yes
 log-function=yes
 QPIDD_CONF
 
+
+# Setting the number of apache processes to 1 due to https://bugzilla.redhat.com/show_bug.cgi?id=1121102 as a temprary workaround until the bz will be fixed.
+# for more details see the bz itself
+rpm -q --queryformat '%{VERSION}' pulp-server | grep '2\.4\.0' && sed -i s,processes=.,processes=1, /etc/httpd/conf.d/pulp.conf
+
 # enable services
 systemctl enable redis
 systemctl start redis
