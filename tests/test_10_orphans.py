@@ -36,7 +36,6 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         all_orphans = Orphans.info(self.pulp)
         self.assertEqual(len(rpm_orphans), all_orphans['rpm']['count'])
 
-    @unittest.expectedFailure
     def test_01_view_orphaned_content_invalid_type_1092450(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1092450
         self.pulp.send(Request('GET', path_join(Orphans.path, 'invalid_type')))
