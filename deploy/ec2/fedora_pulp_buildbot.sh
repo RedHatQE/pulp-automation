@@ -91,18 +91,18 @@ grep auth= /etc/qpidd.conf
 
 # configure pulp-admin
 yum -y groupinstall pulp-admin
-sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/admin/admin.conf
-grep host= /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/admin/admin.conf
+grep host: /etc/pulp/admin/admin.conf
 #disable verification
-sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /"  /etc/pulp/admin/admin.conf
 
 # configure local consumer
 # For environments that use Qpid, install the Pulp consumer client, agent packages, and Qpid specific consumer dependencies with one command by running:
 yum -y groupinstall pulp-consumer-qpid
-sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
-grep host= /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/consumer/consumer.conf
+grep host: /etc/pulp/consumer/consumer.conf
 #disable verification
-sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /" /etc/pulp/consumer/consumer.conf
 
 # generate ssl certs
 pushd /etc/pki/tls
