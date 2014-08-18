@@ -118,74 +118,54 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_05_delete_orphan_rpm_11098700_planned_for_next_release241(self):
+    def test_05_delete_orphan_rpm_1109870(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
-        #response = RpmOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+        response = RpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_06_delete_orphan_pkggroup_11098700_planned_for_next_release241(self):
-        #response = PackageGroupOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_06_delete_orphan_pkggroup_1109870(self):
+        response = PackageGroupOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_07_delete_orphan_pkgcategory_11098700_planned_for_next_release241(self):
-        #response = PackageCategoryOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_07_delete_orphan_pkgcategory_1109870(self):
+        response = PackageCategoryOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_08_delete_orphan_erratum_11098700_planned_for_next_release241(self):
-        #response = ErratumOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_08_delete_orphan_erratum_1109870(self):
+        response = ErratumOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_09_delete_orphan_distribution_11098700_planned_for_next_release241(self):
-        #response = DistributionOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_09_delete_orphan_distribution_1109870(self):
+        response = DistributionOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_09_delete_orphan_drpm_11098700_planned_for_next_release241(self):
-        #response = DrpmOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_09_delete_orphan_drpm_1109870(self):
+        response = DrpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_09_delete_orphan_srpm_11098700_planned_for_next_release241(self):
-        #response = SrpmOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_09_delete_orphan_srpm_1109870(self):
+        response = SrpmOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_09_delete_orphan_yum_repo_metadata_11098700_planned_for_next_release241(self):
-        #response = YumRepoMetadataFileOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_09_delete_orphan_yum_repo_metadata_1109870(self):
+        response = YumRepoMetadataFileOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_10_delete_orphan_puppet_module_11098700_planned_for_next_release241(self):
-        #response = PuppetModuleOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_10_delete_orphan_puppet_module_1109870(self):
+        response = PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_10_delete_orphan_ISO_11098700_planned_for_next_release241(self):
-        #response = IsoOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+    def test_10_delete_orphan_ISO_1109870(self):
+        response = IsoOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 

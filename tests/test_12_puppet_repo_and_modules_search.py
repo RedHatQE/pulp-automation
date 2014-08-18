@@ -82,10 +82,8 @@ class SimplePuppetSearchRepoTest(PuppetSearchRepoTest):
         for response in list(self.pulp.last_response):
             Task.wait_for_report(self.pulp, response)
 
-    #@unittest.expectedFailure
-    def test_07_delete_puppet_orphans_1109870_planned_for_next_release241(self):
+    def test_07_delete_puppet_orphans_1109870(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1109870
-        #response = PuppetModuleOrphan.delete_all(self.pulp)
-        response = Orphans.delete(self.pulp)
+        response = PuppetModuleOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
