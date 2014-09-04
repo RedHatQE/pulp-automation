@@ -94,7 +94,7 @@ yum -y groupinstall pulp-admin
 sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/admin/admin.conf
 grep host: /etc/pulp/admin/admin.conf
 #disable verification
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /"  /etc/pulp/admin/admin.conf
+#sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /"  /etc/pulp/admin/admin.conf
 
 # configure local consumer
 # For environments that use Qpid, install the Pulp consumer client, agent packages, and Qpid specific consumer dependencies with one command by running:
@@ -102,7 +102,7 @@ yum -y groupinstall pulp-consumer-qpid
 sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/consumer/consumer.conf
 grep host: /etc/pulp/consumer/consumer.conf
 #disable verification
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /" /etc/pulp/consumer/consumer.conf
+#sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /" /etc/pulp/consumer/consumer.conf
 
 #enable ssl
 touch /etc/pki/CA/index.txt
@@ -121,8 +121,8 @@ openssl ca -batch -cert certs/myca.crt -keyfile private/myca.key -out certs/apac
 cp certs/myca.crt /etc/pki/tls/certs/
 sed -i s,^[#\ ]*SSLCertificateFile.*,SSLCertificateFile\ /etc/pki/CA/certs/apache.crt, /etc/httpd/conf.d/ssl.conf
 sed -i s,^[#\ ]*SSLCertificateKeyFile.*,SSLCertificateKeyFile\ /etc/pki/CA/private/apache.key, /etc/httpd/conf.d/ssl.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
 popd
 
 
