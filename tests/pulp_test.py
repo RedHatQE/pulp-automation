@@ -35,14 +35,14 @@ def requires_any(thing, condition=lambda item: True):
     return wrapped()
 
 
-@requires('pulp.url', 'pulp.auth')
+@requires('pulp.url', 'pulp.auth', 'pulp.verify_api_ssl')
 class PulpTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if getattr(cls, '__unittest_skip__', False):
             # FIXME: suggest a unittest patch dealing setUpClass being called even though __unittest_skip__ is set
             raise unittest.SkipTest(getattr(cls, '__unittest_skip_why__', ''))
-        cls.pulp = Pulp(ROLES.pulp.url, tuple(ROLES.pulp.auth))
+        cls.pulp = Pulp(ROLES.pulp.url, tuple(ROLES.pulp.auth), ROLES.pulp.verify_api_ssl)
         cls.log = logging.getLogger(cls.__name__)
 
     def assertPulpOK(self):

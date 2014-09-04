@@ -94,7 +94,7 @@ yum -y groupinstall pulp-admin
 sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/admin/admin.conf
 grep host= /etc/pulp/admin/admin.conf
 #disable verification
-sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/admin/admin.conf
+#sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/admin/admin.conf
 
 # configure local consumer
 # For environments that use Qpid, install the Pulp consumer client, agent packages, and Qpid specific consumer dependencies with one command by running:
@@ -102,20 +102,28 @@ yum -y groupinstall pulp-consumer-qpid
 sed -i s,^[#\ ]*host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
 grep host= /etc/pulp/consumer/consumer.conf
 #disable verification
-sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/consumer/consumer.conf
+#sed -i s,^[#\ ]*verify_ssl.*=.*,verify_ssl=False, /etc/pulp/consumer/consumer.conf
 
-# generate ssl certs
-pushd /etc/pki/tls
-old_umask=`umask`
-umask 0077
-openssl req -new -x509 -nodes -out certs/localhost.crt -keyout private/localhost.key -subj "/C=US/ST=NC/L=Raleigh/CN=`hostname`"
-umask $old_umask
-chmod go+r certs/localhost.crt
-popd
-# adding ca cert to the system trusted certs for pulp-admin and pulp-consumer
-ln -s /etc/pki/pulp/ca.crt `openssl x509 -noout -hash -in /etc/pki/pulp/ca.crt`.0
-pushd /etc/pki/tls/certs
-cp /etc/pki/pulp/ca.crt `openssl x509 -noout -hash -in /etc/pki/pulp/ca.crt`.0
+
+#enable ssl
+touch /etc/pki/CA/index.txt
+echo '01' > /etc/pki/CA/serial
+pushd /etc/pki/CA/
+# CA
+openssl req -new -x509 -nodes -out certs/myca.crt -keyout private/myca.key -subj "/C=US/ST=NC/L=Raleigh/O=Ltd/CN=`hostname`"
+chmod 0400 /etc/pki/CA/private/myca.key
+# apache
+openssl req -new -nodes -keyout private/apache.key -out apache.csr -subj "/C=US/ST=NC/L=Raleigh/O=Ltd/CN=`hostname`"
+chown root.apache /etc/pki/CA/private/apache.key
+chmod 0440 /etc/pki/CA/private/apache.key
+# sign apache
+openssl ca -batch -cert certs/myca.crt -keyfile private/myca.key -out certs/apache.crt -in apache.csr
+#TODO modify conf file
+cp certs/myca.crt /etc/pki/tls/certs/
+sed -i s,^[#\ ]*SSLCertificateFile.*,SSLCertificateFile\ /etc/pki/CA/certs/apache.crt, /etc/httpd/conf.d/ssl.conf
+sed -i s,^[#\ ]*SSLCertificateKeyFile.*,SSLCertificateKeyFile\ /etc/pki/CA/private/apache.key, /etc/httpd/conf.d/ssl.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/" /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/" /etc/pulp/admin/admin.conf
 popd
 
 

@@ -31,13 +31,15 @@ class Cli(Connection):
         '''return a Plubmub bound remote command instance of pulp-consumer and args'''
         return command(remote=self.connection.pbm, auth=self.pulp_auth)
 
-    def configure(self, pulp_hostname='localhost', pulp_port=443, qpid_hostname=None, qpid_port=5672):
+    def configure(self, pulp_hostname='localhost', pulp_port=443, qpid_hostname=None, qpid_port=5672, verify=None, ca_path=None):
         '''set consumer cli hostname and port'''
         self.pulp_hostname = pulp_hostname
         self.pulp_port = pulp_port
         # use same host as pulp in case no qpid_hostname was provided
         self.qpid_hostname = qpid_hostname or self.pulp_hostname
         self.qpid_port = qpid_port
+        self.verify = verify
+        self.ca_path = ca_path
         config_filename = '/etc/pulp/consumer/consumer.conf'
         config = ConfigParser()
         with self.connection.rpyc.builtin.open(config_filename) as fp:
@@ -46,6 +48,13 @@ class Cli(Connection):
         config.set('server', 'port', self.pulp_port)
         config.set('messaging', 'host', self.qpid_hostname)
         config.set('messaging', 'port', self.qpid_port)
+        if self.verify == False:
+            config.set('server', 'verify_ssl', False)
+        if self.verify == True:
+            config.set('server', 'verify_ssl', True)
+            config.set('server', 'ca_path', self.ca_path)
+        # if self.verify will be None, none changes will be done
+        # and default cofigs will be used what where specified in installation script
         with self.connection.rpyc.builtin.open(config_filename, 'w+') as fp:
             config.write(fp)
         try:
@@ -78,6 +87,8 @@ class Cli(Connection):
             id,
             hostname='localhost',
             ssh_key=None,
+            verify=None,
+            ca_path=None,
             pulp={
                 'hostname': 'localhost',
                 'port': 443,
@@ -94,7 +105,7 @@ class Cli(Connection):
     ):
         '''instantiate a ready-to-use cli i.e. configured and registered'''
         cli = cls(hostname, ssh_key)
-        cli.configure(pulp.get('hostname', 'localhost'), pulp.get('port', 443), qpid.get('hostname', None), qpid.get('port', 5672))
+        cli.configure(pulp.get('hostname', 'localhost'), pulp.get('port', 443), qpid.get('hostname', None), qpid.get('port', 5672), verify, ca_path)
         cli.register(id, pulp.get('auth', ['admin', 'admin']), description, display_name, note)
         return cli
 
