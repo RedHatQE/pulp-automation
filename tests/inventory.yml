@@ -14,6 +14,11 @@
 # - auth: [username, password] for the https REST client
 # - url:  the protocol&hots part of the pulp URL
 # - hostname: FQDN of the machine running pulp service
+# - verify_api_ssl: Enables ssl verification via api. So just provide here path to the
+#           trusted CA situated on the laptop in case you'd like to enable it
+#           (you should copy the cert form pulp).
+#           False - disables ssl.
+#
 #
 # The Qpid Role
 # -------------
@@ -37,6 +42,12 @@
 # - id: mandatory ID field to use in Pulp when referring to the repo
 # - hostname: for automation commands execution over ssh
 # - ssh_key: for automation commands execution over ssh; root access
+# - verify: True or False (enables/disables ssl). This field can also be left empty
+#           then no changes will be done to the consumer conf file and default/current settings
+#           will be used(for examle the one that were specified in the installation script)
+#           Right now the ssl is enabled by default.
+# - ca_path: path to the ca cert on the consumer in case verify is True. 
+#            (this field can be used, for example, in case of testing with wrong/none cert)
 # - os
 #   - name: of the operating system
 #   - version: of the operating system
@@ -50,6 +61,7 @@ ROLES:
     auth: [admin, admin]
     url: 'https://pulp.example.com/'
     hostname: pulp.example.com
+    verify_api_ssl: False/Ca-path
   qpid:
     url: pulp.example.com
   repos:
@@ -64,6 +76,8 @@ ROLES:
     id: my_consumer
     hostname: consumer.example.com
     ssh_key:  /home/user/.ssh/id_rsa
+    verify: True/False or can be left empty
+    ca_path: path to the cert on the real consumer
     os:
       name: Fedora
       version: 20
