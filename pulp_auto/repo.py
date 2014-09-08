@@ -4,6 +4,16 @@ from . import (path_join, format_response)
 from pulp_auto.task import Task
 from pulp_auto.item import ScheduledAction
 
+class RepoAppl(item.ItemNoData):
+    path = '/repositories/'
+
+    def applicability(
+        self,
+        pulp,
+        data,
+        path='/actions/content/regenerate_applicability/'
+    ):
+        return pulp.send(self.request('POST', path=path, data=data))
 
 class Repo(item.Item):
     relevant_data_keys = ['id', 'display_name', 'description', 'notes']
