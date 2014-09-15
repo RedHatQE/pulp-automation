@@ -1,7 +1,8 @@
 import unittest
-from pulp_auto.consumer.consumer_class import (Consumer, Binding, Event) 
+from pulp_auto.consumer.consumer_class import (Consumer, Binding, Event, ConsumersApplicability)
 from pulp_auto.task import Task 
 from pulp_test import (ConsumerAgentPulpTest, agent_test)
+
 
 
 class TestConsumer(ConsumerAgentPulpTest):
@@ -26,6 +27,7 @@ class TestConsumer(ConsumerAgentPulpTest):
             Task.wait_for_report(self.pulp, response)
 
 
+    @unittest.expectedFailure
     @agent_test(catching=True)
     def test_02_bind_non_existant_distributor_1115528(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1115528
@@ -157,3 +159,58 @@ class TestConsumer(ConsumerAgentPulpTest):
     #def test_18_get_profile(self):
         
     ### applicability
+
+    def test_19_applicabilty_single_consumer(self):
+        #Generate Content Applicability for a single Consumer
+        self.consumer.applicability(self.pulp)
+        self.assertPulp(code=202)
+
+class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
+    def test_01_applicabilty_consumers(self):
+        #Generate Content Applicability for Updated Consumers
+        response = ConsumersApplicability.regenerate(self.pulp, data={
+                                                       "consumer_criteria": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}}
+                                                      }
+                                    )
+        self.assertPulp(code=202)
+        Task.wait_for_report(self.pulp, response)
+        # TODO: assert applicability tags in task response
+        # TODO: assert the applicability applies OK :) or is sane
+
+    def test_02_applicabilty_consumers_invalid_param(self):
+        #Generate Content Applicability for Updated Consumers
+        #if one or more of the parameters is invalid
+        ConsumersApplicability.query(self.pulp, data={
+                                                       "invalid_parameter": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}}
+                                                      }
+                                    )
+        self.assertPulp(code=400)
+
+    def test_03_applicabilty_non_existing_consumer(self):
+        #Generate Content Applicability for a single Consumer
+        #if a consumer with given consumer_id does not exist
+        ConsumersApplicability.query(self.pulp, path='/NonExistingConsumerID/actions/content/regenerate_applicability/'
+                                    )
+        self.assertPulp(code=404)
+
+    def test_04_query_applicability(self):
+        #Query Content Applicability
+        response = ConsumersApplicability.query(self.pulp, data={
+                                                            "criteria": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}},
+                                                            "content_types": ["type_1", "type_2"]
+                                                           }
+                                          )
+        self.assertPulp(code=200)
+        Task.wait_for_report(self.pulp, response)
+        # TODO: assert applicability tags in task response
+        # TODO: assert the applicability applies OK :) or is sane
+
+    def test_05_query_applicability_invalid_param(self):
+        #Query Content Applicability
+        #if one or more of the parameters is invalid
+        ConsumersApplicability.query(self.pulp, data={
+                                                            "invalid_param": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}},
+                                                            "content_types": ["type_1", "type_2"]
+                                                           }
+                                          )
+        self.assertPulp(code=400)

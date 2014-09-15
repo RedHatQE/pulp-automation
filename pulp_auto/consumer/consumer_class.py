@@ -11,6 +11,29 @@ class Event(item.AssociatedItem):
     path='/history/'
     relevant_data_keys = ['event_type', 'limit', 'sort', 'start_date', 'end_date']
 
+class ConsumersApplicability(object):
+    path = '/consumers/'
+
+    @staticmethod
+    def request(method, path, data={}, params={}):
+        return Request(method, path_join(ConsumersApplicability.path, path), params=params, data=data)
+
+    @staticmethod
+    def regenerate(
+        pulp,
+        data={},
+        path='/actions/content/regenerate_applicability/'
+    ):
+        return pulp.send(ConsumersApplicability.request('POST', path=path, data=data))
+
+    @staticmethod
+    def query(
+        pulp,
+        data={},
+        path='/content/applicability/'
+    ):
+        return pulp.send(ConsumersApplicability.request('POST', path=path, data=data))
+
 class Consumer(common_consumer.ProtoConsumer):
     '''consumer item implementation'''
     path = '/consumers/'
@@ -90,6 +113,13 @@ class Consumer(common_consumer.ProtoConsumer):
             "options": options
         }
         return self.create_scheduled_action(pulp, action='/content/update/', schedule=schedule, data=data)
+
+    def applicability(
+        self,
+        pulp,
+        path='/actions/content/regenerate_applicability/'
+    ):
+        return pulp.send(self.request('POST', path=path))
 
     def schedule_uninstall(
         self,

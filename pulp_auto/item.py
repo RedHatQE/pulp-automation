@@ -5,6 +5,16 @@ from hasdata import HasData
 from handler import logged
 log = logging.getLogger(__name__)
 
+
+class ItemNoData:
+    path="/"
+
+    def __init__(self):
+        self.data = {}
+
+    def request(self, method, path='', data={}):
+        return Request(method, data=data, path=path_join(self.path, path))
+
 class Item(HasData):
     '''a generic pulp rest api item'''
     path = '/'
