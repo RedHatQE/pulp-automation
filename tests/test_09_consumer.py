@@ -200,7 +200,6 @@ class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
                                                            }
                                           )
         self.assertPulp(code=200)
-        Task.wait_for_report(self.pulp, response)
         # TODO: assert applicability tags in task response
         # TODO: assert the applicability applies OK :) or is sane
 
