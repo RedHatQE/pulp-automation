@@ -11,28 +11,28 @@ class Event(item.AssociatedItem):
     path='/history/'
     relevant_data_keys = ['event_type', 'limit', 'sort', 'start_date', 'end_date']
 
+
 class ConsumersApplicability(object):
     path = '/consumers/'
 
     @staticmethod
-    def request(method, path, data={}, params={}):
-        return Request(method, path_join(ConsumersApplicability.path, path), params=params, data=data)
-
-    @staticmethod
     def regenerate(
         pulp,
-        data={},
+        data,
         path='/actions/content/regenerate_applicability/'
     ):
-        return pulp.send(ConsumersApplicability.request('POST', path=path, data=data))
+        path=path_join(ConsumersApplicability.path, path)
+        return pulp.send(Request('POST', path=path, data=data))
 
     @staticmethod
     def query(
         pulp,
-        data={},
+        data,
         path='/content/applicability/'
     ):
-        return pulp.send(ConsumersApplicability.request('POST', path=path, data=data))
+        path=path_join(ConsumersApplicability.path, path)
+        return pulp.send(Request('POST', path=path, data=data))
+
 
 class Consumer(common_consumer.ProtoConsumer):
     '''consumer item implementation'''
