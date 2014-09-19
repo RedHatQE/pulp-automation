@@ -3,15 +3,14 @@ from pulp_auto.repo import RepoAppl
 from pulp_auto.task import Task
 
 
-class RepoApplicabilityTest(pulp_test.PulpTest):
-    @classmethod
-    def setUpClass(cls):
-        super(RepoApplicabilityTest, cls).setUpClass()
-        cls.repo_appl = RepoAppl()
+def setUpModule():
+    pass
 
-class Applicabilty(RepoApplicabilityTest):
+
+class RepoApplicabilty(pulp_test.PulpTest):
+
     def test_01_repo_content_applicability(self):
-        response = self.repo_appl.applicability(self.pulp, data={
+        response = RepoAppl.applicability(self.pulp, data={
                                          "repo_criteria": {"filters": {"id":{"$in":["test-repo", "test-errata"]}}}
                                                      }
                                     )
@@ -22,7 +21,7 @@ class Applicabilty(RepoApplicabilityTest):
 
     def test_02_repo_content_applicability_invalid_param(self):
         #response_code: 400,if one or more of the parameters is invalid
-        self.repo_appl.applicability(self.pulp, data={
+        RepoAppl.applicability(self.pulp, data={
                                          "invalid_parameter": {"filters": {"id":{"$in":["test-repo", "test-errata"]}}}
                                                      }
                                     )

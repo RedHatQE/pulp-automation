@@ -1,6 +1,8 @@
 import unittest
 from pulp_auto.consumer.consumer_class import (Consumer, Binding, Event, ConsumersApplicability)
 from pulp_auto.task import Task 
+from pulp_auto.pulp import Request
+from pulp_auto import path_join
 from pulp_test import (ConsumerAgentPulpTest, agent_test)
 
 
@@ -161,10 +163,13 @@ class TestConsumer(ConsumerAgentPulpTest):
 
     def test_19_applicabilty_single_consumer(self):
         #Generate Content Applicability for a single Consumer
-        self.consumer.applicability(self.pulp)
+        response = self.consumer.applicability(self.pulp)
         self.assertPulp(code=202)
+        Task.wait_for_report(self.pulp, response)
+
 
 class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
+
     def test_01_applicabilty_consumers(self):
         #Generate Content Applicability for Updated Consumers
         response = ConsumersApplicability.regenerate(self.pulp, data={
@@ -179,7 +184,7 @@ class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
     def test_02_applicabilty_consumers_invalid_param(self):
         #Generate Content Applicability for Updated Consumers
         #if one or more of the parameters is invalid
-        ConsumersApplicability.query(self.pulp, data={
+        ConsumersApplicability.regenerate(self.pulp, data={
                                                        "invalid_parameter": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}}
                                                       }
                                     )
@@ -188,8 +193,7 @@ class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
     def test_03_applicabilty_non_existing_consumer(self):
         #Generate Content Applicability for a single Consumer
         #if a consumer with given consumer_id does not exist
-        ConsumersApplicability.query(self.pulp, path='/NonExistingConsumerID/actions/content/regenerate_applicability/'
-                                    )
+        self.pulp.send(Request('POST', path_join(Consumer.path,'/NonExistingConsumerID/actions/content/regenerate_applicability/')))
         self.assertPulp(code=404)
 
     def test_04_query_applicability(self):
