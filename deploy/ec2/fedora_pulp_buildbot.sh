@@ -121,8 +121,8 @@ openssl ca -batch -cert certs/myca.crt -keyfile private/myca.key -out certs/apac
 cp certs/myca.crt /etc/pki/tls/certs/
 sed -i s,^[#\ ]*SSLCertificateFile.*,SSLCertificateFile\ /etc/pki/CA/certs/apache.crt, /etc/httpd/conf.d/ssl.conf
 sed -i s,^[#\ ]*SSLCertificateKeyFile.*,SSLCertificateKeyFile\ /etc/pki/CA/private/apache.key, /etc/httpd/conf.d/ssl.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[#\ ]*ca_path =.*/ca_path = \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
 popd
 
 
