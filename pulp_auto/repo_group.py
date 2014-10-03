@@ -55,6 +55,18 @@ class RepoGroup(item.Item):
         with pulp.asserting(True):
             return pulp.send(self.request('GET', path=path)).json()
 
+    def publish(
+        self,
+        pulp,
+        distributor_group_id,
+        config = None,
+        path='/actions/publish/'
+    ):
+        data={
+            'id': distributor_group_id,
+            'override_config': config
+        }
+        return pulp.send(self.request('POST', path=path, data=data))
 
 
 class GroupDistributor(item.AssociatedItem):
