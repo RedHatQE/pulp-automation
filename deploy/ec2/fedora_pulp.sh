@@ -80,6 +80,9 @@ yum -y groupinstall pulp-consumer
 sed -i s,host.*=.*,host=`hostname`, /etc/pulp/consumer/consumer.conf
 grep host= /etc/pulp/consumer/consumer.conf
 
+#install Docker plugins
+yum install -y pulp-docker-admin-extensions pulp-docker-plugins python-pulp-docker-common
+
 # generate ssl certs and ca
 pulp-gen-ca-certificate
 pushd /etc/pki/tls/certs
