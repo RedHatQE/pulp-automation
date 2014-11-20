@@ -13,14 +13,14 @@ class DockerRepoTest(pulp_test.PulpTest):
     def setUpClass(cls):
         super(DockerRepoTest, cls).setUpClass()
         cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
-        cls.feed = 'https://index.docker.io/v1/repositories/busybox/images/'
+        cls.feed = 'https://index.docker.io/'
 
 
 class SimpleDockerRepoTest(DockerRepoTest):
 
-    def setUp(self):
-        # wait for confirm
-        # raw_input("continue?")
+    #def setUp(self):
+        #wait for confirm
+        #raw_input("continue?")
 
     def test_01_create_repo(self):
         self.repo.create(self.pulp)
@@ -49,8 +49,9 @@ class SimpleDockerRepoTest(DockerRepoTest):
             data={
                 'importer_type_id': 'docker_importer',
                 'importer_config': {
-                    'feed': self.feed
-                }
+                    'feed': self.feed,
+                     "upstream_name": "busybox"
+                                     }
             }
         )
         self.assertPulp(code=202)
@@ -63,7 +64,8 @@ class SimpleDockerRepoTest(DockerRepoTest):
                 'importer_type_id': 'docker_importer',
                 'repo_id': self.repo.id,
                 'config': {
-                    'feed': self.feed
+                    'feed': self.feed,
+                    "upstream_name": "busybox"
                 },
                 'last_sync': None
             }
