@@ -169,3 +169,9 @@ class PackageEnvironmentUnit(AbstractUnit):
     '''package environments (collections of package groups)'''
     path = AbstractUnit.path + "/package_environment/"
     # TODO: relevant_data_keys
+
+
+class DockerUnit(AbstractUnit):
+    '''Docker-specific unit code'''
+    path = AbstractUnit.path + "/docker_image/"
+    # TODO: relevant_data_keys

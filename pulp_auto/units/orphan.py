@@ -70,6 +70,11 @@ class PackageEnvironmentOrphan(AbstractOrphan):
     path = AbstractOrphan.path + "/package_environment/"
 
 
+class DockerOrphan(AbstractOrphan):
+    '''docker-specific orphan code'''
+    path = AbstractOrphan.path + "/docker_image/"
+
+
 class Orphans(object):
     '''The content/orphans/ container handler'''
     path = '/content/orphans/'
