@@ -358,6 +358,67 @@ def create_iso_repo(
         ))
     return repo, importer, distributor
 
+def create_docker_repo(
+    pulp,
+    id,
+    feed,
+    display_name=None,
+    relative_url=None,
+    http=True,
+    https=True,
+    **kvs
+):
+    '''create an almost default docker repo'''
+    repo = Repo(
+        {
+            'id': id,
+            'feed': 'https://index.docker.io/',
+            'display_name': display_name,
+            'notes': {"_docker-type": "docker-repo"},
+            'importer_type_id': 'docker_importer',
+            'importer_config': {'feed': feed, "upstream_name": "busybox"},
+            'distributor_type_id': 'docker_distributor_web',
+            'distributor_config': {
+                    'http': True,
+                    'https': True,
+                    'relative_url': '/library/busybox'
+                },
+            'distributor_id': 'dist_1',
+            'auto_publish': False
+        }
+    )
+    if relative_url is None:
+        relative_url = id
+    with pulp.asserting(True):
+        repo = Repo.from_response(repo.create(pulp))
+        response = repo.associate_importer(
+            pulp,
+            data={
+                'importer_type_id': 'docker_importer',
+                'importer_id': 'docker_importer',
+                'importer_config': {
+                    'feed': feed,
+                    "upstream_name": "busybox"
+                }
+            }
+        )
+        Task.wait_for_report(pulp, response)
+        importer = repo.get_importer(pulp, "docker_importer")
+        distributor = Distributor.from_response(repo.associate_distributor(
+            pulp,
+            data={
+                'distributor_id': id + "_distributor",
+                'distributor_type_id': 'docker_distributor_web',
+                'distributor_config': {
+                    'http': http,
+                    'https': https,
+                    'relative_url': '/library/busybox'
+                },
+                'auto_publish': False
+            }
+        ))
+    return repo, importer, distributor
+
 SAMPLE_YUM_DISTRIBUTOR_CONFIG_DATA = {
     "distributor_id": "yum_distributor",
     "auto_publish": True,
