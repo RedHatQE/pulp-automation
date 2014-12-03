@@ -52,7 +52,6 @@ class SimplePublishGroupTest(PublishGroupTest):
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
 
-    @unittest.expectedFailure
     def test_02_publish_non_existent_repo_group_bz1148928(self):
         response = self.repo_group1.publish(
             self.pulp,
