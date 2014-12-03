@@ -44,7 +44,6 @@ class PublishGroupTest(pulp_test.PulpTest):
 class SimplePublishGroupTest(PublishGroupTest):
 
 
-    @unittest.expectedFailure
     def test_01_publish_repo_group_with_no_members_bz1148937(self):
         response = self.repo_group.publish(
             self.pulp,
