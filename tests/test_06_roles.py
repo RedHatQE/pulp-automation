@@ -100,7 +100,6 @@ class SimpleRoleTest(RoleTest):
         self.assertPulp(code=200)
         self.assertEqual(Role.get(self.pulp, self.role.id).data['users'], [self.user.id])
 
-    @unittest.expectedFailure
     def test_08_add_unexistant_user_1116825(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1116825
         # add user to the role
