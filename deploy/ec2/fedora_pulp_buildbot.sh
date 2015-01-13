@@ -43,7 +43,7 @@ gpgcheck=0
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/fedora-\$releasever/\$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -104,6 +104,9 @@ grep host: /etc/pulp/consumer/consumer.conf
 #disable verification
 #sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /" /etc/pulp/consumer/consumer.conf
 
+#install Docker plugins
+yum install -y pulp-docker-admin-extensions pulp-docker-plugins python-pulp-docker-common
+
 #enable ssl
 touch /etc/pki/CA/index.txt
 echo '01' > /etc/pki/CA/serial
@@ -121,8 +124,8 @@ openssl ca -batch -cert certs/myca.crt -keyfile private/myca.key -out certs/apac
 cp certs/myca.crt /etc/pki/tls/certs/
 sed -i s,^[#\ ]*SSLCertificateFile.*,SSLCertificateFile\ /etc/pki/CA/certs/apache.crt, /etc/httpd/conf.d/ssl.conf
 sed -i s,^[#\ ]*SSLCertificateKeyFile.*,SSLCertificateKeyFile\ /etc/pki/CA/private/apache.key, /etc/httpd/conf.d/ssl.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path:.*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path[: =].*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*ca_path[: =].*/ca_path: \/etc\/pki\/tls\/certs\/myca.crt/"  /etc/pulp/admin/admin.conf
 popd
 
 
