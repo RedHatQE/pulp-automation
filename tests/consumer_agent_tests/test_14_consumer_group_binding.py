@@ -1,10 +1,10 @@
 import json
-from tests import pulp_test
+import tests.pulp_test
 from pulp_auto.consumer_group import ConsumerGroup
 from pulp_auto.common_consumer import ProtoConsumer, Binding
 from pulp_auto.consumer.consumer_class import Consumer
 from pulp_auto.task import Task
-from pulp_test import (ConsumerAgentPulpTest, agent_test)
+from tests.pulp_test import (ConsumerAgentPulpTest, agent_test)
 
 
 def setUpModule():

@@ -1,5 +1,5 @@
 import unittest, logging, nose
-from .. import ROLES
+from tests import ROLES
 from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE
 from pulp_auto.repo import create_yum_repo

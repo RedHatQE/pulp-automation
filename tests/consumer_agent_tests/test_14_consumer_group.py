@@ -1,5 +1,5 @@
 import json
-from tests import pulp_test
+import tests.pulp_test
 from pulp_auto.consumer_group import ConsumerGroup 
 from pulp_auto.consumer.consumer_class import Consumer
 from pulp_auto.task import Task

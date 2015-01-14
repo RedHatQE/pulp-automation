@@ -1,5 +1,5 @@
 import json
-from tests import pulp_test
+import tests.pulp_test
 from pulp_auto.repo import Repo
 from pulp_auto.task import Task, TaskFailure
 from tests.pulp_test import (ConsumerAgentPulpTest, agent_test)
