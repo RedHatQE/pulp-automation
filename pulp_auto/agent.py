@@ -1,6 +1,7 @@
 import contextlib, logging, namespace, gevent
 from gevent.event import Event
 from handler import logged
+from distutils.version import LooseVersion
 log = logging.getLogger(__name__)
 
 
@@ -50,19 +51,22 @@ class Agent(object):
         ret['status'] = status
         return ret
 
-    @staticmethod
     @logged(log.debug)
-    def invert_envelope(envelope):
+    def invert_envelope(self, envelope):
         ''''return envelope copy suitable for request-to-response processing'''
         envelope = envelope.copy()
 
-        if envelope['replyto'] is None:
-            # handle inverting of don't care messages
-            replyto_fields = [None, None]
-        else:
-            assert "exchange" in envelope['replyto'] and "routing_key" in envelope['replyto'], \
-                "wrong replyto format: %s" % envelope['replyto']
-            replyto_fields = envelope['replyto']['exchange'], envelope['replyto']['routing_key']
+        # handle inverting of don't care messages
+        replyto_fields = [None, None]
+
+        if envelope['replyto'] is not None:
+            if str(envelope['version']) >= LooseVersion('2.0'):
+                # different replyto format with newer Gofer
+                replyto_fields = [self.module.__name__, envelope['replyto']]
+            else:
+                assert "exchange" in envelope['replyto'] and "routing_key" in envelope['replyto'], \
+                    "wrong replyto format: %s" % envelope['replyto']
+                replyto_fields = envelope['replyto']['exchange'], envelope['replyto']['routing_key']
         source = replyto_fields[0]
         destination = envelope['routing'][1]
         routing_id = envelope['routing'][0]
@@ -88,6 +92,7 @@ class Agent(object):
         if 'cntr' in request and request['cntr'] is not None:
             assert isinstance(request['cntr'], list)
             assert len(request['cntr']) == 2
+            cntr = request['cntr']
             cargs = cntr[0]
             ckvs = cntr[1]
             assert isinstance(cargs, list)
