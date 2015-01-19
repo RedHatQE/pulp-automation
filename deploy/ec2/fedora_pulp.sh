@@ -43,7 +43,7 @@ gpgcheck=0
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/fedora-\$releasever/\$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/2.6/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0 
