@@ -35,7 +35,7 @@ gpgcheck=0
 # Version 2.x Beta Builds
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.4/fedora-\$releasever/\$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.6/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -43,7 +43,7 @@ gpgcheck=0
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/fedora-\$releasever/\$basearch/
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/2.6/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -51,7 +51,7 @@ gpgcheck=0
 # eu-west-1 pulp-mirror
 [pulp-v2-beta-mirror]
 name=Pulp v2 Beta Builds Mirror
-baseurl=http://ec2-54-74-186-187.eu-west-1.compute.amazonaws.com/pulp/repos/pulp/beta/2.4/fedora/\$basearch/
+baseurl=http://ec2-54-74-186-187.eu-west-1.compute.amazonaws.com/pulp/repos/pulp/beta/2.6/fedora/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -91,7 +91,7 @@ grep auth= /etc/qpidd.conf
 
 # configure pulp-admin
 yum -y groupinstall pulp-admin
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/admin/admin.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host\s*[:=].*/host: `hostname`/"  /etc/pulp/admin/admin.conf
 grep host: /etc/pulp/admin/admin.conf
 #disable verification
 #sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /"  /etc/pulp/admin/admin.conf
@@ -99,7 +99,7 @@ grep host: /etc/pulp/admin/admin.conf
 # configure local consumer
 # For environments that use Qpid, install the Pulp consumer client, agent packages, and Qpid specific consumer dependencies with one command by running:
 yum -y groupinstall pulp-consumer-qpid
-sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host:.*/host: `hostname`/"  /etc/pulp/consumer/consumer.conf
+sed -i "/^\[server\]$/,/^\[/ s/^[# ]*host\s*[:=].*/host: `hostname`/"  /etc/pulp/consumer/consumer.conf
 grep host: /etc/pulp/consumer/consumer.conf
 #disable verification
 #sed -i "/^\[server\]$/,/^\[/ s/^[# ]*verify_ssl:.*/verify_ssl: False /" /etc/pulp/consumer/consumer.conf
