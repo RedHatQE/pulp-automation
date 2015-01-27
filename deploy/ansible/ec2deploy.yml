@@ -6,10 +6,13 @@
     - name: Launch instances
       local_action:
         module: ec2
+        # regions: us-east-1, us-west-1, us-west-2, eu-west-1, ap-northeast-1 ..
         region: eu-west-1
-        keypair: mminar-eu-west-1
+        # insert your key in selected region
+        keypair: myname-eu-west-1
         group: pulp
         instance_type: m3.large
+        # insert ami for OS you want to install eg. for Fedora 20 its ami-a5ad56d2
         image: ami-a5ad56d2
         count: 3
         wait: yes
@@ -20,7 +23,8 @@
       with_items: ec2.instances
       args:
         tags:
-          Name: mminar
+          # to be able find all your instances
+          Name: myname
 
     - name: Give everyone a minute
       pause: minutes=1
