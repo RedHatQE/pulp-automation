@@ -213,7 +213,7 @@ class Association(item.AssociatedItem):
 def create_yum_repo(
     pulp,
     id,
-    feed,
+    feed=None,
     display_name=None,
     relative_url=None,
     http=True,
