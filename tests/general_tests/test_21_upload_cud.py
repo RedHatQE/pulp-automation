@@ -1,5 +1,41 @@
 from tests.pulp_test import PulpTest
-from pulp_auto.upload import Upload
+from pulp_auto.upload import Upload, rpm_metadata
+from contextlib import contextmanager
+import urllib2
+
+@contextmanager
+def tmpurl_ctx(url, chunksize=65536):
+    '''save the url as a temporary named file object'''
+    import tempfile
+    fd = urllib2.urlopen(url)
+    tmpfd = tempfile.NamedTemporaryFile()
+    while True:
+        data = fd.read(chunksize)
+        if not data:
+            break
+        tmpfd.write(data)
+    tmpfd.file.seek(0)
+    fd.close()
+    try:
+        yield tmpfd
+    finally:
+        tmpfd.close()
+
+def upload_url_rpm(pulp, url):
+    '''create an upload object fed from the url'''
+    import os
+    # get basename for upload purpose
+    basename = os.path.basename(urllib2.urlparse.urlsplit(url).path)
+    with tmpurl_ctx(url) as tmpfile:
+        data = rpm_metadata(tmpfile.file)
+        # augment rpm file name
+        data['unit_metadata']['relativepath'] = basename
+        data['unit_metadata']['filename'] = basename
+        upload = Upload.create(pulp, data=data)
+        # feed the data
+        tmpfile.file.seek(0)
+        upload.file(pulp, tmpfile.file)
+    return upload
 
 class UploadCudTest(PulpTest):
     def testcase_01_create_delete_upload(self):
@@ -18,4 +54,8 @@ class UploadCudTest(PulpTest):
         ids = Upload.list(self.pulp)
         assert upload.id not in ids, 'upload %s deleted but still on server (%s)' % (upload.id, ids)
 
+    def testcase_02_upload_rpm(self):
+        upload = upload_url_rpm(self.pulp, 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm')
+        upload.delete(self.pulp)
+        self.assertPulpOK()
 
