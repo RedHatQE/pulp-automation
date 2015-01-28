@@ -125,11 +125,14 @@ class Pulp(object):
 class Request(object):
     pulp_path = pulp_path
     '''a callable request compatible with Pulp.send''' 
-    def __init__(self, method, path, data={}, headers={'content-type': 'application/json'},
+    def __init__(self, method, path, data={}, headers=cidict({'content-type': 'application/json'}),
             params={}):
         self.method = method
         self.path = path
-        self.data = data
+        if 'content-type' in headers and headers['content-type'] == 'application/json':
+            self.data = json.dumps(data)
+        else:
+            self.data = data
         self.headers = headers
         self.params = params
 
