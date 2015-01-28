@@ -3,6 +3,7 @@ from . import (normalize_url, path_join, path_split, strip_url)
 from pulp_auto import (Request, format_response)
 from hasdata import HasData
 from handler import logged
+from requests.structures import CaseInsensitiveDict as cidict
 log = logging.getLogger(__name__)
 
 
@@ -108,8 +109,10 @@ class Item(HasData):
         ''' in the data can be present delta-data dict and/or some other information)'''
         return pulp.send(self.request('PUT', data=data))
 
-    def request(self, method, path='', data={}, params={}):
-        return Request(method, data=data, path=path_join(self.path, self.id, path), params=params)
+    def request(self, method, path='', data={}, params={},
+            headers=cidict({'content-type': 'application/json'})):
+        return Request(method, data=data, path=path_join(self.path, self.id, path), params=params,
+                headers=headers)
 
     def create_scheduled_action(
         self,
