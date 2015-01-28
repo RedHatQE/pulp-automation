@@ -13,6 +13,7 @@ import pulp_auto.handler
 from pulp_auto.namespace import (locate_ns_item,)
 from pulp_auto.authenticator import Authenticator
 from M2Crypto import (RSA, BIO)
+from contextlib import contextmanager
 
 
 def requires(*things):
@@ -126,3 +127,19 @@ class ConsumerAgentPulpTest(PulpTest):
 
 class InventoryInducedSkip(unittest.SkipTest):
         '''some inventory items are missing --- skip the test that requires these'''
+
+@contextmanager
+def calling_method(thing, method, *args, **kvs):
+    '''call thing.<method>(*args, **kvs) upon exit'''
+    try:
+        yield thing
+    finally:
+        getattr(thing, method)(*args, **kvs)
+
+@contextmanager
+def deleting(pulp, thing):
+    '''call thing.delete(pulp) upon return'''
+    with calling_method(thing, 'delete', pulp) as thing:
+        yield thing
+    assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
+            (thing, pulp.last_response)
