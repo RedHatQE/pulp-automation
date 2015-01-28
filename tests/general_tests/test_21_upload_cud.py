@@ -1,34 +1,16 @@
-from tests.pulp_test import PulpTest, deleting
+from tests.pulp_test import PulpTest, deleting, temp_url
 from pulp_auto.upload import Upload, rpm_metadata
 from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task
-from contextlib import contextmanager
-import urllib2
-
-@contextmanager
-def tmpurl_ctx(url, chunksize=65536):
-    '''save the url as a temporary named file object'''
-    import tempfile
-    fd = urllib2.urlopen(url)
-    tmpfd = tempfile.NamedTemporaryFile()
-    while True:
-        data = fd.read(chunksize)
-        if not data:
-            break
-        tmpfd.write(data)
-    tmpfd.file.seek(0)
-    fd.close()
-    try:
-        yield tmpfd
-    finally:
-        tmpfd.close()
+from contextlib import closing
 
 def upload_url_rpm(pulp, url):
     '''create an upload object fed from the url'''
     import os
+    import urllib2
     # get basename for upload purpose
     basename = os.path.basename(urllib2.urlparse.urlsplit(url).path)
-    with tmpurl_ctx(url) as tmpfile:
+    with closing(temp_url(url)) as tmpfile:
         data = rpm_metadata(tmpfile.file)
         # augment rpm file name
         data['unit_metadata']['relativepath'] = basename

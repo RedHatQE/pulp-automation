@@ -143,3 +143,18 @@ def deleting(pulp, thing):
         yield thing
     assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
             (thing, pulp.last_response)
+
+def temp_url(url, chunksize=65535):
+    '''save the url as a temporary named file object'''
+    import tempfile
+    import urllib2
+    fd = urllib2.urlopen(url)
+    tmpfd = tempfile.NamedTemporaryFile()
+    while True:
+        data = fd.read(chunksize)
+        if not data:
+            break
+        tmpfd.write(data)
+    tmpfd.file.seek(0)
+    fd.close()
+    return tmpfd
