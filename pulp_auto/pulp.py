@@ -3,6 +3,7 @@ from requests.adapters import HTTPAdapter
 from . import (normalize_url, path_join, path as pulp_path, static_path as pulp_static_path)
 from handler import logged
 from M2Crypto import (RSA, BIO)
+from requests.structures import CaseInsensitiveDict as cidict
 log = logging.getLogger(__name__)
 
 
@@ -124,10 +125,11 @@ class Pulp(object):
 class Request(object):
     pulp_path = pulp_path
     '''a callable request compatible with Pulp.send''' 
-    def __init__(self, method, path, data={}, headers={'Content-Type': 'application/json'}, params={}):
+    def __init__(self, method, path, data={}, headers={'content-type': 'application/json'},
+            params={}):
         self.method = method
         self.path = path
-        self.data = json.dumps(data)
+        self.data = data
         self.headers = headers
         self.params = params
 
