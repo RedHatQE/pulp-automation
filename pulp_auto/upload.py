@@ -73,6 +73,10 @@ class Upload(Item):
                 break
             self.chunk(pulp, chunk)
 
+    def import_to(self, pulp, repo):
+        '''import self into repo'''
+        return pulp.send(repo.request('POST', path='actions/import_upload/', data=self.data))
+
 def file_checksum(fd, chunksize=65536, checksum_type='sha256'):
     '''get file hashlib checksum'''
     import hashlib

@@ -1,5 +1,7 @@
-from tests.pulp_test import PulpTest
+from tests.pulp_test import PulpTest, deleting
 from pulp_auto.upload import Upload, rpm_metadata
+from pulp_auto.repo import create_yum_repo
+from pulp_auto.task import Task
 from contextlib import contextmanager
 import urllib2
 
@@ -38,6 +40,7 @@ def upload_url_rpm(pulp, url):
     return upload
 
 class UploadCudTest(PulpTest):
+    rpm_url = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm'
     def testcase_01_create_delete_upload(self):
         '''test creating uploads works'''
         upload = Upload.create(self.pulp)
@@ -55,7 +58,9 @@ class UploadCudTest(PulpTest):
         assert upload.id not in ids, 'upload %s deleted but still on server (%s)' % (upload.id, ids)
 
     def testcase_02_upload_rpm(self):
-        upload = upload_url_rpm(self.pulp, 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm')
-        upload.delete(self.pulp)
-        self.assertPulpOK()
+        with deleting(self.pulp, create_yum_repo(self.pulp, 'upload_test_rpm_repo')[0]) as repo:
+            with deleting(self.pulp, upload_url_rpm(self.pulp, self.rpm_url)) as upload:
+                response = upload.import_to(self.pulp, repo)
+                self.assertPulpOK()
+                Task.wait_for_report(self.pulp, response)
 
