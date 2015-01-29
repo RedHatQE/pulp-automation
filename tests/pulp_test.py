@@ -128,6 +128,19 @@ class ConsumerAgentPulpTest(PulpTest):
 class InventoryInducedSkip(unittest.SkipTest):
         '''some inventory items are missing --- skip the test that requires these'''
 
+def stacked_ctx(ctxmanager):
+    '''decorator allowing simple ctx managers to get stacked'''
+    @contextmanager
+    def stacked(*things):
+        if len(things) > 1:
+            with ctxmanager(things[0]) as thing:
+                with stacked(*things[1:]) as somethings:
+                    yield thing, somethings
+        else:
+            with ctxmanager(things[0]) as thing:
+                yield thing
+    return stacked
+
 @contextmanager
 def calling_method(thing, method, *args, **kvs):
     '''call thing.<method>(*args, **kvs) upon exit'''
@@ -137,12 +150,19 @@ def calling_method(thing, method, *args, **kvs):
         getattr(thing, method)(*args, **kvs)
 
 @contextmanager
-def deleting(pulp, thing):
-    '''call thing.delete(pulp) upon return'''
-    with calling_method(thing, 'delete', pulp) as thing:
-        yield thing
-    assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
-            (thing, pulp.last_response)
+def deleting(pulp, *things):
+    '''call thing.delete(pulp) upon return for thing in things'''
+
+    @stacked_ctx
+    @contextmanager
+    def wrapper_ctx(thing):
+        with calling_method(thing, 'delete', pulp) as thing:
+            yield thing
+        assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
+                (thing, pulp.last_response)
+
+    with wrapper_ctx(*things) as otherthings:
+        yield otherthings
 
 def temp_url(url, chunksize=65535):
     '''save the url as a temporary named file object'''
