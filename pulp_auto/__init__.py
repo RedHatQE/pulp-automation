@@ -3,7 +3,7 @@ from gevent import monkey; monkey.patch_all(aggressive=False, select=True)
 
 path = '/pulp/api/v2/'
 static_path = '/pulp/static/'
-
+content_path = '/pulp/repos/'
 
 def normalize_url(url):
     '''remove stacked forward slashes'''

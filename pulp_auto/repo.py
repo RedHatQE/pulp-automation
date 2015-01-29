@@ -1,6 +1,6 @@
 import item, json
 from pulp_auto import (Request, )
-from . import (path_join, format_response)
+from . import (path_join, format_response, content_path)
 from pulp_auto.task import Task
 from pulp_auto.item import ScheduledAction
 
@@ -204,6 +204,10 @@ class Distributor(item.AssociatedItem):
     ):
         return self.list_scheduled_action(pulp, action='/publish/')
 
+    def content_url(self, pulp, path='/'):
+        '''assemblel url of the content being served'''
+        return path_join(pulp.url, content_path,
+                self.data['config']['relative_url'], path).strip('/')
 
 
 class Association(item.AssociatedItem):
