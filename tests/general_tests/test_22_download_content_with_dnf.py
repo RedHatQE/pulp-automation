@@ -31,7 +31,7 @@ def upload_url_rpm(pulp, url):
         upload.file(pulp, tmpfile.file)
     return upload
 
-def download_package_with_dnf(pulp, repo_url, package_name)
+def download_package_with_dnf(pulp, repo_url, package_name):
     base = dnf.Base()
     conf = base.conf
     conf.cachedir = '/tmp/download_package_with_dnf' 
