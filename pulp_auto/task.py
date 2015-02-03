@@ -3,7 +3,7 @@ from item import (Item, GroupItem)
 from pulp_auto.pulp import Request
 from pulp_auto import strip_url
 
-class TaskError(RuntimeError):
+class TaskError(AssertionError):
    '''super class for task failures'''
    def __init__(self, *args, **kvs):
         '''save the task for reference'''
