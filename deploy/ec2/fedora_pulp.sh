@@ -43,7 +43,7 @@ yum -y groupinstall pulp-server
 # configure firewall
 iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
 iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
-service iptables save
+service iptables save ||
 
 # configure pulp
 sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
