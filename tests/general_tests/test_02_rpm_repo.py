@@ -48,7 +48,6 @@ class SimpleRepoTest(RepoTest):
         self.assertPulp(code=200)
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
-    @unittest.expectedFailure
     def test_05_associate_importer_with_invalid_type_1084064(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1084064
         self.repo.associate_importer(
@@ -68,7 +67,8 @@ class SimpleRepoTest(RepoTest):
             data={
                 'importer_type_id': 'yum_importer',
                 'importer_config': {
-                    'feed': self.feed
+                    'feed': self.feed,
+                    'ssl_validation': False
                 }
             }
         )
@@ -81,14 +81,14 @@ class SimpleRepoTest(RepoTest):
                 'importer_type_id': 'yum_importer',
                 'repo_id': self.repo.id,
                 'config': {
-                    'feed': self.feed
+                    'feed': self.feed,
+                    'ssl_validation': False
                 },
                 'last_sync': None
             },
             importer)
 
 
-    @unittest.expectedFailure
     def test_07_associate_importer_to_unexistant_repo_1078833(self):
         # https://bugzilla.redhat.com/show_bug.cgi?id=1078833
         self.repo2.associate_importer(
