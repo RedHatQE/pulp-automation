@@ -28,14 +28,6 @@ tail -1 /etc/hosts
 # fetch pulp repo file
 pushd /etc/yum.repos.d/
 cat << PULP_REPO_EOF > rhel6-pulp.repo
-# Version 2.x Production Releases
-[pulp-v2-stable]
-name=Pulp v2 Production Releases
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/\$releasever/\$basearch/
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
-
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
