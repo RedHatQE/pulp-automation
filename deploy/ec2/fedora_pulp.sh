@@ -24,10 +24,9 @@ tail -1 /etc/hosts
 # fetch pulp repo file
 pushd /etc/yum.repos.d/
 cat << PULP_REPO_EOF > fedora-pulp.repo
-# Weekly Testing Builds
-[pulp-v2-testing]
-name=Pulp v2 Testing Builds
-baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/testing/2.6/fedora-\$releasever/\$basearch/
+[pulp-v2-beta]
+name=Pulp v2 Beta
+baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.6/fedora-\$releasever/\$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0 
