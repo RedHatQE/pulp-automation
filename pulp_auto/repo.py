@@ -243,7 +243,8 @@ def create_yum_repo(
                 'importer_type_id': 'yum_importer',
                 'importer_id': 'yum_importer',
                 'importer_config': {
-                    'feed': feed
+                    'feed': feed,
+                    'ssl_validation': False # FIXME: workaround for 1188875
                 }
             }
         )
