@@ -49,20 +49,27 @@ class Pulp(object):
 
         self._semaphore = BoundedSemaphore(1)
 
+    @classmethod
+    def copy(cls, other, adapter=HTTPAdapter(max_retries=3), asserting=False):
+        '''copy constructor; does not copy internal state'''
+        return cls(other.url, auth=other.auth, verify=other.verify, adapter=adapter, asserting=asserting)
+
     @logged(log.debug)
     def send(self, request):
-        '''send a request; the request has to be callable that accepts url and auth params'''
+        '''send a request; the request has to be callable that accepts url and auth params; locking'''
         if self._async:
             # when in async mode, just "queue" requests
             self.last_request += (request(self.url, self.auth), )
             return
-        self.last_request = request(self.url, self.auth)
-        self.last_response = self.session.send(self.last_request, verify=self.verify)
-        if self._asserting:
-            assert self.is_ok, 'pulp was not OK:\n' + \
-                format_preprequest(self.last_request) + format_response(self.last_response)
-            pass
-        return self.last_response
+        with self._semaphore:
+            self.last_request = request(self.url, self.auth)
+            last_response = self.session.send(self.last_request, verify=self.verify)
+            self.last_response = last_response
+            if self._asserting:
+                assert self.is_ok, 'pulp was not OK:\n' + \
+                    format_preprequest(self.last_request) + format_response(self.last_response)
+                pass
+        return last_response
 
     @property
     def is_ok(self):
@@ -90,8 +97,12 @@ class Pulp(object):
     @contextlib.contextmanager
     def async(self, timeout=None):
         '''enter a async/concurent--send context; pending requests will be processed at context exit'''
-        self.last_request = ()
-        self._async = True
+        with self._semaphore:
+            if self._async:
+                # avoid nesting
+                raise RuntimeError('Already in async ctx: %s' % self)
+            self.last_request = ()
+            self._async = True
 
         def sender(request):
             with self._semaphore:
@@ -121,11 +132,10 @@ class Pulp(object):
         return self._pubkey
 
 
-
 class Request(object):
     pulp_path = pulp_path
     '''a callable request compatible with Pulp.send''' 
-    def __init__(self, method, path, data={}, headers=cidict({'content-type': 'application/json'}),
+    def __init__(self, method, path='/', data={}, headers=cidict({'content-type': 'application/json'}),
             params={}):
         self.method = method
         self.path = path
