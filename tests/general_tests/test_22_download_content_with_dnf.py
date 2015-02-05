@@ -8,6 +8,7 @@ from contextlib import closing
 try:
     import dnf
 except ImportError as e:
+    import unittest
     raise unittest.SkipTest(e)
 
 def url_basename(url):
