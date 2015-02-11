@@ -1,6 +1,7 @@
 #!/bin/bash
 
-exec &> /var/log/fedora_pulp_amazon.log
+OUTPUT="/var/log/fedora_pulp_amazon.log"
+exec &> $OUTPUT
 set -xe
 
 # while ! [ -x /sbin/ldconfig ] ; do sleep 1 ; echo -n . ; done
@@ -19,19 +20,15 @@ grep HOSTNAME= /etc/sysconfig/network
 echo `curl -# http://169.254.169.254/latest/meta-data/public-ipv4` `hostname` >> /etc/hosts
 tail -1 /etc/hosts
 
-
 # PULP install
 #
-curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_pulp.sh | su - root -s /bin/sh &>> /var/log/fedora_pulp_amazon.log
+curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_pulp.sh | su - root -s /bin/sh &>> $OUTPUT
 
 # configure firewall
 # iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
 # iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
 # service iptables save ||
 
-
-# TODO copy from the other
-# buildbot install
+# BUILDBOT install
 #
-#
-# curl
+curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_buildbot.sh | su - root -s /bin/sh &>> $OUTPUT
