@@ -7,7 +7,7 @@ set -xe
 
 # fetch pulp repo file
 pushd /etc/yum.repos.d/
-cat << PULP_REPO_EOF > fedora-pulp.repo
+cat <<PULP_REPO_EOF > fedora-pulp.repo
 # beta
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
