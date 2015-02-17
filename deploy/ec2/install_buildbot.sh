@@ -68,7 +68,7 @@ INVENTORY_EOF
 #cp -f /usr/share/pulp_auto/tests/.coveragerc /usr/share/pulp_auto/
 
 # pipe the rest of this script via a sudo call
-cat <<INVENTORY_EOF | exec sudo -i -u buildbot bash
+cat <<BUILDBOT_EOF | exec sudo -i -u buildbot bash
 # preserve logging
 set -xe
 
@@ -97,5 +97,5 @@ sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
 buildbot start master
 buildslave start slave
 popd
-INVENTORY_EOF
+BUILDBOT_EOF
 exit $?
