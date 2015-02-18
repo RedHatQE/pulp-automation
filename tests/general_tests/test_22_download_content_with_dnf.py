@@ -36,7 +36,7 @@ def download_package_with_dnf(pulp, repo_url, package_name):
     base = dnf.Base()
     conf = base.conf
     conf.cachedir = '/tmp/download_package_with_dnf' 
-    conf.substitutions['releasever'] = '22'
+    conf.substitutions['releasever'] = '21'
     repo = dnf.repo.Repo('ZooInPulp', conf.cachedir)
     repo.baseurl = repo_url
     base.repos.add(repo)
@@ -61,7 +61,7 @@ class DownloadContentTest(PulpTest):
     rpm_url = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm'
     def testcase_01_upload_and_download_using_dnf_rpm(self):
         # create yum-repo, -importer, -distributor
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo')) as (repo, (importer, (distributor))):
+        with deleting(self.pulp, *create_yum_repo(self.pulp, 'test_22_rpm_repo_for_dnf')) as (repo, (importer, (distributor))):
             # create and perform an rpm url upload
             with deleting(self.pulp, upload_url_rpm(self.pulp, self.rpm_url)) as upload:
                 # assign the upload to the repo
