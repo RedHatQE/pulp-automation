@@ -94,8 +94,9 @@ wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automatio
 # FIXME disable the jenkins feed
 sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
 
-buildbot start master
-buildslave start slave
+#BUILDBOT START
+# buildbot start master
+# buildslave start slave
 popd
 BUILDBOT_EOF
 exit $?

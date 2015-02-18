@@ -6,6 +6,8 @@
 set -xe
 
 # fetch pulp repo file
+# http://repos.fedorapeople.org/repos/pulp/pulp/fedora-pulp.repo
+# https://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
 pushd /etc/yum.repos.d/
 cat <<PULP_REPO_EOF > fedora-pulp.repo
 # beta
