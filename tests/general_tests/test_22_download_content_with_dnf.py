@@ -35,26 +35,19 @@ def upload_url_rpm(pulp, url):
 def download_package_with_dnf(pulp, repo_url, package_name):
     base = dnf.Base()
     conf = base.conf
-    conf.cachedir = '/tmp/download_package_with_dnf' 
-    conf.substitutions['releasever'] = '21'
+    conf.cachedir = '/tmp/download_package_with_dnf_1' 
+    conf.substitutions['releasever'] = '22'
     repo = dnf.repo.Repo('ZooInPulp', conf.cachedir)
     repo.baseurl = repo_url
+    repo.sslverify = False
+    repo.load()
     base.repos.add(repo)
-    print base.repos
     base.fill_sack()
     query = base.sack.query() 
     available = query.available()
     available = available.filter(name=package_name)
-    # print search output
-    for package in available:
-        print package.name
     base.download_packages(available)
     package = available[0]
-    print dir (package)
-    print package.chksum
-    print package.location
-    print package.url
-    print package.localPkg()
     return package.name
 
 class DownloadContentTest(PulpTest):
@@ -74,6 +67,8 @@ class DownloadContentTest(PulpTest):
                 Task.wait_for_report(self.pulp, response)
                 # fetch the package through the repo
                 pulp_rpm_url = distributor.content_url(self.pulp, url_basename(self.rpm_url))
+                pulp_repo = distributor.content_url(self.pulp)
                 with closing(temp_url(pulp_rpm_url)) as tmpfile:
                     assert url_basename(self.rpm_url).startswith(rpm_metadata(tmpfile)['unit_key']['name'])
-                assert url_basename(self.rpm_url) == download_package_with_dnf(self.pulp, pulp_rpm_url, "bear")
+                assert "bear" == download_package_with_dnf(self.pulp, pulp_repo, "bear")
+
