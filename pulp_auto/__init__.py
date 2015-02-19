@@ -1,5 +1,7 @@
 # top-level stuff
 from gevent import monkey; monkey.patch_all(aggressive=False, select=True)
+# automation env doesn't care much about the warnings being displayed immediatelly
+import logging; logging.captureWarnings(True)
 
 path = '/pulp/api/v2/'
 static_path = '/pulp/static/'
