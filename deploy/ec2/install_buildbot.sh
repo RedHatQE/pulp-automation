@@ -6,7 +6,7 @@
 set -xe
 
 ### BUILDBOT SECTION
-### jsut a very basic single-node deployment
+### just a very basic single-node deployment
 ### tracking pulp & pulp_auto repos
 
 # automation dependencies
@@ -94,7 +94,7 @@ wget -N -O master/jenkins_feed.py https://raw.github.com/RedHatQE/pulp-automatio
 # FIXME disable the jenkins feed
 sed -e "s/cmd\s*=\s*\['curl',/cmd = ['echo', 'curl',/" -i master/jenkins_feed.py
 
-#BUILDBOT START
+#BUILDBOT START - dont start it here
 # buildbot start master
 # buildslave start slave
 popd

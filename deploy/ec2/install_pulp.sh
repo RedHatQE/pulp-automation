@@ -1,7 +1,6 @@
 #!/bin/bash
 # follows https://pulp-user-guide.readthedocs.org/en/pulp-2.2/installation.html
 
-
 # exec &>> /var/log/fedora_pulp.log
 set -xe
 
@@ -20,7 +19,7 @@ gpgcheck=0
 PULP_REPO_EOF
 popd
 
-# configure firewall
+# configure firewall - open HTTP, HTTPS, 5672, 5671,..
 # iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
 # iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
 # service iptables save ||

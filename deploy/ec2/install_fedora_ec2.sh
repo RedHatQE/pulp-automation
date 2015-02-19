@@ -13,13 +13,11 @@ sed -i s,HOSTNAME=.*$,HOSTNAME=`hostname`, /etc/sysconfig/network
 grep HOSTNAME= /etc/sysconfig/network
 echo `curl -# http://169.254.169.254/latest/meta-data/public-ipv4` `hostname` >> /etc/hosts
 tail -1 /etc/hosts
-# PULP install
+
+# PULP install and run
 #
 curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_pulp.sh | /bin/sh &>> $OUTPUT
-# configure firewall
-# iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
-# iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
-# service iptables save ||
+
 # BUILDBOT install
 #
 curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_buildbot.sh | /bin/sh &>> $OUTPUT
