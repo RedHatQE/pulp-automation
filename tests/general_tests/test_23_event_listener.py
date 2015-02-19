@@ -67,7 +67,7 @@ class EventListenerTest(PulpTest):
         tasks = Task.from_report(self.pulp, report)
         # fetch the request as POSTed by pulp event listener to the bin (http://requestb.in/<bin_id>)
         self.bin.reload()
-        assert self.bin.request_count == 0, 'invalid event listener POST count (%s)' \
+        assert self.bin.request_count == 1, 'invalid event listener POST count (%s)' \
                                                 % self.bin.request_count
         el_request = self.bin.requests[0]
         # assert the bin was POSTed no later any task finished
