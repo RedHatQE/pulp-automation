@@ -158,8 +158,12 @@ def deleting(pulp, *things):
     def wrapper_ctx(thing):
         with calling_method(thing, 'delete', pulp) as thing:
             yield thing
+        # async-delete hacks
+        if pulp.last_response.status_code == 202:
+            Task.wait_for_report(pulp, pulp.last_response)
         assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
                 (thing, pulp.last_response)
+
 
     with wrapper_ctx(*things) as otherthings:
         yield otherthings
