@@ -52,6 +52,7 @@ class AbstractTask(object):
             raise TaskFailure('Task failed: %r' % self.data['error'], task=self)
 
 class TaskDetails(hasdata.HasData):
+    time_format = '%Y-%m-%dT%H:%M:%SZ'
     relevant_data_keys = [
         "error",
         "state",
@@ -81,6 +82,15 @@ class TaskDetails(hasdata.HasData):
     def id(self, other):
         self.data['task_id'] = other
 
+    @property
+    def start_time(self):
+        # return data['start_time'] as a timestruct or None
+        return self.data['start_time'] and time.strptime(self.data['start_time'], self.time_format)
+
+    @property
+    def finish_time(self):
+        # return data['finish_time'] as timestruct or None
+        return self.data['finish_time'] and time.strptime(self.data['finish_time'], self.time_format)
 
 class Task(TaskDetails, AbstractTask, Item):
     '''an item-view task'''
@@ -98,18 +108,40 @@ class Task(TaskDetails, AbstractTask, Item):
             ret.wait(pulp, timeout=timeout)
 
     @classmethod
-    def wait_for_report(cls, pulp, response, timeout=300):
+    def from_report(cls, pulp, report):
+        # report-based constructor
         # now every asyncronous call returns a call report object
         # call report has 'spawned_tasks' that contains list of tasks
         # meanwhile every tasks can have its own spawned tasks
-        ret = cls.from_report(response)['spawned_tasks']
-        if isinstance(ret, list):
-            for task in ret:
-                task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
-                Task.wait_for_response(pulp, task_resp, timeout=timeout)
-                task_resp = pulp.send(Request('GET', strip_url(task['_href'])))
-                if 'spawned_tasks' in Task.from_response(task_resp).data:
-                    Task.wait_for_report(pulp, task_resp, timeout=timeout)
+        data = report.json()
+        assert 'spawned_tasks' in data, 'invalid report data: %s' % data
+        reported_tasks = data['spawned_tasks']
+        if not reported_tasks:
+            return []
+        ret = []
+        for reported_task in reported_tasks:
+            response = pulp.send(Request('GET', strip_url(reported_task['_href'])))
+            assert pulp.is_ok, response.reason
+            task = Task.from_response(response)
+            ret.append(task)
+            if 'spawned_tasks' in task.data:
+                # recurse
+                ret += cls.from_report(pulp, response)
+        return ret
+
+    @classmethod
+    def from_call_report_data(cls, data):
+        # older interface; event-listeners still use this to report tasks
+        assert 'call_report' in data, 'invalid data format: %s' % data
+        return cls(data['call_report'])
+
+
+
+    @classmethod
+    def wait_for_report(cls, pulp, response, timeout=300):
+        tasks = Task.from_report(pulp, response)
+        for task in tasks:
+            task.wait(pulp, timeout=timeout)
 
     @classmethod
     def wait_for_reports(cls, pulp, responses, timeout=300):
