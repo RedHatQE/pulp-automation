@@ -153,3 +153,33 @@ class EventListenerTest(PulpTest):
         assert el_task.id in [task.id for task in publish_tasks], 'invalid task id posted: %s' % el_task.id
         assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:publish']) == sorted(el_task.data['tags']), \
                 'invalid task tags: %s' % el_task.data['tags']
+
+    def test_05_repo_publish_finish(self):
+        self.el.update(self.pulp, {'event_types': ['repo.publish.finish']})
+        self.assertPulpOK()
+        self.el.reload(self.pulp)
+        report = self.repo.publish(self.pulp, self.distributor.id)
+        # wait till publish-induced tasks finish
+        Task.wait_for_report(self.pulp, report)
+        # fetch the tasks spawned for the publish to perform
+        tasks = [task for task in Task.from_report(self.pulp, report) \
+                if u'pulp:action:publish' in task.data['tags']]
+        assert tasks, 'no tasks induced'
+        # assert bin status
+        self.bin.reload()
+        assert self.bin.request_count == 1, 'invalid event listener requests count: %s' % \
+                self.bin.request_count
+        el_request = self.bin.requests[0]
+        # assert request method
+        assert el_request.method == 'POST', 'invalid request method: %s' % el_request.method
+        # assert the request was made after all tasks finished
+        tasks_finished_after_request = [task.id for task in tasks if el_request.time < task.finish_time]
+        assert tasks_finished_after_request == [], '%s finished before request at %s' % \
+                (tasks_finished_after_request, el_request.time)
+        # the request body contains a task
+        el_task = Task.from_call_report_data(json.loads(el_request.body))
+        el_task.reload(self.pulp)
+        # assert proper task was posted
+        assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
+        assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:publish']) == sorted(el_task.data['tags']), \
+                'invalid task tags: %s' % el_task.data['tags']
