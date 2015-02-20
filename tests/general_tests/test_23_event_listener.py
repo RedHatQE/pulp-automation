@@ -174,7 +174,7 @@ class EventListenerTest(PulpTest):
         assert el_request.method == 'POST', 'invalid request method: %s' % el_request.method
         # assert the request was made after all tasks finished
         tasks_finished_after_request = [task.id for task in tasks if el_request.time < task.finish_time]
-        assert tasks_finished_after_request == [], '%s finished before request at %s' % \
+        assert tasks_finished_after_request == [], '%s finished after request at %s' % \
                 (tasks_finished_after_request, el_request.time)
         # the request body contains a task
         el_task = Task.from_call_report_data(json.loads(el_request.body))
