@@ -74,7 +74,7 @@ class EventListenerTest(PulpTest):
         # assert the bin was POSTed no later any task finished
         tasks_finished_before_request = [task.id for task in tasks if el_request.time > task.finish_time]
         assert tasks_finished_before_request == [], 'tasks %s finished before request at: %s' % \
-                (tasks_finished_before_request, el_requets.time)
+                (tasks_finished_before_request, el_request.time)
         # FIXME: not yet specified in docs: assert the bin was not POSTed before any task has started
         # tasks_started_after_request = [task.id for task in tasks if el_request.time < task.start_time]
         # assert tasks_started_after_request == [], 'tasks %s started after request at: %s' % \
@@ -114,4 +114,40 @@ class EventListenerTest(PulpTest):
         # assert proper task was posted
         assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
         assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:sync']) == sorted(el_task.data['tags']), \
+                'invalid task tags: %s' % el_task.data['tags']
+
+    def test_04_repo_publish_start(self):
+        self.el.update(self.pulp, {'event_types': ['repo.publish.start']})
+        self.assertPulpOK()
+        self.el.reload(self.pulp)
+        report = self.repo.publish(self.pulp, self.distributor.id)
+        # wait till report-induced tasks finish
+        Task.wait_for_report(self.pulp, report)
+        # fetch the tasks spawned for report; only
+        sync_tasks = [task for task in Task.from_report(self.pulp, report) \
+                if u'pulp:action:sync' in task.data['tags']]
+        publish_tasks = [task for task in Task.from_report(self.pulp, report) \
+                if u'pulp:action:publish' in task.data['tags']]
+        assert publish_tasks, 'no publish tasks induced'
+        self.bin.reload()
+        assert self.bin.request_count == 1, 'invalid event listener requests count: %s' % \
+                self.bin.request_count
+        el_request = self.bin.requests[0]
+        assert el_request.method == 'POST', 'invalid request method: %s' % el_request.method
+        # assert the event was not triggered after any publish task finished
+        publish_tasks_finished_before_request = [task.id for task in publish_tasks \
+                if el_request.time > task.finish_time]
+        assert publish_tasks_finished_before_request == [], '%s publish tasks finished before request at: %s' % \
+                (publish_tasks_finished_before_request, el_request.time)
+        # assert the event was not triggered before all sync tasks finished
+        sync_tasks_finished_after_request = [task.id for task in sync_tasks \
+                if el_request.time < sync_task.finish_time]
+        assert sync_tasks_finished_after_request == [], '%s sync tasks finished after request at: %s' % \
+                (sync_tasks_finished_after_request, el_request.time)
+        # the request body contains a task
+        el_task = Task.from_call_report_data(json.loads(el_request.body))
+        el_task.reload(self.pulp)
+        # assert proper task was posted
+        assert el_task.id in [task.id for task in publish_tasks], 'invalid task id posted: %s' % el_task.id
+        assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:publish']) == sorted(el_task.data['tags']), \
                 'invalid task tags: %s' % el_task.data['tags']
