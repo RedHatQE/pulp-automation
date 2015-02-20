@@ -65,6 +65,7 @@ class EventListenerTest(PulpTest):
         Task.wait_for_report(self.pulp, report)
         # keep track of all the spawned tasks
         tasks = Task.from_report(self.pulp, report)
+        assert tasks, 'no tasks induced'
         # fetch the request as POSTed by pulp event listener to the bin (http://requestb.in/<bin_id>)
         self.bin.reload()
         assert self.bin.request_count == 1, 'invalid event listener POST count (%s)' \
@@ -98,6 +99,7 @@ class EventListenerTest(PulpTest):
         Task.wait_for_report(self.pulp, report)
         # fetch the tasks sync-call has spawned
         tasks = Task.from_report(self.pulp, report)
+        assert tasks, 'no tasks induced'
         # check the requestsb.in got notified
         self.bin.reload()
         assert self.bin.request_count == 1, 'invalid event listener requests count: %s' % \
