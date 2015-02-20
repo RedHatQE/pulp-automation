@@ -99,7 +99,7 @@ class EventListenerTest(PulpTest):
         # fetch the tasks sync-call has spawned
         tasks = Task.from_report(self.pulp, report)
         # check the requestsb.in got notified
-        self.el.reload(self.pulp)
+        self.bin.reload()
         assert self.bin.request_count == 1, 'invalid event listener requests count: %s' % \
                                                 self.bin.request_count
         el_request = self.bin.requests[0]
