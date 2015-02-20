@@ -81,3 +81,5 @@ class EventListenerTest(PulpTest):
         el_task.reload(self.pulp)
         # assert the task is indeed in the tasks list spawned by pulp to perform repo sync
         assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
+        assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:sync']) == sorted(el_task.data['tags']), \
+                'invalid task tags: %s' % el_task.data['tags']
