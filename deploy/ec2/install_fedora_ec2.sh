@@ -16,8 +16,8 @@ tail -1 /etc/hosts
 
 # PULP install and run
 #
-curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_pulp.sh | /bin/sh &>> $OUTPUT
+curl https://raw.githubusercontent.com/RedHatQE/pulp-automation/master/deploy/ec2/install_pulp.sh | /bin/sh &>> $OUTPUT
 
 # BUILDBOT install
 #
-curl https://raw.githubusercontent.com/kvitajakub/pulp-automation/master/deploy/ec2/install_buildbot.sh | /bin/sh &>> $OUTPUT
+curl https://raw.githubusercontent.com/RedHatQE/pulp-automation/master/deploy/ec2/install_buildbot.sh | /bin/sh &>> $OUTPUT
