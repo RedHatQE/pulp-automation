@@ -70,6 +70,7 @@ class EventListenerTest(PulpTest):
         assert self.bin.request_count == 1, 'invalid event listener POST count (%s)' \
                                                 % self.bin.request_count
         el_request = self.bin.requests[0]
+        assert el_request.method == 'POST', 'invalid request method: %s' % el_request.method
         # assert the bin was POSTed no later any task finished
         assert all(el_request.time < task.finish_time for task in tasks), \
                 '%s finished before %s' % \
