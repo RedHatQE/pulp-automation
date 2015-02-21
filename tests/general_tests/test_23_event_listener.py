@@ -217,7 +217,7 @@ class EventListenerTest(PulpTest):
         # sync part
         assert el_sync_start_task.state == TASK_RUNNING_STATE, 'invalid state: %s' % el_sync_start_task.state
         assert el_sync_start_task.id in [task.id for task in sync_tasks], 'invalid task posted: %s' % el_sync_start_task.id
-        assert el_sync_finish_task.state == TASK_RUNNING_STATE, 'invalid state: %s' % el_sync_finish_task
+        assert el_sync_finish_task.state == TASK_FINISHED_STATE, 'invalid state: %s' % el_sync_finish_task
         assert el_sync_finish_task.id in [task.id for task in sync_tasks], 'invalid task posted: %s' % el_sync_finish_task.id
         # start and finish are the same task but posted twice (with different state)
         assert el_sync_start_task.id == el_sync_finish_task.id, 'sync start and finish events refer to different tasks respectively'
