@@ -3,6 +3,13 @@ from item import (Item, GroupItem)
 from pulp_auto.pulp import Request
 from pulp_auto import strip_url
 
+TASK_WAITING_STATE = 'waiting'
+TASK_READY_STATE = 'ready'
+TASK_RUNNING_STATE = 'running'
+TASK_FINISHED_STATE = 'finished'
+TASK_ERROR_STATE = 'error'
+TASK_CANCELLED_STATE = 'cancelled'
+
 class TaskError(AssertionError):
    '''super class for task failures'''
    def __init__(self, *args, **kvs):
@@ -66,9 +73,9 @@ class TaskDetails(hasdata.HasData):
         "tags"
     ]
     required_data_keys = ['task_id', 'state']
-    active_states = ['running', 'waiting']
-    end_states = ['finished', 'error', 'canceled', 'cancelled']
-    error_states = ['error']
+    active_states = [TASK_RUNNING_STATE, TASK_WAITING_STATE]
+    end_states = [TASK_FINISHED_STATE, TASK_ERROR_STATE, TASK_CANCELLED_STATE, 'canceled']
+    error_states = [TASK_ERROR_STATE]
 
     @property
     def state(self):
