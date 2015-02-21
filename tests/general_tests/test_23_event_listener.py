@@ -1,5 +1,5 @@
 from pulp_auto.event_listener import EventListener
-from pulp_auto.task import Task
+from pulp_auto.task import Task, TASK_RUNNING_STATE, TASK_FINISHED_STATE
 from pulp_auto.repo import create_yum_repo
 from tests.pulp_test import PulpTest, deleting
 import json
@@ -84,6 +84,7 @@ class EventListenerTest(PulpTest):
         # assert there's a task POSTed to the bin with the same ID pulp reported with sync
         # request.body contains original POSTed task-report-data --- create a Task object from it
         el_task = Task.from_call_report_data(json.loads(el_request.body))
+        assert el_task.state == TASK_RUNNING_STATE, 'invalid task state: %s' % el_task.state
         el_task.reload(self.pulp)
         # assert the task is indeed in the tasks list spawned by pulp to perform repo sync
         assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
@@ -112,6 +113,7 @@ class EventListenerTest(PulpTest):
                 (tasks_finished_after_request, el_request.time)
         # the request body contains a task
         el_task = Task.from_call_report_data(json.loads(el_request.body))
+        assert el_task.state == TASK_FINISHED_STATE, 'invalid task state: %s' % el_task.state
         el_task.reload(self.pulp)
         # assert proper task was posted
         assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
@@ -148,6 +150,7 @@ class EventListenerTest(PulpTest):
                 (sync_tasks_finished_after_request, el_request.time)
         # the request body contains a task
         el_task = Task.from_call_report_data(json.loads(el_request.body))
+        assert el_task.state == TASK_RUNNING_STATE, 'invalid task state: %s' % el_task.state
         el_task.reload(self.pulp)
         # assert proper task was posted
         assert el_task.id in [task.id for task in publish_tasks], 'invalid task id posted: %s' % el_task.id
@@ -178,8 +181,50 @@ class EventListenerTest(PulpTest):
                 (tasks_finished_after_request, el_request.time)
         # the request body contains a task
         el_task = Task.from_call_report_data(json.loads(el_request.body))
+        assert el_task.state == TASK_FINISHED_STATE, 'invalid task state: %s' % el_task.state
         el_task.reload(self.pulp)
         # assert proper task was posted
         assert el_task.id in [task.id for task in tasks], 'invalid task id posted: %s' % el_task.id
         assert sorted([u'pulp:repository:EventListenerRepo', u'pulp:action:publish']) == sorted(el_task.data['tags']), \
                 'invalid task tags: %s' % el_task.data['tags']
+
+    def test_06_wildcard_events(self):
+        # prepare event listener
+        self.el.update(self.pulp, {'event_types': ['*']})
+        self.assertPulpOK()
+        self.el.reload(self.pulp)
+        # trigger repo sync and publish; wait for related tasks to finish
+        sync_report = self.repo.sync(self.pulp)
+        Task.wait_for_report(self.pulp, sync_report)
+        publish_report = self.repo.publish(self.pulp, self.distributor.id)
+        Task.wait_for_report(self.pulp, publish_report)
+        # fetch tasks data
+        sync_tasks = Task.from_report(self.pulp, sync_report)
+        publish_tasks = Task.from_report(self.pulp, publish_report)
+        assert sync_tasks, 'no sync tasks induced'
+        assert publish_tasks, 'no publish tasks induced'
+        # assert bin status
+        self.bin.reload()
+        assert self.bin.request_count == 4, 'invalid event listener request count: %s' % \
+                self.bin.request_count
+        el_request_tasks = [Task.from_call_report_data(json.loads(request.body)) for request in self.bin.requests]
+        # the POSTed tasks should look like this
+        # - sync running task for repo.sync.start event
+        # - sync finished task for repo.sync.finis  event
+        # - publish running task for repo.publish.start event
+        # - publish finished task for repo.publish.finish event
+        el_sync_start_task, el_sync_finish_task, el_publish_start_task, el_publish_finish_task = el_request_tasks
+        # sync part
+        assert el_sync_start_task.state == TASK_RUNNING_STATE, 'invalid state: %s' % el_sync_start_task.state
+        assert el_sync_start_task.id in [task.id for task in sync_tasks], 'invalid task posted: %s' % el_sync_start_task.id
+        assert el_sync_finish_task.state == TASK_RUNNING_STATE, 'invalid state: %s' % el_sync_finish_task
+        assert el_sync_finish_task.id in [task.id for task in sync_tasks], 'invalid task posted: %s' % el_sync_finish_task.id
+        # start and finish are the same task but posted twice (with different state)
+        assert el_sync_start_task.id == el_sync_finish_task.id, 'sync start and finish events refer to different tasks respectively'
+        # publish part
+        assert el_publish_start_task.state == TASK_RUNNING_STATE, 'invalid state: %s' % el_publish_start_task.state
+        assert el_publish_start_task.id in [task.id for task in publish_tasks], 'invalid task posted: %s' % el_publish_start_task.id
+        assert el_publish_finish_task.state == TASK_FINISHED_STATE, 'invalid state: %s' % el_publish_finish_task.state
+        assert el_publish_finish_task.id in [task.id for task in publish_tasks], 'invalid task posted: %' % el_publish_finish_task.id
+        # start and finish are the same task but posted twice (with different state)
+        assert el_publish_start_task.id == el_publish_finish_task.id, 'publish start and finish events refer to different tasks respectively'
