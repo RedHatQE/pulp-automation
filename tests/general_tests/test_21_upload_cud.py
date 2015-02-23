@@ -64,13 +64,13 @@ class UploadCudTest(PulpTest):
 
     def testcase_02_upload_rpm(self):
         # create yum-repo, -importer, -distributor
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo_1')) as (repo, (importer, (distributor))):
+        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo')) as (repo, (importer, (distributor))):
             # create and perform an rpm url upload
             self.rpm_uploader(self.pulp, self.rpm_url_bear, repo, distributor)
 
     def testcase_03_parallel_upload_rpms(self):
         import gevent
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo_2')) as (repo, (importer, (distributor))):
+        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo')) as (repo, (importer, (distributor))):
             # create and perform an rpm url upload
             jobs = [gevent.spawn(lambda: self.rpm_uploader(self.pulp, url, repo, distributor)) for url in \
                             [self.rpm_url_bear, self.rpm_url_mouse]]

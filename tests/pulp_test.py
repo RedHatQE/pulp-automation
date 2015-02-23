@@ -164,7 +164,6 @@ def deleting(pulp, *things):
         assert pulp.is_ok, 'deleting %s caused pulp not feeling ok: %s' % \
                 (thing, pulp.last_response)
 
-
     with wrapper_ctx(*things) as otherthings:
         yield otherthings
 
