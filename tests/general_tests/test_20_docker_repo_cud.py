@@ -1,4 +1,5 @@
 import json
+import pprint
 from tests import pulp_test
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task,  TaskFailure
@@ -8,20 +9,15 @@ from pulp_auto.units import Orphans
 def setUpModule():
     pass
 
-
 class DockerRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(DockerRepoTest, cls).setUpClass()
-        cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
+	cls.repo = Repo(data={'id': "docker-test123"})
         cls.feed = 'https://index.docker.io/'
 
 
 class SimpleDockerRepoTest(DockerRepoTest):
-
-    #def setUp(self):
-        #wait for confirm
-        #raw_input("continue?")
 
     def test_01_create_repo(self):
         self.repo.create(self.pulp)
@@ -76,22 +72,25 @@ class SimpleDockerRepoTest(DockerRepoTest):
         response = self.repo.associate_distributor(
             self.pulp,
             data={
-                'distributor_type_id': 'docker_distributor_web',
-                'distributor_config': {
+		'distributor_type_id': 'docker_distributor_web',
+		'distributor_id': 'dist-1',
+		'distributor_config': {
                     'http': True,
                     'https': True,
                     'relative_url': '/library/busybox'
                 },
-                'distributor_id': 'dist_1',
+                'last_publish': None,
                 'auto_publish': False
             }
         )
+
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
+        print pprint.pformat(distributor.data)
         self.assertEqual(
             distributor,
             {
-                'id': 'dist_1',
+                'id': "dist-1",
                 'distributor_type_id': 'docker_distributor_web',
                 'repo_id': self.repo.id,
                 'config': {
@@ -112,7 +111,7 @@ class SimpleDockerRepoTest(DockerRepoTest):
     def test_08_publish_repo(self):
         response = self.repo.publish(
             self.pulp,
-            'dist_1'
+            'dist-1'
         )
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
