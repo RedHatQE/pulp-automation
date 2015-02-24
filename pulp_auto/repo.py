@@ -380,16 +380,6 @@ def create_docker_repo(
             'feed': 'https://index.docker.io/',
             'display_name': display_name,
             'notes': {"_docker-type": "docker-repo"},
-            'importer_type_id': 'docker_importer',
-            'importer_config': {'feed': feed, "upstream_name": "busybox"},
-            'distributor_type_id': 'docker_distributor_web',
-            'distributor_config': {
-                    'http': True,
-                    'https': True,
-                    'relative_url': '/library/busybox'
-                },
-            'distributor_id': 'dist_1',
-            'auto_publish': False
         }
     )
     if relative_url is None:
