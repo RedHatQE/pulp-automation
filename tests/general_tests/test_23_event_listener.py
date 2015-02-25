@@ -252,6 +252,7 @@ class EventListenerErrorTest(PulpTest):
         with deleting(self.pulp, *create_yum_repo(self.pulp, 'sync_error_repo',
                     feed='http://example.com/repos/none')) as (repo, (importer, distributor)):
             response = repo.sync(self.pulp)
+            self.assertPulpOK()
             with self.assertRaises(TaskFailure):
                 # make sure the sync did not succeed
                 Task.wait_for_report(self.pulp, response)
@@ -259,6 +260,26 @@ class EventListenerErrorTest(PulpTest):
             # assert the bin contains request with a failed task in body
             self.bin.reload()
             assert self.bin.request_count == 1, 'invalid bin.request count: %s' % self.bin.request_count
+            el_request = self.bin.requests[0]
+            assert el_request.method == 'POST', 'invalid bin request method: %s' % el_request.method
+            el_task = Task.from_call_report_data(json.loads(el_request.body))
+            assert el_task.state == TASK_ERROR_STATE, 'invalid request.body:Task.state: %s' % el_task.state
+            assert el_task.id in [task.id for task in tasks], 'invalid request.body:Task.id: %s' % el_task.id
+
+    def test_02_repo_publish_finish(self):
+        self.el.update(self.pulp, {'event_listener': ['repo.publish.finish']})
+        self.el.reload(self.pulp)
+        with deleting(self.pulp, *create_yum_repo(self.pulp, 'publish_error_repo',
+                    feed='https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')) as (repo, (importer, distributor)):
+            response = repo.publish(self.pulp, 'invalid_distributor_id')
+            self.assertPulpOK()
+            with self.assertRaises(TaskFailure):
+                # make sure the publish task failed
+                Task.wait_for_report(self.pulp, response)
+            task = Task.from_report(self.pulp, response)
+            # assert the bin contains a request with a fained task in body
+            self.bin.reload()
+            assert self.bin.request_count == 1, 'invalid bin.request_count: %s' % self.bin.request_count
             el_request = self.bin.requests[0]
             assert el_request.method == 'POST', 'invalid bin request method: %s' % el_request.method
             el_task = Task.from_call_report_data(json.loads(el_request.body))
