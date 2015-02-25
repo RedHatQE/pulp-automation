@@ -74,6 +74,14 @@ class DockerOrphan(AbstractOrphan):
     '''docker-specific orphan code'''
     path = AbstractOrphan.path + "/docker_image/"
 
+#Nodes and repositories leaked from pulp-nodes into pulp-server 2.6.0-7 - this will be fixed in 2.6.1
+class NodeOrphan(AbstractOrphan):
+    path = AbstractOrphan.path + "/node/"
+
+class RepositoryOrphan(AbstractOrphan):
+    path = AbstractOrphan.path + "/repository/"
+# End of workaround
+
 
 class Orphans(object):
     '''The content/orphans/ container handler'''
