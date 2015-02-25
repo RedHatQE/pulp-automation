@@ -1,5 +1,4 @@
 import json
-import pprint
 from tests import pulp_test
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task,  TaskFailure
@@ -86,7 +85,6 @@ class SimpleDockerRepoTest(DockerRepoTest):
 
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
-        print pprint.pformat(distributor.data)
         self.assertEqual(
             distributor,
             {
