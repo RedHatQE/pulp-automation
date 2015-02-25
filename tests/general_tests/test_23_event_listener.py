@@ -1,5 +1,6 @@
 from pulp_auto.event_listener import EventListener
-from pulp_auto.task import Task, TASK_RUNNING_STATE, TASK_FINISHED_STATE
+from pulp_auto.task import Task, TASK_RUNNING_STATE, TASK_FINISHED_STATE, TASK_ERROR_STATE, \
+    TaskFailure
 from pulp_auto.repo import create_yum_repo
 from tests.pulp_test import PulpTest, deleting
 import json
@@ -228,3 +229,38 @@ class EventListenerTest(PulpTest):
         assert el_publish_finish_task.id in [task.id for task in publish_tasks], 'invalid task posted: %' % el_publish_finish_task.id
         # start and finish are the same task but posted twice (with different state)
         assert el_publish_start_task.id == el_publish_finish_task.id, 'publish start and finish events refer to different tasks respectively'
+
+
+class EventListenerErrorTest(PulpTest):
+    def setUp(self):
+        super(EventListenerErrorTest, self).setUp()
+        # set up a fresh http://requestb.in bin for each test method
+        self.bin = Bin.create()
+        el = EventListener.http(self.bin.url)
+        response = el.create(self.pulp)
+        self.assertPulpOK()
+        self.el = EventListener.from_response(response)
+
+    def tearDown(self):
+        self.el.delete(self.pulp)
+        self.assertPulpOK()
+        super(EventListenerErrorTest, self).tearDown()
+
+    def test_01_repo_sync_finish(self):
+        self.el.update(self.pulp, {'event_types': ['repo.sync.finish']})
+        self.el.reload(self.pulp)
+        with deleting(self.pulp, *create_yum_repo(self.pulp, 'sync_error_repo',
+                    feed='http://example.com/repos/none')) as (repo, (importer, distributor)):
+            response = repo.sync(self.pulp)
+            with self.assertRaises(TaskFailure):
+                # make sure the sync did not succeed
+                Task.wait_for_report(self.pulp, response)
+            tasks = Task.from_report(self.pulp, response)
+            # assert the bin contains request with a failed task in body
+            self.bin.reload()
+            assert self.bin.request_count == 1, 'invalid bin.request count: %s' % self.bin.request_count
+            el_request = self.bin.requests[0]
+            assert el_request.method == 'POST', 'invalid bin request method: %s' % el_request.method
+            el_task = Task.from_call_report_data(json.loads(el_request.body))
+            assert el_task.state == TASK_ERROR_STATE, 'invalid request.body:Task.state: %s' % el_task.state
+            assert el_task.id in [task.id for task in tasks], 'invalid request.body:Task.id: %s' % el_task.id
