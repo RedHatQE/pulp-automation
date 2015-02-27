@@ -55,6 +55,18 @@
 # - tags: a list of custom consumer "descriptors"
 #
 #
+# The Nodes Role
+# lists nodes to test
+# attributes:
+# - auth: the auth details to log into pulp running on the node
+# - id: unique pulp node id
+# - hostname: as above
+# - ssh_key: as above
+# - url: the url of pulp server running on the node
+# - verify_api_ssl: as in pulp section
+# - display_name: shown to users instead of id
+# - description: some details about the node
+# - tags: as above, for test case filtering
 
 ROLES:
   pulp: &PULP
@@ -85,3 +97,11 @@ ROLES:
     - *ZOO
     pulp: *PULP
     tags: ['default']
+  nodes:
+    - &node_01
+      auth: [admin, admin]
+      hostname: pulp-node-01.example.com
+      url: 'https://pulp-node-01.example.com'
+      verify_api_ssl: false
+      display_name: pulp-node-01
+      description: 'the pulp node 01 of the example.com domain'
