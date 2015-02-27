@@ -36,4 +36,4 @@ def path_last(path):
 
 
 from pulp import (Pulp, Request, ResponseLike, format_response, format_preprequest)
-import item, repo, namespace, hasdata, qpid_handle, consumer, agent, permission, handler, units, upload, event_listener
+import item, repo, namespace, hasdata, qpid_handle, consumer, agent, permission, handler, units, upload, event_listener, node
