@@ -1,29 +1,10 @@
-from tests.pulp_test import PulpTest, deleting, temp_url
+from tests.pulp_test import PulpTest, deleting
 from pulp_auto.upload import Upload, rpm_metadata
 from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task
+from tests.utils.upload import upload_url_rpm, temp_url, url_basename
 from contextlib import closing
 
-def url_basename(url):
-    '''basename from url'''
-    import os
-    import urllib2
-    return os.path.basename(urllib2.urlparse.urlsplit(url).path)
-
-def upload_url_rpm(pulp, url):
-    '''create an upload object fed from the url'''
-    # get basename for upload purpose
-    basename = url_basename(url)
-    with closing(temp_url(url)) as tmpfile:
-        data = rpm_metadata(tmpfile.file)
-        # augment rpm file name
-        data['unit_metadata']['relativepath'] = basename
-        data['unit_metadata']['filename'] = basename
-        upload = Upload.create(pulp, data=data)
-        # feed the data
-        tmpfile.file.seek(0)
-        upload.file(pulp, tmpfile.file)
-    return upload
 
 class UploadCudTest(PulpTest):
     rpm_url_bear = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm'
