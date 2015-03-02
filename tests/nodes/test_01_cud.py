@@ -20,7 +20,7 @@ class NodeTest(PulpTest):
         cls.node = Node.register(cls.pulp,  node_role.id,
                 description=getattr(node_role, 'description', None),
                 display_name=getattr(node_role, 'display_name', None))
-        cls.pulp_node = Pulp(node_role.url, tuple(node_role.auth), node_role.verify_api_ssl)
+        cls.pulp_child = Pulp(node_role.url, tuple(node_role.auth), node_role.verify_api_ssl)
         repo_role = ROLES.repos[0]
         cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **repo_role)
 
@@ -44,5 +44,5 @@ class NodeTest(PulpTest):
         assert self.node in Node.list(self.pulp), 'node %s not found on pulp' % self.node.id
 
     def test_04_login(self):
-        self.pulp_node.send(login_request())
+        self.pulp_child.send(login_request())
         self.assertPulpOK()
