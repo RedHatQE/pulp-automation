@@ -31,3 +31,8 @@ class Node(Consumer):
     def unbind_repo(self, pulp, repo_id, distributor_id=NodeDistributor.default_id):
         '''unbind this node from a repo'''
         return self.unbind_distributor(pulp, repo_id, distributor_id)
+
+    def sync_repo(self, pulp, repo_id):
+        '''sync a bound repo to this node'''
+        return self.update_unit(pulp, type_id='repository', unit_key=dict(repo_id=repo_id),
+                    options={})

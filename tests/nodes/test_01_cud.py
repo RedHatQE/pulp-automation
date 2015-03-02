@@ -3,8 +3,9 @@ simple nodes e2e scenario
 """
 from tests.pulp_test import PulpTest, deleting, requires_any, ROLES
 from pulp_auto.pulp import Pulp, ResponseLike
+from pulp_auto.consumer import Cli
 from pulp_auto.login import request as login_request
-from pulp_auto.repo import create_yum_repo, NodeDistributor
+from pulp_auto.repo import create_yum_repo, NodeDistributor, Repo
 from pulp_auto.task import Task
 from pulp_auto.common_consumer import Binding
 from tests.utils.upload import upload_url_rpm, temp_url, url_basename, download_package_with_dnf
@@ -17,15 +18,16 @@ class NodeTest(PulpTest):
     def setUpClass(cls):
         super(NodeTest, cls).setUpClass()
         node_role = ROLES.nodes[0]
-        cls.node = Node.register(cls.pulp,  node_role.id,
-                description=getattr(node_role, 'description', None),
-                display_name=getattr(node_role, 'display_name', None))
+        # configure the node via cli
+        cli = Cli.ready_instance(**node_role)
+        cls.node = Node.get(cls.pulp,  node_role.id)
+        cls.node.cli = cli
+        # instantiate a pulp child from the role details
         cls.pulp_child = Pulp(node_role.url, tuple(node_role.auth), node_role.verify_api_ssl)
 
     @classmethod
     def tearDownClass(cls):
-        with deleting(cls.pulp, cls.node):
-            pass
+        cls.node.cli.unregister()
         super(NodeTest, cls).tearDownClass()
 
 class NodeTestActivation(NodeTest):
@@ -85,6 +87,11 @@ class NodeTestRepo(NodeTest):
     def test_03_node_bind_repo(self):
         response = self.node.bind_repo(self.pulp, self.repo.id, self.node_distributor.id)
         self.assertPulpOK()
+
+    def test_04_child_repo_sync(self):
+        response = self.node.sync_repo(self.pulp, self.repo.id)
+        self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
 
     def test_99_node_unbind_repo(self):
         self.node.unbind_repo(self.pulp, self.repo.id, self.node_distributor.id)
