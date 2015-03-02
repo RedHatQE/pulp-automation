@@ -4,6 +4,8 @@ from . import (path_join, format_response, content_path)
 from pulp_auto.task import Task
 from pulp_auto.item import ScheduledAction
 
+NODE_DISTRIBUTOR_TYPE_ID='nodes_http_distributor'
+
 class RepoAppl(object):
     path = '/repositories/'
 
@@ -67,7 +69,7 @@ class Repo(item.Item):
         data={
             'id': distributor_id,
             'override_config': config
-        }        
+        }
         return pulp.send(self.request('POST', path=path, data=data))
 
     def get_publish_history(
@@ -137,7 +139,7 @@ class Repo(item.Item):
         data,
         path='/actions/unassociate/'
     ):
-        # example of criteria usage 
+        # example of criteria usage
         # {"criteria": {"type_ids": ["puppet_module"], "filters": {"unit": {"name": "tomcat7_rhel"}}}}
         return pulp.send(self.request('POST', path=path, data=data))
 
@@ -209,6 +211,19 @@ class Distributor(item.AssociatedItem):
         return path_join(pulp.url, content_path,
                 self.data['config']['relative_url'], path).strip('/')
 
+class NodeDistributor(Distributor):
+    '''a node distributor'''
+    # for convenience, default ID is set to the same as the type ID
+    default_id = NODE_DISTRIBUTOR_TYPE_ID
+    required_data_keys = ['id', 'distributor_type_id']
+
+    @classmethod
+    def default(cls, id=NODE_DISTRIBUTOR_TYPE_ID, config={}, auto_publish=False):
+
+        '''default config constructor'''
+        return cls(data=dict(id=id,
+                            distributor_type_id=NODE_DISTRIBUTOR_TYPE_ID,
+                            distributor_config=config, auto_publish=auto_publish))
 
 class Association(item.AssociatedItem):
     path = '/search/units/'

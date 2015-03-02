@@ -2,6 +2,8 @@
 pulp node Item
 """
 from pulp_auto.consumer.consumer_class import Consumer
+from pulp_auto.repo import NODE_DISTRIBUTOR_TYPE_ID, NodeDistributor
+
 
 class Node(Consumer):
     '''Node is a Consumer...'''
@@ -20,3 +22,12 @@ class Node(Consumer):
     def deactivate(self, pulp):
         '''deactivate the node interface'''
         return self.update(pulp, data={'delta': {'_child-node': None, '_node-update_strategy': None}})
+
+    def bind_repo(self, pulp, repo_id, distributor_id=NodeDistributor.default_id,
+                config={'strategy': 'additive'}):
+        '''bind this node to a repo'''
+        return self.bind_distributor(pulp, repo_id, distributor_id, config=config, notify_agent=False)
+
+    def unbind_repo(self, pulp, repo_id, distributor_id=NodeDistributor.default_id):
+        '''unbind this node from a repo'''
+        return self.unbind_distributor(pulp, repo_id, distributor_id)
