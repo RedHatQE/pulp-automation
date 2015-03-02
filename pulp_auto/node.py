@@ -15,12 +15,8 @@ class Node(Consumer):
 
     def activate(self, pulp, update_strategy='additive'):
         '''activate/promote this consumer to a node'''
-        self.update(pulp, data={'delta': {'_child-node': True, '_node-update-strategy': update_strategy}})
-        assert pulp.is_ok, 'Pulp does not feel OK having updated self'
-        self.reload(pulp)
+        return self.update(pulp, data={'delta': {'_child-node': True, '_node-update-strategy': update_strategy}})
 
     def deactivate(self, pulp):
         '''deactivate the node interface'''
-        self.update(pulp, data={'delta': {'_child-node': None, '_node-update_strategy': None}})
-        assert pulp.is_ok, 'Pulp does not feel OK having updated self'
-        self.reload(pulp)
+        return self.update(pulp, data={'delta': {'_child-node': None, '_node-update_strategy': None}})

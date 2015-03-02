@@ -32,9 +32,13 @@ class NodeTest(PulpTest):
 
     def test_01_deactivate(self):
         self.node.deactivate(self.pulp)
+        self.assertPulpOK()
+        self.node.reload(self.pulp)
 
     def test_02_reactivate(self):
         self.node.activate(self.pulp)
+        self.assertPulpOK()
+        self.node.reload(self.pulp)
 
     def test_03_list(self):
         assert self.node in Node.list(self.pulp), 'node %s not found on pulp' % self.node.id
