@@ -56,7 +56,7 @@ class NodeTestActivation(NodeTest):
 
 @requires_any('repos', lambda repo: repo.type == 'rpm')
 class NodeTestRepo(NodeTest):
-
+    # end2end scenario with a child node binding&syncing an rpm repo
     @classmethod
     def setUpClass(cls):
         # set up the class with a repo that is synced and set up for nodes to feed from
@@ -81,8 +81,9 @@ class NodeTestRepo(NodeTest):
             'Node Distributor not found'
 
     def test_02_node_distributor_publish(self):
-        self.repo.publish(self.pulp, self.node_distributor.id)
+        response = self.repo.publish(self.pulp, self.node_distributor.id)
         self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
 
     def test_03_node_bind_repo(self):
         response = self.node.bind_repo(self.pulp, self.repo.id, self.node_distributor.id)
@@ -93,6 +94,14 @@ class NodeTestRepo(NodeTest):
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
+    def test_05_child_repo_list(self):
+        # at this point the repo should be visible on both the nodes
+        assert self.repo in Repo.list(self.pulp_child), 'repo not propagated to child node'
+
     def test_99_node_unbind_repo(self):
         self.node.unbind_repo(self.pulp, self.repo.id, self.node_distributor.id)
         self.assertPulpOK()
+        # nodes keep the repos after updating
+        child_repos = Repo.list(self.pulp_child)
+        for repo in child_repos:
+            Task.wait_for_report(self.pulp_child, repo.delete(self.pulp_child))
