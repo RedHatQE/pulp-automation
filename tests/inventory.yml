@@ -46,7 +46,7 @@
 #           then no changes will be done to the consumer conf file and default/current settings
 #           will be used(for examle the one that were specified in the installation script)
 #           Right now the ssl is enabled by default.
-# - ca_path: path to the ca cert on the consumer in case verify is True. 
+# - ca_path: path to the ca cert on the consumer in case verify is True.
 #            (this field can be used, for example, in case of testing with wrong/none cert)
 # - os
 #   - name: of the operating system
@@ -67,6 +67,12 @@
 # - display_name: shown to users instead of id
 # - description: some details about the node
 # - tags: as above, for test case filtering
+# - pulp: the link to the pulp (parent) node
+# - qpid: the link to the parent node broker; the child node talks
+#         consumer language over there with its parent
+# - ca_path: as with pulp
+# Please, note that for the Node tests to work the OAuth should be configured
+# See the Pulp docs for more details
 
 ROLES:
   pulp: &PULP
@@ -74,7 +80,7 @@ ROLES:
     url: 'https://pulp.example.com/'
     hostname: pulp.example.com
     verify_api_ssl: False/Ca-path
-  qpid:
+  qpid: &QPID
     url: pulp.example.com
   repos:
     - &ZOO
@@ -105,3 +111,5 @@ ROLES:
       verify_api_ssl: false
       display_name: pulp-node-01
       description: 'the pulp node 01 of the example.com domain'
+      pulp: *PULP
+      QPID: *QPID
