@@ -17,16 +17,37 @@ class Node(Consumer):
 
     def activate(self, pulp, update_strategy='additive'):
         '''activate/promote this consumer to a node'''
-        return self.update(pulp, data={'delta': {'_child-node': True, '_node-update-strategy': update_strategy}})
+        return self.update(
+            pulp,
+            data={
+                'delta': {
+                    'notes': {
+                        '_child-node': True,
+                        '_node-update-strategy': update_strategy
+                    }
+                }
+            }
+        )
 
     def deactivate(self, pulp):
         '''deactivate the node interface'''
-        return self.update(pulp, data={'delta': {'_child-node': None, '_node-update_strategy': None}})
+        return self.update(
+            pulp,
+            data={
+                'delta': {
+                    'notes': {
+                        '_child-node': None,
+                        '_node-update_strategy': None
+                    }
+                }
+            }
+        )
 
     def bind_repo(self, pulp, repo_id, distributor_id=NodeDistributor.default_id,
                 config={'strategy': 'additive'}):
         '''bind this node to a repo'''
-        return self.bind_distributor(pulp, repo_id, distributor_id, config=config, notify_agent=False)
+        return self.bind_distributor(pulp, repo_id, distributor_id, config=config,
+                notify_agent=False)
 
     def unbind_repo(self, pulp, repo_id, distributor_id=NodeDistributor.default_id):
         '''unbind this node from a repo'''
