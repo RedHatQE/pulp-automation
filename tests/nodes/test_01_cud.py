@@ -8,7 +8,8 @@ from pulp_auto.login import request as login_request
 from pulp_auto.repo import create_yum_repo, NodeDistributor, Repo
 from pulp_auto.task import Task
 from pulp_auto.common_consumer import Binding
-from tests.utils.upload import upload_url_rpm, temp_url, url_basename, download_package_with_dnf
+from tests.utils.upload import upload_url_rpm, temp_url, url_basename, download_package_with_dnf, \
+        pulp_repo_url
 from contextlib import closing
 from pulp_auto.node import Node
 
@@ -97,6 +98,25 @@ class NodeTestRepo(NodeTest):
     def test_05_child_repo_list(self):
         # at this point the repo should be visible on both the nodes
         assert self.repo in Repo.list(self.pulp_child), 'repo not propagated to child node'
+
+    def test_06_child_repo_content(self):
+        # access the content of the pulp_child node
+        # please note when the repo is created on the other node,
+        # the distributor id used by default is yum_distributor
+
+        # make sure the repo was published on the child node
+        # the repo ID and distributor ID are the same on both the nodes
+        child_repo = Repo.get(self.pulp_child, self.repo.id)
+        response = child_repo.publish(self.pulp_child, self.distributor.id)
+        assert response == ResponseLike(202), 'wrong response from the child node: %s' % response
+        Task.wait_for_report(self.pulp_child, response)
+
+        # fetch the repo content url on the child node
+        repo_url = pulp_repo_url(self.pulp_child, self.repo.id)
+        assert repo_url, 'invalid repo id on pulp_child node'
+        # try accessing the content on the child node
+        pkg_name = download_package_with_dnf(self.pulp_child, repo_url, 'bear')
+        assert pkg_name == 'bear', 'not able to acces bear rpm on the child node'
 
     def test_99_node_unbind_repo(self):
         self.node.unbind_repo(self.pulp, self.repo.id, self.node_distributor.id)

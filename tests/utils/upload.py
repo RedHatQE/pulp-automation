@@ -3,6 +3,7 @@ common upload utils
 """
 from contextlib import closing
 from pulp_auto.upload import Upload, rpm_metadata
+from pulp_auto.repo import Repo, Distributor
 import dnf
 
 def temp_url(url, chunksize=65535):
@@ -52,9 +53,19 @@ def download_package_with_dnf(pulp, repo_url, package_name):
     repo.load()
     base.repos.add(repo)
     base.fill_sack()
-    query = base.sack.query() 
+    query = base.sack.query()
     available = query.available()
     available = available.filter(name=package_name)
     base.download_packages(available)
     package = available[0]
     return package.name
+
+def pulp_repo_url(pulp, repo_id, distributor_type_id='yum_distributor'):
+    '''return repo content url for given repo id or None'''
+    repo = Repo.get(pulp, repo_id)
+    # this should at most 1 item (for any given type)
+    distributors = [distributor for distributor in repo.list_distributors(pulp) \
+        if distributor['distributor_type_id'] == distributor_type_id]
+    if not distributors:
+        return None
+    return Distributor(data=distributors[0]).content_url(pulp)
