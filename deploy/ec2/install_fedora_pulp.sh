@@ -1,5 +1,5 @@
 #!/bin/sh
-OUTPUT="/var/log/fedora_pulp_amazon.log"
+OUTPUT="/var/log/install_pulp.log"
 exec &> $OUTPUT
 set -xe
 ## enable root access

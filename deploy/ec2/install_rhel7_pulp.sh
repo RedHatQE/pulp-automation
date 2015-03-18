@@ -7,8 +7,14 @@ while ! [ -x /sbin/ldconfig ] ; do sleep 1 ; echo -n . ; done
 echo
 
 function service_start {
-    chkconfig $1 on
-    service $1 start
+    systemctl enable $1.service
+    if [ "$1" == "mongod" ]; then
+      systemctl start $1.service
+      sleep 300
+      systemctl status $1.service
+    else
+      systemctl start $1.service
+    fi
 }
 
 # enable root access
@@ -36,7 +42,7 @@ tail -1 /etc/hosts
 
 # fetch pulp repo file
 pushd /etc/yum.repos.d/
-cat <<PULP_REPO_EOF > rhel6-pulp.repo
+cat <<PULP_REPO_EOF > rhel7-pulp.repo
 # Weekly Testing Builds
 [pulp-v2-testing]
 name=Pulp v2 Testing Builds
@@ -46,37 +52,37 @@ skip_if_unavailable=1
 gpgcheck=0
 PULP_REPO_EOF
 
-cat <<EPEL_REPO_EOF > rhel6-epel.repo
+cat <<EPEL_REPO_EOF >rhel7-epel.repo
 [epel]
-name=Extra Packages for Enterprise Linux 6 - \$basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/6/\$basearch
-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=\$basearch
+name=Extra Packages for Enterprise Linux 7 - \$basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/7/\$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=\$basearch
 failovermethod=priority
 enabled=1
 gpgcheck=0
 EPEL_REPO_EOF
 
-cat <<QPID_REPO_EOF > qpid-cpp.repo
-[qpid-cpp-x86_64]
-name=Qpid packages for epel-6 \$basearch
-baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/\$basearch
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
+# cat <<QPID_REPO_EOF > qpid-cpp.repo
+# [qpid-cpp-x86_64]
+# name=Qpid packages for epel-6 \$basearch
+# baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/\$basearch
+# enabled=1
+# skip_if_unavailable=1
+# gpgcheck=0
 
-[qpid-cpp-noarch]
-name=Qpid packages for epel-6 noarch
-baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/noarch
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
+# [qpid-cpp-noarch]
+# name=Qpid packages for epel-6 noarch
+# baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/noarch
+# enabled=1
+# skip_if_unavailable=1
+# gpgcheck=0
 
-[qpid-cpp-source]
-name=Qpid packages for epel-6 - Source
-baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/SRPMS
-enabled=0
-skip_if_unavailable=1
-QPID_REPO_EOF
+# [qpid-cpp-source]
+# name=Qpid packages for epel-6 - Source
+# baseurl=http://repos.fedorapeople.org/repos/mcpierce/qpid-cpp/epel-6/SRPMS
+# enabled=0
+# skip_if_unavailable=1
+# QPID_REPO_EOF
 popd
 
 # install pulp
@@ -91,7 +97,7 @@ yum -y install python-qpid-qmf
 # configure firewall
 iptables -I INPUT -p tcp --destination-port 443 -j ACCEPT
 iptables -I INPUT -p tcp --destination-port 5672 -j ACCEPT
-service iptables save
+service iptables save ||
 
 # configure pulp
 sed -i s,url:.*tcp://.*:5672,url:tcp://`hostname`:5672, /etc/pulp/server.conf
