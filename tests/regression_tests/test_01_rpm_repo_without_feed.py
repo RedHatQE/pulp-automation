@@ -1,9 +1,12 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
+from pulp_auto.upload import Upload, rpm_metadata
 from pulp_auto.repo import create_yum_repo, Repo, Importer, Distributor
-from tests.pulp_test import (PulpTest, requires_any)
+from tests.pulp_test import (PulpTest, requires_any, deleting)
+from tests.utils.upload import upload_url_rpm, temp_url, url_basename
 from tests import ROLES
+from contextlib import closing
 
 def setUpModule():
     pass
@@ -12,51 +15,61 @@ def tearDownModule():
     pass
 
 @requires_any('consumers')
-class RegRepoFeedTest(PulpTest):
+class RegRepoNoFeedTest(PulpTest):
     @classmethod
     def setUpClass(cls):
-        super(RegRepoFeedTest, cls).setUpClass()
+        super(RegRepoNoFeedTest, cls).setUpClass()
         
         # create repo
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, cls.__name__ + "_repo", feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')
+        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, cls.__name__ + "_repo", feed=None)
 
         # create consumer
         cls.consumer = Consumer(ROLES.consumers[0])
         setattr(cls.consumer, 'cli', Cli.ready_instance(**ROLES.consumers[0]))
+        
+        # rpm
+        cls.rpm_url_mouse = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/mouse-0.1.12-1.noarch.rpm'
 
-    def test_01_update_repo(self):
-        display_name = 'A %s repo' % self.__class__.__name__
-        self.repo |= {'display_name': display_name}
-        self.repo.delta_update(self.pulp)
-        self.assertPulp(code=200)
-        self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
-    def test_02_sync_repo(self):
-        with self.pulp.asserting(True):
-            response = self.repo.sync(self.pulp)
-        Task.wait_for_report(self.pulp, response)
+    @staticmethod
+    def rpm_uploader(pulp, url, repo, distributor):
+        '''perform an upload'''
+        # create an already fed upload object
+        with deleting(pulp, upload_url_rpm(pulp, url)) as upload:
+            # assing upload to repo
+            Task.wait_for_report(pulp, upload.import_to(pulp, repo))
+            # publish the content
+            Task.wait_for_report(pulp, repo.publish(pulp, distributor.id))
+            # download the rpm from pulp now
+            pulp_rpm_url = distributor.content_url(pulp, url_basename(url))
+            with closing(temp_url(pulp_rpm_url)) as tmpfile:
+                # make sure the rpm fetched has the same name as the one uploaded
+                assert url_basename(url).startswith(rpm_metadata(tmpfile)['unit_key']['name'])
+
+    def test_01_upload_rpm(self):
+        # create and perform an rpm url upload
+        self.rpm_uploader(self.pulp, self.rpm_url_mouse, self.repo, self.distributor)
                       
-    def test_03_publish_repo(self):
+    def test_02_publish_repo(self):
         with self.pulp.asserting(True):        
             response = self.repo.publish(self.pulp, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
             
-    
-    def test_04_api_registered_consumer(self):
+    def test_03_api_registered_consumer(self):
         # assert the cli registration worked in API
         with self.pulp.asserting(True):
             Consumer.get(self.pulp, self.consumer.cli.consumer_id)
 
-    def test_05_bind_distributor(self):
+    def test_04_bind_distributor(self):
         with self.pulp.asserting(True):
            response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
 
-    def test_06_assert_yum_repos(self):
+    def test_05_assert_yum_repos(self):
         remote_yum_repo = YumRepo.list(self.consumer.cli)
         self.assertIn(YumRepo({'id': self.repo.id}), remote_yum_repo)
 
-    def test_07_assert_unit_install(self):
+    def test_06_assert_unit_install(self):
         unit = {
             'name': 'pike'
         }
@@ -66,7 +79,7 @@ class RegRepoFeedTest(PulpTest):
         Task.wait_for_report(self.pulp, response)
         assert rpm in RpmUnit.list(self.consumer.cli), "rpm %s not installed on %s" % (rpm, consumer)
 
-    def _test_08_assert_unit_uninstall(self):
+    def _test_07_assert_unit_uninstall(self):
         unit = {
             'name': 'pike'
         }
@@ -77,7 +90,7 @@ class RegRepoFeedTest(PulpTest):
         Task.wait_for_report(self.pulp, response)
         assert rpm not in RpmUnit.list(consumer.cli), "rpm %s still installed on %s" % (rpm, consumer)
 
-    def _test_09_unbind_repo(self):
+    def _test_08_unbind_repo(self):
         with self.pulp.asserting(True):
             response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
@@ -96,4 +109,4 @@ class RegRepoFeedTest(PulpTest):
 
         # unregister consumer
         cls.consumer.cli.unregister()
-        super(RegRepoFeedTest, cls).tearDownClass()
+        super(RegRepoNoFeedTest, cls).tearDownClass()

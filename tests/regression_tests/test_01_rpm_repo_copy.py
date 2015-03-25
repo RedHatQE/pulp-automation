@@ -12,36 +12,39 @@ def tearDownModule():
     pass
 
 @requires_any('consumers')
-class RegRepoFeedTest(PulpTest):
+class RegRepoCopyTest(PulpTest):
     @classmethod
     def setUpClass(cls):
-        super(RegRepoFeedTest, cls).setUpClass()
+        super(RegRepoCopyTest, cls).setUpClass()
         
         # create repo
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, cls.__name__ + "_repo", feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')
+        cls.repo1, cls.importer1, cls.distributor1 = create_yum_repo(cls.pulp, cls.__name__ + "_repo1", feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')
+        cls.repo2, cls.importer2, cls.distributor2 = create_yum_repo(cls.pulp, cls.__name__ + "_repo2", feed=None)
 
         # create consumer
         cls.consumer = Consumer(ROLES.consumers[0])
         setattr(cls.consumer, 'cli', Cli.ready_instance(**ROLES.consumers[0]))
 
-    def test_01_update_repo(self):
-        display_name = 'A %s repo' % self.__class__.__name__
-        self.repo |= {'display_name': display_name}
-        self.repo.delta_update(self.pulp)
-        self.assertPulp(code=200)
-        self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
-
-    def test_02_sync_repo(self):
+    def test_01_sync_repo1(self):
         with self.pulp.asserting(True):
-            response = self.repo.sync(self.pulp)
+            response = self.repo1.sync(self.pulp)
         Task.wait_for_report(self.pulp, response)
+        
+    def test_02_copy_repo1_to_repo2(self):
+        with self.pulp.asserting(True):
+            response = self.repo2.copy(self.pulp, self.repo1.id, data={})
+        Task.wait_for_report(self.pulp, response)
+        
+        #check that the number of modules are the same
+        repo1 = Repo.get(self.pulp, self.repo1.id)
+        repo2 = Repo.get(self.pulp, self.repo2.id)
+        self.assertEqual(repo1.data['content_unit_counts'], repo2.data['content_unit_counts'])
                       
-    def test_03_publish_repo(self):
+    def test_03_publish_repo2(self):
         with self.pulp.asserting(True):        
-            response = self.repo.publish(self.pulp, self.distributor.id)
+            response = self.repo2.publish(self.pulp, self.distributor2.id)
         Task.wait_for_report(self.pulp, response)
             
-    
     def test_04_api_registered_consumer(self):
         # assert the cli registration worked in API
         with self.pulp.asserting(True):
@@ -49,12 +52,12 @@ class RegRepoFeedTest(PulpTest):
 
     def test_05_bind_distributor(self):
         with self.pulp.asserting(True):
-           response = self.consumer.bind_distributor(self.pulp, self.repo.id, self.distributor.id)
+           response = self.consumer.bind_distributor(self.pulp, self.repo2.id, self.distributor2.id)
         Task.wait_for_report(self.pulp, response)
 
     def test_06_assert_yum_repos(self):
         remote_yum_repo = YumRepo.list(self.consumer.cli)
-        self.assertIn(YumRepo({'id': self.repo.id}), remote_yum_repo)
+        self.assertIn(YumRepo({'id': self.repo2.id}), remote_yum_repo)
 
     def test_07_assert_unit_install(self):
         unit = {
@@ -79,14 +82,18 @@ class RegRepoFeedTest(PulpTest):
 
     def _test_09_unbind_repo(self):
         with self.pulp.asserting(True):
-            response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id)
+            response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor2.id)
         Task.wait_for_report(self.pulp, response)
 
     @classmethod
     def tearDownClass(cls):
-        # delete repo
+        # delete repos
         with cls.pulp.asserting(True):
-            response = cls.repo.delete(cls.pulp)
+            response = cls.repo1.delete(cls.pulp)
+        Task.wait_for_report(cls.pulp, response)
+        
+        with cls.pulp.asserting(True):
+            response = cls.repo2.delete(cls.pulp)
         Task.wait_for_report(cls.pulp, response)
         
         # delete orphans
@@ -96,4 +103,4 @@ class RegRepoFeedTest(PulpTest):
 
         # unregister consumer
         cls.consumer.cli.unregister()
-        super(RegRepoFeedTest, cls).tearDownClass()
+        super(RegRepoCopyTest, cls).tearDownClass()
