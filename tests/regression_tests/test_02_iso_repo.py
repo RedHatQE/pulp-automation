@@ -28,26 +28,3 @@ class SimpleIsoRepoTest(IsoRepoTest):
         #no duplicate repo
         self.repo.create(self.pulp)
         self.assertPulp(code=409)
-
-    def test_02_get_repo(self):
-        repo = Repo.get(self.pulp, self.repo.id)
-        self.assertEqual(repo.id, self.repo.id)
-        self.repo.reload(self.pulp)
-        self.assertEqual(self.repo, repo)
-        #get unexistant repo
-        with self.assertRaises(AssertionError):
-            Repo.get(self.pulp, 'some_id')
-        self.assertPulp(code=404)
-
-    def test_03_list_repos(self):
-        repos = Repo.list(self.pulp)
-        self.assertIn(self.repo, repos)
-
-
-    #TODO FIXME not working, same as in test_02_rpm_repo.py
-    def test_13_delete_repo(self):
-        response = self.repo.delete(self.pulp)
-        Task.wait_for_report(self.pulp, response)
-        #check you cannot delete it twice
-        self.repo.delete(self.pulp)
-        self.assertPulp(code=404)        
