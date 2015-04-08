@@ -81,12 +81,20 @@ def file_checksum(fd, chunksize=65536, checksum_type='sha256'):
     '''get file hashlib checksum'''
     import hashlib
     checksum = hashlib.new(checksum_type)
+    fd.seek(0)
     while True:
         data = fd.read(chunksize)
         if not data:
             break
         checksum.update(data)
     return checksum.hexdigest()
+
+def file_size(fd):
+    '''
+    get filesize with seeking to the end of file
+    '''
+    fd.seek(0,2)
+    return fd.tell()
 
 def rpm_metadata(fd):
     '''
@@ -100,7 +108,6 @@ def rpm_metadata(fd):
     transaction_set.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
     # get headers
     headers = transaction_set.hdrFromFdno(fd)
-    fd.seek(0)
     # compute checksum
     checksum = file_checksum(fd)
 
@@ -138,3 +145,14 @@ def rpm_metadata(fd):
     return dict(override_config=dict(), unit_type_id=unit_type_id, unit_key=unit_key,
         unit_metadata=unit_metadata)
 
+def iso_metadata(fd):
+    '''
+    get iso metadata.
+    Usage: Upload.create(pulp, data=iso_metadata(fd), ...)
+    '''
+    checksum = file_checksum(fd)
+    size = file_size(fd)
+
+    unit_key = dict(checksumtype='sha256', checksum=checksum, name=fd.name, size=size)
+
+    return dict(unit_key=unit_key)

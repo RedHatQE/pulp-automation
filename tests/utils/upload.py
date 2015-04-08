@@ -2,7 +2,7 @@
 common upload utils
 """
 from contextlib import closing
-from pulp_auto.upload import Upload, rpm_metadata
+from pulp_auto.upload import iso_metadata, Upload, rpm_metadata
 from pulp_auto.repo import Repo, Distributor
 import dnf
 
@@ -36,6 +36,20 @@ def upload_url_rpm(pulp, url):
         # augment rpm file name
         data['unit_metadata']['relativepath'] = basename
         data['unit_metadata']['filename'] = basename
+        upload = Upload.create(pulp, data=data)
+        # feed the data
+        tmpfile.file.seek(0)
+        upload.file(pulp, tmpfile.file)
+    return upload
+
+def upload_url_iso(pulp, url):
+    '''create an upload object fed from the url'''
+    # get basename for upload purpose
+    basename = url_basename(url)
+    with closing(temp_url(url)) as tmpfile:
+        data = iso_metadata(tmpfile.file)
+        # augment rpm file name
+        data['unit_key']['name'] = basename
         upload = Upload.create(pulp, data=data)
         # feed the data
         tmpfile.file.seek(0)
