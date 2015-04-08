@@ -28,7 +28,7 @@ class RegRepoNoFeedTest(PulpTest):
         setattr(cls.consumer, 'cli', Cli.ready_instance(**ROLES.consumers[0]))
         
         # rpm
-        cls.rpm_url_mouse = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/mouse-0.1.12-1.noarch.rpm'
+        cls.rpm_url_pike = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/pike-2.2-1.noarch.rpm'
 
 
     @staticmethod
@@ -48,7 +48,7 @@ class RegRepoNoFeedTest(PulpTest):
 
     def test_01_upload_rpm(self):
         # create and perform an rpm url upload
-        self.rpm_uploader(self.pulp, self.rpm_url_mouse, self.repo, self.distributor)
+        self.rpm_uploader(self.pulp, self.rpm_url_pike, self.repo, self.distributor)
                       
     def test_02_publish_repo(self):
         with self.pulp.asserting(True):        
@@ -77,20 +77,20 @@ class RegRepoNoFeedTest(PulpTest):
         with self.pulp.asserting(True):
             response = self.consumer.install_unit(self.pulp, unit, 'rpm')
         Task.wait_for_report(self.pulp, response)
-        assert rpm in RpmUnit.list(self.consumer.cli), "rpm %s not installed on %s" % (rpm, consumer)
+        assert rpm in RpmUnit.list(self.consumer.cli), "rpm %s not installed on %s" % (rpm, self.consumer)
 
-    def _test_07_assert_unit_uninstall(self):
+    def test_07_assert_unit_uninstall(self):
         unit = {
             'name': 'pike'
         }
         rpm = RpmUnit(unit, relevant_data_keys=unit.keys())
-        assert rpm in RpmUnit.list(consumer.cli), "rpm %s not installed on %s" % (rpm, consumer)
+        assert rpm in RpmUnit.list(self.consumer.cli), "rpm %s not installed on %s" % (rpm, self.consumer)
         with self.pulp.asserting(True):
             response = self.consumer.uninstall_unit(self.pulp, unit, 'rpm')
         Task.wait_for_report(self.pulp, response)
-        assert rpm not in RpmUnit.list(consumer.cli), "rpm %s still installed on %s" % (rpm, consumer)
+        assert rpm not in RpmUnit.list(self.consumer.cli), "rpm %s still installed on %s" % (rpm, self.consumer)
 
-    def _test_08_unbind_repo(self):
+    def test_08_unbind_repo(self):
         with self.pulp.asserting(True):
             response = self.consumer.unbind_distributor(self.pulp, self.repo.id, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
