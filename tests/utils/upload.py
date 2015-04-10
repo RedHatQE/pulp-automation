@@ -48,7 +48,7 @@ def upload_url_iso(pulp, url):
     basename = url_basename(url)
     with closing(temp_url(url)) as tmpfile:
         data = iso_metadata(tmpfile.file)
-        # augment rpm file name
+        # augment iso file name
         data['unit_key']['name'] = basename
         upload = Upload.create(pulp, data=data)
         # feed the data
