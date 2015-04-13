@@ -5,6 +5,8 @@ from pulp_auto.repo import create_iso_repo, Repo, Importer, Distributor
 from tests.pulp_test import PulpTest, requires_any, deleting
 from tests.utils.upload import upload_url_iso, temp_url, url_basename
 from tests import ROLES
+from contextlib import closing
+
 
 def setUpModule():
     pass
@@ -68,21 +70,26 @@ class IsoRepoTest(PulpTest):
             response = self.repo_copy.publish(self.pulp, self.distributor_copy.id)
         Task.wait_for_report(self.pulp, response)        
 
-    @staticmethod
-    def iso_uploader(pulp, url, repo, distributor):
-        '''perform an upload'''
-        # create an already fed upload object
-        with deleting(pulp, upload_url_iso(pulp, url)) as upload:
-            # assing upload to repo
-            Task.wait_for_report(pulp, upload.import_to(pulp, repo))
-            # publish the content
-            Task.wait_for_report(pulp, repo.publish(pulp, distributor.id))
-            # download the rpm from pulp now
-            pulp_iso_url = distributor.content_url(pulp, url_basename(url))
-            with closing(temp_url(pulp_iso_url)) as tmpfile:
-                # make sure the iso fetched has the same name as the one uploaded
-                # FIXME: a silly check indeed ;)
-                assert url_basename(url).startswith(iso_metadata(tmpfile)['unit_key']['name'])
-
     def test_03_upload_to_repo_upload_and_publish(self):
-        self.iso_uploader(self.pulp, self.iso_url_test, self.repo_upload, self.distributor_upload)
+
+        def iso_uploader(pulp, url, repo, distributor):
+            '''perform an upload'''
+            # create an already fed upload object
+            with deleting(pulp, upload_url_iso(pulp, url)) as upload:
+                # upload = upload_url_iso(pulp, url)
+                # assing upload to repo
+                Task.wait_for_report(pulp, upload.import_to(pulp, repo))
+                # publish the content
+                Task.wait_for_report(pulp, repo.publish(pulp, distributor.id))
+                # download the rpm from pulp now
+                pulp_iso_url = distributor.content_url(pulp, url_basename(url))
+                with closing(temp_url(pulp_iso_url)) as tmpfile:
+                    # make sure the iso fetched has the same name as the one uploaded
+                    # FIXME: a silly check indeed ;)
+                    # print "============================================================"
+                    # print url_basename(url)
+                    # print iso_metadata(tmpfile)['unit_key']['name']
+                    # print "============================================================"
+                    assert url_basename(url).startswith(iso_metadata(tmpfile)['unit_key']['name'])
+
+        iso_uploader(self.pulp, self.iso_url_test, self.repo_upload, self.distributor_upload)

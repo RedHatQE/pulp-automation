@@ -155,4 +155,4 @@ def iso_metadata(fd):
 
     unit_key = dict(checksumtype='sha256', checksum=checksum, name=fd.name, size=size)
 
-    return dict(unit_key=unit_key)
+    return dict(unit_key=unit_key, unit_type_id='iso')
