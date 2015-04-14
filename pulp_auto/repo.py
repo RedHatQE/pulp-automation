@@ -1,6 +1,6 @@
 import item, json
 from pulp_auto import (Request, )
-from . import (path_join, format_response, content_path)
+from . import (path_join, format_response, content_path, content_iso_path)
 from pulp_auto.task import Task
 from pulp_auto.item import ScheduledAction
 
@@ -211,6 +211,13 @@ class Distributor(item.AssociatedItem):
         return path_join(pulp.url, content_path,
                 self.data['config']['relative_url'], path).strip('/')
 
+class IsoDistributor(Distributor):
+
+    def content_url(self, pulp, path='/'):
+        '''assemblel url of the content being served'''
+        return path_join(pulp.url, content_iso_path,
+                self.data['config']['relative_url'], path).strip('/')
+
 class NodeDistributor(Distributor):
     '''a node distributor'''
     # for convenience, default ID is set to the same as the type ID
@@ -363,7 +370,7 @@ def create_iso_repo(
         )
         Task.wait_for_report(pulp, response)
         importer = repo.get_importer(pulp, "iso_importer")
-        distributor = Distributor.from_response(repo.associate_distributor(
+        distributor = IsoDistributor.from_response(repo.associate_distributor(
             pulp,
             data={
                 'distributor_id': id + "_distributor",

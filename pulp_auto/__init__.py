@@ -6,6 +6,7 @@ import logging; logging.captureWarnings(True)
 path = '/pulp/api/v2/'
 static_path = '/pulp/static/'
 content_path = '/pulp/repos/'
+content_iso_path = '/pulp/isos/'
 
 def normalize_url(url):
     '''remove stacked forward slashes'''

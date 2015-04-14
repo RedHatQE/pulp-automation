@@ -3,7 +3,7 @@ from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
 from pulp_auto.repo import create_iso_repo, Repo, Importer, Distributor
 from tests.pulp_test import PulpTest, requires_any, deleting
-from tests.utils.upload import upload_url_iso, temp_url, url_basename
+from tests.utils.upload import upload_url_iso,iso_metadata, temp_url, url_basename
 from tests import ROLES
 from contextlib import closing
 
@@ -84,12 +84,16 @@ class IsoRepoTest(PulpTest):
                 # download the rpm from pulp now
                 pulp_iso_url = distributor.content_url(pulp, url_basename(url))
                 with closing(temp_url(pulp_iso_url)) as tmpfile:
-                    # make sure the iso fetched has the same name as the one uploaded
-                    # FIXME: a silly check indeed ;)
+                # make sure the iso fetched has the same name as the one uploaded
+                # FIXME: asilly check indeed ;)
                     # print "============================================================"
                     # print url_basename(url)
+                    # print url
+                    # print pulp_iso_url
                     # print iso_metadata(tmpfile)['unit_key']['name']
                     # print "============================================================"
-                    assert url_basename(url).startswith(iso_metadata(tmpfile)['unit_key']['name'])
+                # import pprint
+                # print pprint.pformat(distributor.data)
+                    assert upload.data['unit_key']['checksum'].startswith(iso_metadata(tmpfile)['unit_key']['checksum'])
 
         iso_uploader(self.pulp, self.iso_url_test, self.repo_upload, self.distributor_upload)
