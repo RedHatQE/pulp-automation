@@ -76,7 +76,6 @@ class IsoRepoTest(PulpTest):
             '''perform an upload'''
             # create an already fed upload object
             with deleting(pulp, upload_url_iso(pulp, url)) as upload:
-                # upload = upload_url_iso(pulp, url)
                 # assing upload to repo
                 Task.wait_for_report(pulp, upload.import_to(pulp, repo))
                 # publish the content
@@ -84,16 +83,7 @@ class IsoRepoTest(PulpTest):
                 # download the rpm from pulp now
                 pulp_iso_url = distributor.content_url(pulp, url_basename(url))
                 with closing(temp_url(pulp_iso_url)) as tmpfile:
-                # make sure the iso fetched has the same name as the one uploaded
-                # FIXME: asilly check indeed ;)
-                    # print "============================================================"
-                    # print url_basename(url)
-                    # print url
-                    # print pulp_iso_url
-                    # print iso_metadata(tmpfile)['unit_key']['name']
-                    # print "============================================================"
-                # import pprint
-                # print pprint.pformat(distributor.data)
+                # make sure the iso fetched has the same checksum as the one uploaded
                     assert upload.data['unit_key']['checksum'].startswith(iso_metadata(tmpfile)['unit_key']['checksum'])
 
         iso_uploader(self.pulp, self.iso_url_test, self.repo_upload, self.distributor_upload)
