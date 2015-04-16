@@ -84,6 +84,6 @@ class IsoRepoTest(PulpTest):
                 pulp_iso_url = distributor.content_url(pulp, url_basename(url))
                 with closing(temp_url(pulp_iso_url)) as tmpfile:
                 # make sure the iso fetched has the same checksum as the one uploaded
-                    assert upload.data['unit_key']['checksum'].startswith(iso_metadata(tmpfile)['unit_key']['checksum'])
+                    assert upload.data['unit_key']['checksum'] == iso_metadata(tmpfile)['unit_key']['checksum']
 
         iso_uploader(self.pulp, self.iso_url_test, self.repo_upload, self.distributor_upload)
