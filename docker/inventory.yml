@@ -1,0 +1,91 @@
+# Pulp Automation Invetory File
+# =============================
+#
+# About
+# -----
+# Pulp automation is a suite of test cases that examine REST API functionality of Pulp.
+# A bunch of test cases that verify E2E scenarios with both real and mocked Pulp consumers
+# is included. This file provides pulp automation with information necessary to run the
+# test cases.
+#
+# The Pulp Role
+# -------------
+# describes REST API endpoint the test cases should use:
+# - auth: [username, password] for the https REST client
+# - url:  the protocol&hots part of the pulp URL
+# - hostname: FQDN of the machine running pulp service
+# - verify_api_ssl: Enables ssl verification via api. So just provide here path to the
+#           trusted CA situated on the laptop in case you'd like to enable it
+#           (you should copy the cert form pulp).
+#           False - disables ssl.
+#
+#
+# The Qpid Role
+# -------------
+# describes the RMI Broker endbpoint of Pulp for mocked consumer to attach to
+# - url: the amqp url of the broker
+#
+# The Repos Role
+# lists various repositories to be used during testing. Test cases apply filter
+# criteria on the list to select best repos for testing based on repo attributes:
+# - id: mandatory ID field to use in Pulp when referring to the repo
+# - type: (importer) type ID to distinguish various repo kinds
+# - feed: data source of the repo; the URL
+# - display_name: to show in Pulp
+# - tags: a list of custom repo "descriptors"
+#
+# The Consumers Role
+# ------------------
+# lists consumers to run real Pulp Consumer Client suite on
+# Test cases apply filter criteria on the list to select best consumers
+# for testing based on consumer attributes:
+# - id: mandatory ID field to use in Pulp when referring to the repo
+# - hostname: for automation commands execution over ssh
+# - ssh_key: for automation commands execution over ssh; root access
+# - verify: True or False (enables/disables ssl). This field can also be left empty
+#           then no changes will be done to the consumer conf file and default/current settings
+#           will be used(for examle the one that were specified in the installation script)
+#           Right now the ssl is enabled by default.
+# - ca_path: path to the ca cert on the consumer in case verify is True.
+#            (this field can be used, for example, in case of testing with wrong/none cert)
+# - os
+#   - name: of the operating system
+#   - version: of the operating system
+# - repos: a list of repo pointers or repos to bind the consumer to
+# - tags: a list of custom consumer "descriptors"
+#
+#
+# The Nodes Role
+# lists nodes to test
+# attributes:
+# - auth: the auth details to log into pulp running on the node
+# - id: unique pulp node id
+# - hostname: as above
+# - ssh_key: as above
+# - url: the url of pulp server running on the node
+# - verify_api_ssl: as in pulp section
+# - display_name: shown to users instead of id
+# - description: some details about the node
+# - tags: as above, for test case filtering
+# - pulp: the link to the pulp (parent) node
+# - qpid: the link to the parent node broker; the child node talks
+#         consumer language over there with its parent
+# - ca_path: as with pulp
+# Please, note that for the Node tests to work the OAuth should be configured
+# See the Pulp docs for more details
+
+ROLES:
+  pulp: &PULP
+    auth: [admin, admin]
+    url: 'https://pulp.example.com/'
+    hostname: pulp.example.com
+    verify_api_ssl: False
+  qpid: &QPID
+    url: pulp.example.com
+  repos:
+    - &ZOO
+      id: zoo
+      type: rpm
+      feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
+      display_name: ZOo rEPO
+      tags: ['default', 'small', 'demo']
