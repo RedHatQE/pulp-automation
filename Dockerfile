@@ -13,6 +13,7 @@ RUN pip install pinocchio
 
 # add source
 ADD pulp_auto /src/pulp_auto
+ADD tests /src/tests
 ADD setup.py /src/setup.py
 
 # install!
@@ -21,8 +22,8 @@ RUN pip install --no-index /src/
 # stuff that will configure and run the tests
 VOLUME /pulp_auto/
 WORKDIR /pulp_auto/
+ADD tests/ /pulp_auto/tests
 ADD docker/geninventory.py /usr/local/bin/geninventory
-ADD tests /pulp_auto/tests
 ADD docker/inventory.yml /pulp_auto/inventory.yml
 # "expand" PULPHOST env, if set
 CMD geninventory && nosetests -vs --with-xunit --with-outputsave --save-directory=logs
