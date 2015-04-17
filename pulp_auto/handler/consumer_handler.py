@@ -27,3 +27,7 @@ class Consumer(Handler):
     def unregistered(self, *args, **kvs):
         pass
 
+    @logged(log.info)
+    def unregister(self, *args, **kvs):
+        pass
+
