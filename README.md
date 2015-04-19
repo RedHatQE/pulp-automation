@@ -49,7 +49,7 @@ To do test coverage:
 Docker usage
 ------------
 To run, set the env variable `PULPHOST` to override packaged `inventory.yaml` entries:
-`docker run -it -e PULPHOST=pulp.example.com dparalen/pulp-automation:latest`
+`docker run -it -e PULPHOST=pulp.example.com redhatqe/pulp-automation:latest`
 The default pulp hostname used in the inventory is `pulp.example.com`
 Setting up hostnames resolution should also make the tests run.
 
@@ -57,4 +57,6 @@ The pulp-automation image uses a volume--workdir to run nosetest in.
 You can find the test results in the workdir counterpart on your docker host, such as:
 `/mnt/sda1/var/lib/docker/vfs/dir/<container ID>/`
 Having run the container, you should find e.g. `nosetests.xml` inside, which you could feed to your `Jenkins` server.
+
+The pulp-automation image repo is hosted on the [Docker Hub](https://registry.hub.docker.com/u/redhatqe/pulp-automation/)
  
