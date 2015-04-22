@@ -25,26 +25,27 @@ Basic usage:
 
 To run tests:
 
-1) copy the inventory.yml from the directory /tests into /pulp-automation and edit it. How to do it properly you can find info in the file itself.
+* `cd pulp-automation; cp tests/inventory.yaml ./` and update the template as needed (visit the file for instructions)
+* To run all tests:
 
-2) To run all tests:
-
-    nosetests -vs
+        nosetests -vs
     
-   To run a particular test:
+* To run a particular test:
 
-    nosetests -vs tests/test_1_login.py
+        nosetests -vs tests/test_1_login.py
 
 All testcases should pass. If something fails it means that:
-  - there is a regression bug,
-  - some bugs are on_qa state and expected failure decorator(used to mark automated BZ tests as pass) should be removed,
-  - there is a problem in the framework
+* there is a regression bug,
+* some bugs are on_qa state and expected failure decorator(used to mark automated BZ tests as pass) should be removed,
+* there is a problem in the framework
 
 
 To do test coverage:
 --------------------
-
-    -place .coveragerc into /usr/share/pulp_auto
+* set up [remote python tracing](https://github.com/RedHatQE/python-moncov)
+* run test cases while collecting coverage records
+* visit  `.coveragerc`
+* [generate coverage stats](https://github.com/RedHatQE/python-moncov/wiki/coverage-with-python-files-over-sshfs) 
 
 Docker usage
 ------------
