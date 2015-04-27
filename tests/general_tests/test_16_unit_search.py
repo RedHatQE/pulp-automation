@@ -18,7 +18,7 @@ class UnitSearchTest(pulp_test.PulpTest):
         super(UnitSearchTest, cls).setUpClass()
         #create and sync puppet repo
         repo_id = cls.__name__
-        queries = ['tomcat']
+        queries = ['jenkins']
         # make sure we run clean
         response = Repo({'id': repo_id}).delete(cls.pulp)
         if response == ResponseLike(202):
