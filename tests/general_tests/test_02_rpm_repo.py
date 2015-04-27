@@ -48,9 +48,7 @@ class SimpleRepoTest(RepoTest):
         self.assertPulp(code=200)
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
-    @unittest.expectedFailure
-    def test_05_associate_importer_with_invalid_type_1084064(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1084064
+    def test_05_associate_importer_with_invalid_type(self):
         self.repo.associate_importer(
             self.pulp,
             data={
@@ -88,9 +86,7 @@ class SimpleRepoTest(RepoTest):
             importer)
 
 
-    @unittest.expectedFailure
-    def test_07_associate_importer_to_unexistant_repo_1078833(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1078833
+    def test_07_associate_importer_to_unexistant_repo(self):
         self.repo2.associate_importer(
             self.pulp,
             data={

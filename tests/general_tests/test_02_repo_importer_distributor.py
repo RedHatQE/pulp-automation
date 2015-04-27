@@ -50,9 +50,7 @@ class ImporterTest(ImporterDistributorTest):
         self.importer.reload(self.pulp)
         self.assertEqual(self.importer.data["config"]["num_units"], 10)
 
-    @unittest.expectedFailure
-    def test_05_importer_update_unexistent_repo_1078833(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1078833
+    def test_05_importer_update_unexistent_repo(self):
         self.pulp.send(self.repo1.request('PUT', path=path_join(Importer.path, 'yum_importer'), data={"importer_config": {"num_units": 10}}))
         self.assertPulp(code=404)
 
@@ -68,10 +66,6 @@ class DistributorTest(ImporterDistributorTest):
         self.assertPulp(code=200)
         self.assertIn(self.distributor, distributors)
 
-    def test_03_get_single_distributor(self):
-        distributor = self.repo.get_distributor(self.pulp, self.distributor.id)
-        self.assertEqual(self.distributor.id, distributor.id)
-
     def test_02_list_distributors_of_unexistant_repo(self):
         with self.assertRaises(AssertionError):
             self.repo1.list_distributors(self.pulp)
@@ -81,8 +75,7 @@ class DistributorTest(ImporterDistributorTest):
         distributor = self.repo.get_distributor(self.pulp, self.distributor.id)
         self.assertEqual(self.distributor.id, distributor.id)
 
-    def test_04_distributor_update_1091348(self):
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1091348
+    def test_04_distributor_update(self):
         response = self.distributor.update(self.pulp, data={"distributor_config": {"relative_url": "my_url"}})
         Task.wait_for_report(self.pulp, response)
         self.distributor.reload(self.pulp)
