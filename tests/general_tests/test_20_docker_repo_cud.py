@@ -1,4 +1,4 @@
-import json
+import json, unittest
 from tests import pulp_test
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task,  TaskFailure
@@ -101,7 +101,9 @@ class SimpleDockerRepoTest(DockerRepoTest):
             }
         )
 
-    def test_07_sync_repo(self):
+    @unittest.expectedFailure
+    def test_07_sync_repo_914(self):
+        # https://pulp.plan.io/issues/914
         response = self.repo.sync(self.pulp)
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
