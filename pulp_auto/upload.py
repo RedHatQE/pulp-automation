@@ -147,7 +147,7 @@ def rpm_metadata(fd):
 
 def iso_metadata(fd):
     '''
-    get iso metadata.
+    Get iso metadata.
     Usage: Upload.create(pulp, data=iso_metadata(fd), ...)
     '''
     checksum = file_checksum(fd)
@@ -155,4 +155,39 @@ def iso_metadata(fd):
 
     unit_key = dict(checksumtype='sha256', checksum=checksum, name=fd.name, size=size)
 
-    return dict(unit_key=unit_key, unit_type_id='iso')
+    return dict(unit_type_id='iso', unit_key=unit_key)
+
+
+def package_group_metadata(group_id, repo_id, package_list):
+    '''
+    Get basic metadata for creating package group.
+    All parameters necessary.
+    '''
+        # {
+        #     "unit_type_id": "package_group",
+        #     "unit_key": {
+        #         "id": self.repo1.id + "_group1",
+        #         "repo_id": self.repo1.id
+        #     },
+        #     "unit_metadata": {
+        #         # "conditional_package_names": [],
+        #         # "default": "null",
+        #         # "default_package_names": "null",
+        #         # "description": "A package group of Pulp test files.",
+        #         # "display_order": 0,
+        #         # "langonly": "null",
+        #         "mandatory_package_names": rpmlist,
+        #         "name": self.repo1.id + "_group1",
+        #         # "optional_package_names": "null",
+        #         # "translated_description": {},
+        #         # "translated_name": "",
+        #         "user_visible": "True"
+        #     },
+        #     "override_config": {}
+        # }
+
+    unit_key = dict(id=group_id, repo_id=repo_id)
+    unit_metadata = dict(mandatory_package_names=package_list,name=repo_id,user_visible="True")
+
+    return dict(unit_type_id="package_group", unit_key=unit_key,
+        unit_metadata=unit_metadata, override_config=dict())
