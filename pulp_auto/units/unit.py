@@ -175,3 +175,8 @@ class DockerUnit(AbstractUnit):
     '''Docker-specific unit code'''
     path = AbstractUnit.path + "/docker_image/"
     # TODO: relevant_data_keys
+
+class PythonPackageUnit(AbstractUnit):
+    '''python-package unit type'''
+    path = AbstractUnit.path + "/python_package/"
+    # TODO: relevant_data_keys
