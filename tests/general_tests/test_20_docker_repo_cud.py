@@ -101,7 +101,6 @@ class SimpleDockerRepoTest(DockerRepoTest):
             }
         )
 
-    @unittest.expectedFailure
     def test_07_sync_repo_914(self):
         # https://pulp.plan.io/issues/914
         response = self.repo.sync(self.pulp)
