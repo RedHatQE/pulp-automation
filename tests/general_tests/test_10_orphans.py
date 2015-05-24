@@ -4,7 +4,10 @@ from pulp_auto.repo import create_yum_repo, Repo
 from pulp_auto.task import Task
 from pulp_auto.pulp import Request
 from pulp_auto import path_join
-from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, PackageCategoryOrphan, ErratumOrphan, DistributionOrphan, DrpmOrphan, SrpmOrphan, YumRepoMetadataFileOrphan,PuppetModuleOrphan, IsoOrphan, DockerOrphan
+from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan, \
+        PackageCategoryOrphan, ErratumOrphan, DistributionOrphan, DrpmOrphan, \
+        SrpmOrphan, YumRepoMetadataFileOrphan,PuppetModuleOrphan, IsoOrphan, \
+        DockerOrphan, PythonPackageOrphan
 from .. import ROLES
 
 def setUpModule():
@@ -172,6 +175,11 @@ class SimpleOrphanTest(pulp_test.PulpTest):
 
     def test_17_delete_orphan_docker_1109870(self):
         response = DockerOrphan.delete_all(self.pulp)
+        self.assertPulpOK()
+        Task.wait_for_report(self.pulp, response)
+
+    def test_18_delete_orphan_python_package(self):
+        response = PythonPackageOrphan.delete_all(self.pulp)
         self.assertPulpOK()
         Task.wait_for_report(self.pulp, response)
 
