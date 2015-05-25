@@ -187,7 +187,7 @@ def package_group_metadata(group_id, repo_id, package_list):
         # }
 
     unit_key = dict(id=group_id, repo_id=repo_id)
-    unit_metadata = dict(mandatory_package_names=package_list,name=repo_id,user_visible="True")
+    unit_metadata = dict(mandatory_package_names=package_list,name=group_id,user_visible="True")
 
     return dict(unit_type_id="package_group", unit_key=unit_key,
         unit_metadata=unit_metadata, override_config=dict())
