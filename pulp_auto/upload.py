@@ -187,7 +187,41 @@ def package_group_metadata(group_id, repo_id, package_list):
         # }
 
     unit_key = dict(id=group_id, repo_id=repo_id)
-    unit_metadata = dict(mandatory_package_names=package_list,name=group_id,user_visible="True")
+    unit_metadata = dict(mandatory_package_names=package_list,
+                    name=group_id, user_visible="True")
 
     return dict(unit_type_id="package_group", unit_key=unit_key,
+        unit_metadata=unit_metadata, override_config=dict())
+
+
+def package_category_metadata(category_id, repo_id, group_list):
+    '''
+    Get basic metadata for creating package category.
+    All parameters necessary.
+    '''
+        # {
+        #     "unit_type_id": "package_category",
+        #     "unit_key": {
+        #         "id": "example_category",
+        #         "repo_id": "repo_1"
+        #     },
+        #     "unit_metadata": {
+        #         "description": "An Example Category",
+        #         "display_order": 0,
+        #         "name": "Example Category",
+        #         "packagegroupids": [
+        #             "pulp_test_packages",
+        #             "pulp_dotted_name_packages"
+        #         ],
+        #         "translated_description": {},
+        #         "translated_name": ""
+        #     },
+        #     "override_config": {},
+        # }        
+
+    unit_key = dict(id=category_id, repo_id=repo_id)
+    unit_metadata = dict(packagegroupids=group_list,
+                    name=category_id, user_visible="True")
+
+    return dict(unit_type_id="package_category", unit_key=unit_key,
         unit_metadata=unit_metadata, override_config=dict())
