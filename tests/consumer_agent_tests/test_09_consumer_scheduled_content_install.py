@@ -35,7 +35,8 @@ class ConsumerScheduledInstall(ConsumerAgentPulpTest):
                 )
             Task.wait_for_report(cls.pulp, response)
             # create scheduled install
-            response=cls.consumer.schedule_install(cls.pulp,  schedule="PT1M", type_id='rpm', unit_key= 'pike')
+            response=cls.consumer.schedule_install(cls.pulp,  schedule="PT1M", type_id='rpm',
+                                                    unit_key={'name': 'pike'})
             cls.action = ScheduledAction.from_response(response)
             cls.delta = time.time() + 120
 
