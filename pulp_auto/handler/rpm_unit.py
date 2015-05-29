@@ -1,10 +1,12 @@
-from pulp_auto.namespace import load_ns 
+from pulp_auto.namespace import load_ns, Namespace
 
 
 class Rpm(object):
     '''rpm-specific content type actions'''
     @staticmethod
     def unit_to_nevra(request, epoch=0, arch='x86_64', vendor='Fedora'):
+        # unit key as in https://pulp.readthedocs.org/en/latest/dev-guide/integration/rest-api/consumer/content.html#install-content-on-a-consumer
+        assert type(request.unit_key) is Namespace, 'unsupported unit key type: %s' % type(request.unit_key)
         if 'version' in request.unit_key:
             v, r  = request.unit_key.version.split("-")
         else:
