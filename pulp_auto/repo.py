@@ -179,6 +179,20 @@ class Importer(item.AssociatedItem):
     ):
         return self.list_scheduled_action(pulp, action='/sync/')
 
+    def augment_proxy(self, pulp, host, port, username=None, password=None):
+        """
+        set proxy_ options
+        """
+        importer_config = dict(host=host, port=port)
+        if username is not None:
+            importer_config['proxy_username'] = username
+        if password is not None:
+            importer_config['proxy_password'] = password
+        with pulp.asserting(True):
+            pulp.send(self.request('PUT', data=dict(importer_config=importer_config)))
+        self.reload(pulp)
+
+
 
 class Distributor(item.AssociatedItem):
     path = '/distributors/'
@@ -244,6 +258,8 @@ def create_yum_repo(
     relative_url=None,
     http=True,
     https=True,
+    proxy=None,
+    ssl_validation=False,
     **kvs
 ):
     '''create an almost default yum repo'''
@@ -256,6 +272,9 @@ def create_yum_repo(
     )
     if relative_url is None:
         relative_url = id
+    importer_config = dict(feed=feed, ssl_validation=ssl_validation)
+    if proxy is not None:
+        proxy_importer(importer_config, **proxy)
     with pulp.asserting(True):
         #https://bugzilla.redhat.com/show_bug.cgi?id=1076225
         repo = Repo.from_response(repo.create(pulp))
@@ -264,10 +283,7 @@ def create_yum_repo(
             data={
                 'importer_type_id': 'yum_importer',
                 'importer_id': 'yum_importer',
-                'importer_config': {
-                    'feed': feed,
-                    'ssl_validation': False # FIXME: workaround for 1188875
-                }
+                'importer_config': importer_config,
             }
         )
         Task.wait_for_report(pulp, response)
@@ -334,6 +350,17 @@ def create_puppet_repo(
         ))
     return repo, importer, distributor
 
+def proxy_importer(importer_data, host, port, username=None, password=None):
+    """
+    map proxy to importer config
+    """
+    importer_data['proxy_host'] = host
+    importer_data['proxy_port'] = port
+    if username is not None:
+        if password is None:
+            raise ValueError('username implies a password but None set')
+        importer_data['proxy_username'] = username
+        importer_data['proxy_password'] = password
 
 def create_iso_repo(
     pulp,
