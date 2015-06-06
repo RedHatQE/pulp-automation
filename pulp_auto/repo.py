@@ -311,7 +311,8 @@ def create_puppet_repo(
     feed='http://forge.puppetlabs.com',
     display_name=None,
     http=True,
-    https=False
+    https=False,
+    proxy=None
 ):
 
     '''create an almost default puppet repo'''
@@ -322,16 +323,16 @@ def create_puppet_repo(
              'notes': {"_repo-type": "puppet-repo"}
          }
     )
+    importer_config = dict(feed=feed, queries=queries)
+    if proxy is not None:
+        proxy_importer(importer_config, **proxy)
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
         response = repo.associate_importer(
             pulp,
             data={
                 'importer_type_id': 'puppet_importer',
-                'importer_config': {
-                    'feed': feed,
-                    'queries': queries
-                }
+                'importer_config': importer_config
             }
         )
         Task.wait_for_report(pulp, response)
@@ -365,24 +366,28 @@ def proxy_importer(importer_data, host, port, username=None, password=None):
 def create_iso_repo(
     pulp,
     id,
-    feed,
+    feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/',
     display_name=None,
     relative_url=None,
     http=True,
     https=True,
+    proxy=None,
     **kvs
 ):
     '''create an almost default iso repo'''
     repo = Repo(
         {
             'id': id,
-            'feed': 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/',
+            'feed': feed,
             'display_name': display_name,
             'notes': {"_repo-type": "iso-repo"}
         }
     )
     if relative_url is None:
         relative_url = id
+    importer_config = dict(feed=feed)
+    if proxy is not None:
+        proxy_importer(importer_config, **proxy)
     with pulp.asserting(True):
         repo = Repo.from_response(repo.create(pulp))
         response = repo.associate_importer(
@@ -390,9 +395,7 @@ def create_iso_repo(
             data={
                 'importer_type_id': 'iso_importer',
                 'importer_id': 'iso_importer',
-                'importer_config': {
-                    'feed': feed
-                }
+                'importer_config': importer_config,
             }
         )
         Task.wait_for_report(pulp, response)
@@ -415,22 +418,27 @@ def create_iso_repo(
 def create_docker_repo(
     pulp,
     id,
-    feed,
+    feed='https://index.docker.io/',
     display_name=None,
+    upstream_name='busybox',
     relative_url=None,
     http=True,
     https=True,
+    proxy=None,
     **kvs
 ):
     '''create an almost default docker repo'''
     repo = Repo(
         {
             'id': id,
-            'feed': 'https://index.docker.io/',
+            'feed': feed,
             'display_name': display_name,
             'notes': {"_docker-type": "docker-repo"},
         }
     )
+    importer_config = dict(feed=feed, upstream_name=upstream_name)
+    if proxy is not None:
+       proxy_importer(importer_config, **proxy)
     if relative_url is None:
         relative_url = id
     with pulp.asserting(True):
@@ -440,10 +448,7 @@ def create_docker_repo(
             data={
                 'importer_type_id': 'docker_importer',
                 'importer_id': 'docker_importer',
-                'importer_config': {
-                    'feed': feed,
-                    "upstream_name": "busybox"
-                }
+                'importer_config': importer_config,
             }
         )
         Task.wait_for_report(pulp, response)
