@@ -73,6 +73,16 @@
 # - ca_path: as with pulp
 # Please, note that for the Node tests to work the OAuth should be configured
 # See the Pulp docs for more details
+#
+#
+# The Proxy Role
+# use proxy where applicable, esp. with repos
+# attributes:
+# - hostname: mandatory; protocol+hostname specification, see https://pulp.plan.io/issues/1032
+# - port: mandatory; Squid: 3128
+# - username: optional
+# - password: mandatory if username specified
+
 
 ROLES:
   pulp: &PULP
@@ -82,12 +92,18 @@ ROLES:
     verify_api_ssl: False/Ca-path
   qpid: &QPID
     url: pulp.example.com
+  proxy: &SQUID
+    host: "https://proxy.example.com"
+    port: 3128
+    username: squid
+    password: squid
   repos:
     - &ZOO
       id: zoo
       type: rpm
       feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
       display_name: ZOo rEPO
+      proxy: *SQUID
       tags: ['default', 'small', 'demo']
   consumers:
   - &MY_CONSUMER
