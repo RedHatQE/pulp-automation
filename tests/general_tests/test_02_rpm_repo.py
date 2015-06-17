@@ -3,6 +3,8 @@ from tests import pulp_test
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import Orphans
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
+from tests.conf.roles import ROLES
 
 
 def setUpModule():
@@ -15,7 +17,7 @@ class RepoTest(pulp_test.PulpTest):
         super(RepoTest, cls).setUpClass()
         cls.repo = Repo(data={'id': cls.__name__ + "_repo"})
         cls.repo2 = Repo(data={'id': cls.__name__ + "_repo2"})
-        cls.feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
+        cls.repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
 
 
 class SimpleRepoTest(RepoTest):
@@ -49,119 +51,42 @@ class SimpleRepoTest(RepoTest):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
     def test_05_associate_importer_with_invalid_type(self):
-        self.repo.associate_importer(
-            self.pulp,
-            data={
-                'importer_type_id': 'invalid_importer',
-                'importer_config': {
-                    'feed': self.feed
-                }
-            }
-        )
+        data = YumImporter.from_role(self.repo_role).as_data(importer_type_id='invalid_importer')
+        self.repo.associate_importer(self.pulp, data=data)
         self.assertPulp(code=400)
 
     def test_06_associate_importer(self):
-        response = self.repo.associate_importer(
-            self.pulp,
-            data={
-                'importer_type_id': 'yum_importer',
-                'importer_config': {
-                    'feed': self.feed
-                }
-            }
-        )
+        data = YumImporter.from_role(self.repo_role).as_data()
+        response = self.repo.associate_importer(self.pulp, data=data)
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
-        importer = self.repo.get_importer(self.pulp, "yum_importer")
+        importer = self.repo.get_importer(self.pulp, data['id'])
         # fixed as a doc bug https://bugzilla.redhat.com/show_bug.cgi?id=1076225
-        self.assertEqual({
-                'id': 'yum_importer',
-                'importer_type_id': 'yum_importer',
-                'repo_id': self.repo.id,
-                'config': {
-                    'feed': self.feed
-                },
-                'last_sync': None
-            },
-            importer)
+        self.assertEqual(importer.id, data['id'])
 
 
     def test_07_associate_importer_to_unexistant_repo(self):
-        self.repo2.associate_importer(
-            self.pulp,
-            data={
-                'importer_type_id': 'yum_importer',
-                'importer_config': {
-                    'feed': self.feed
-                }
-            }
-        )
+        data = YumImporter.from_role(self.repo_role).as_data()
+        self.repo2.associate_importer(self.pulp, data=data)
         self.assertPulp(code=404)
 
     def test_08_associate_distributor_with_invalid_type(self):
-        self.repo.associate_distributor(
-            self.pulp,
-            data={
-                'distributor_type_id': 'invalid_distributor',
-                'distributor_config': {
-                    'http': False,
-                    'https': False,
-                    'relative_url': '/zoo/'
-                },
-                'distributor_id': 'dist_1',
-                'auto_publish': False
-            }
-        )
-
+        data = YumDistributor.from_role(self.repo_role).as_data(
+                            distributor_type_id='invalid_distributor')
+        self.repo.associate_distributor(self.pulp, data=data)
         self.assertPulp(code=400)
 
     def test_09_associate_distributor(self):
-        response = self.repo.associate_distributor(
-            self.pulp,
-            data={
-                'distributor_type_id': 'yum_distributor',
-                'distributor_config': {
-                    'http': False,
-                    'https': False,
-                    'relative_url': '/zoo/'
-                },
-                'distributor_id': 'dist_1',
-                'auto_publish': False
-            }
-        )
+        data = YumDistributor.from_role(self.repo_role).as_data(distributor_id='dist_1')
+        response = self.repo.associate_distributor(self.pulp, data=data)
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
-        self.assertEqual(
-            distributor,
-            {
-                'id': 'dist_1',
-                'distributor_type_id': 'yum_distributor',
-                'repo_id': self.repo.id,
-                'config': {
-                    'http': False,
-                    'https': False,
-                    'relative_url': '/zoo/'
-                },
-                'last_publish': None,
-                'auto_publish': False
-            }
-        )
+        # please note although one POSTs 'distributor_id' she gets 'id' in return :-/
+        self.assertEqual(data['distributor_id'], distributor.data['id'])
 
     def test_10_associate_distributor_to_unexistant_repo(self):
-        self.repo2.associate_distributor(
-            self.pulp,
-            data={
-                'distributor_type_id': 'yum_distributor',
-                'distributor_config': {
-                    'http': False,
-                    'https': False,
-                    'relative_url': '/zoo/'
-                },
-                'distributor_id': 'dist_1',
-                'auto_publish': False
-            }
-        )
-
+        data = YumDistributor.from_role(self.repo_role).as_data()
+        self.repo2.associate_distributor(self.pulp, data)
         self.assertPulp(code=404)
 
     def test_11_sync_repo(self):

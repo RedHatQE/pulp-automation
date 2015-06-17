@@ -1,10 +1,9 @@
 # basic pulp test class
 import unittest, pprint, logging, nose
-from . import ROLES
+from conf.roles import ROLES
 from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE
 from pulp_auto.consumer import (Consumer, Binding)
-from pulp_auto.repo import create_yum_repo
 from pulp_auto.units import Orphans
 from pulp_auto.task import Task
 from pulp_auto.agent import Agent
@@ -99,8 +98,10 @@ class ConsumerAgentPulpTest(PulpTest):
         super(ConsumerAgentPulpTest, cls).setUpClass()
         cls.ROLES = ROLES
         cls.PROFILE = PROFILE
-        from . import ROLES as inventory_roles
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **[repo for repo in inventory_roles.repos if repo.type == 'rpm'][0])
+        from conf.facade.yum import YumRepo
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
+        cls.repo, cls.importer, [cls.distributor] = YumRepo.from_role(repo_role).create(cls.pulp)
+
         cls.rsa = RSA.load_key('./tests/data/fake-consumer.pem')
         bio_fd = BIO.MemoryBuffer()
         cls.rsa.save_pub_key_bio(bio_fd)
@@ -135,10 +136,10 @@ def stacked_ctx(ctxmanager):
         if len(things) > 1:
             with ctxmanager(things[0]) as thing:
                 with stacked(*things[1:]) as somethings:
-                    yield thing, somethings
+                    yield (thing,) + somethings
         else:
             with ctxmanager(things[0]) as thing:
-                yield thing
+                yield (thing,)
     return stacked
 
 @contextmanager

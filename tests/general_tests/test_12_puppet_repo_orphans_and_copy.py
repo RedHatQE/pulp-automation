@@ -2,9 +2,10 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo, create_yum_repo
+from pulp_auto.repo import create_puppet_repo
 from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import PuppetModuleOrphan, Orphans
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 
 
 def setUpModule():
@@ -26,7 +27,8 @@ class PuppetCopyRepoTest(pulp_test.PulpTest):
         # create data for repo
         cls.invalid_repo = Repo(data={'id': cls.__name__ + "_invalidrepo"})
         # create yum repo
-        cls.yumrepo, _, _ = create_yum_repo(cls.pulp, repo_id + 'yum', feed=None)
+        cls.yumrepo, _, _ = YumRepo(repo_id + 'yum', importer=YumImporter(feed=None),
+                                distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
 
 
 class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):

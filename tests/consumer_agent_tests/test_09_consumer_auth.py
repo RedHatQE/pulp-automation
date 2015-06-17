@@ -1,8 +1,7 @@
 import unittest, logging, nose
-from tests import ROLES
+from tests.conf.roles import ROLES
 from pulp_auto import Pulp, format_response
 from pulp_auto.handler.profile import PROFILE
-from pulp_auto.repo import create_yum_repo
 from pulp_auto.consumer import (Consumer, Binding)
 from pulp_auto.task import (Task, TaskFailure, TaskTimeoutError)
 from pulp_auto.agent import Agent
@@ -11,6 +10,7 @@ from pulp_auto.authenticator import Authenticator
 import pulp_auto.handler
 from M2Crypto import (RSA, BIO)
 from tests.pulp_test import requires, requires_any, PulpTest, agent_test
+from tests.conf.facade.yum import YumRepo
 
 @requires('qpid.url')
 @requires_any('repos', lambda repo: repo.type == 'rpm')
@@ -28,7 +28,8 @@ class ConsumerAuthTest(PulpTest):
         bio_fd = BIO.MemoryBuffer()
         cls.rsa_secondary.save_pub_key_bio(bio_fd)
         cls.pub_pem_secondary = bio_fd.getvalue()
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **[repo for repo in cls.ROLES.repos if repo.type == 'rpm'][0])
+        repo_role = [repo for repo in cls.ROLES.repos if repo.type == 'rpm'][0]
+        cls.repo, cls.importer, [cls.distributor] = YumRepo.from_role(repo_role).create(cls.pulp)
         cls.consumer = Consumer.register(cls.pulp, cls.__name__ + '_consumer', rsa_pub=cls.pub_pem_primary)
         cls.agent = Agent(pulp_auto.handler, PROFILE=pulp_auto.handler.profile.PROFILE)
         cls.qpid_handle = QpidHandle(cls.ROLES.qpid.url, cls.consumer.id, auth=Authenticator(signing_key=cls.rsa_primary, verifying_key=cls.pulp.pubkey))

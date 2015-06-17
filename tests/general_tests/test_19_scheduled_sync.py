@@ -2,11 +2,11 @@ import json, pulp_auto, time
 from tests import pulp_test
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer
-from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task, TaskTimeoutError
 from pulp_auto.item import ScheduledAction
 from pulp_auto.units import Orphans
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo
 
 
 def setUpModule():
@@ -19,7 +19,7 @@ class ScheduledSyncTest(pulp_test.PulpTest):
         super(ScheduledSyncTest, cls).setUpClass()
         # create and sync rpm repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
-        cls.repo, _, _ = create_yum_repo(cls.pulp, **repo_config)
+        cls.repo, _, _ = YumRepo.from_role(repo_config).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         # create a schedule sync
         cls.importer = cls.repo.get_importer(cls.pulp, "yum_importer")

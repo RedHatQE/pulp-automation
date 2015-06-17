@@ -2,10 +2,11 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo, create_yum_repo
+from pulp_auto.repo import create_puppet_repo
 from pulp_auto.task import Task
 from pulp_auto.units import Orphans, UnitFactory, AbstractUnit, PuppetModuleUnit, RpmUnit, ErratumUnit, PackageGroupUnit
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo
 
 
 def setUpModule():
@@ -27,7 +28,7 @@ class UnitSearchTest(pulp_test.PulpTest):
         Task.wait_for_report(cls.pulp, cls.repo1.sync(cls.pulp))
         # create and sync rpm repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
-        cls.repo2, _, _ = create_yum_repo(cls.pulp, **repo_config)
+        cls.repo2, _, _ = YumRepo.from_role(repo_config).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo2.sync(cls.pulp))
 
 

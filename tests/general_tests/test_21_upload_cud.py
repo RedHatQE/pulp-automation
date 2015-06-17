@@ -1,9 +1,9 @@
 from tests.pulp_test import PulpTest, deleting
 from pulp_auto.upload import Upload, rpm_metadata
-from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task
 from tests.utils.upload import upload_url_rpm, temp_url, url_basename
 from contextlib import closing
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 
 
 class UploadCudTest(PulpTest):
@@ -30,7 +30,7 @@ class UploadCudTest(PulpTest):
     def rpm_uploader(pulp, url, repo, distributor):
         '''perform an upload'''
         # create an already fed upload object
-        with deleting(pulp, upload_url_rpm(pulp, url)) as upload:
+        with deleting(pulp, upload_url_rpm(pulp, url)) as (upload,):
             # assing upload to repo
             Task.wait_for_report(pulp, upload.import_to(pulp, repo))
             # publish the content
@@ -45,13 +45,17 @@ class UploadCudTest(PulpTest):
 
     def testcase_02_upload_rpm(self):
         # create yum-repo, -importer, -distributor
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo')) as (repo, (importer, (distributor))):
+        repo, importer, [distributor] = YumRepo(id='upload_test_rpm_repo', importer=YumImporter(feed=None),
+                                            distributors=[YumDistributor(relative_url='xyz')]).create(self.pulp)
+        with deleting(self.pulp, repo, importer, distributor) as (repo, importer, distributor):
             # create and perform an rpm url upload
             self.rpm_uploader(self.pulp, self.rpm_url_bear, repo, distributor)
 
     def testcase_03_parallel_upload_rpms(self):
         import gevent
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'upload_test_rpm_repo')) as (repo, (importer, (distributor))):
+        repo, importer, [distributor] = YumRepo(id='upload_test_rpm_repo', importer=YumImporter(feed=None),
+                                            distributors=[YumDistributor(relative_url='xyz')]).create(self.pulp)
+        with deleting(self.pulp, repo, importer, distributor) as (repo, importer, distributor):
             # create and perform an rpm url upload
             jobs = [gevent.spawn(lambda: self.rpm_uploader(self.pulp, url, repo, distributor)) for url in \
                             [self.rpm_url_bear, self.rpm_url_mouse]]
