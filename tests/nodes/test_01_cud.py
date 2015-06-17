@@ -1,17 +1,20 @@
 """
 simple nodes e2e scenario
 """
-from tests.pulp_test import PulpTest, deleting, requires_any, ROLES
+from contextlib import closing
 from pulp_auto.pulp import Pulp, ResponseLike
 from pulp_auto.consumer import Cli
 from pulp_auto.login import request as login_request
-from pulp_auto.repo import create_yum_repo, NodeDistributor, Repo
+from pulp_auto.repo import NodeDistributor, Repo
 from pulp_auto.task import Task
 from pulp_auto.common_consumer import Binding
+from pulp_auto.node import Node
 from tests.utils.upload import upload_url_rpm, temp_url, url_basename, download_package_with_dnf, \
         pulp_repo_url
-from contextlib import closing
-from pulp_auto.node import Node
+from tests.pulp_test import PulpTest, deleting, requires_any
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
+
 
 @requires_any('nodes')
 class NodeTest(PulpTest):
@@ -64,7 +67,7 @@ class NodeTestRepo(NodeTest):
         super(NodeTestRepo, cls).setUpClass()
         cls.node.activate(cls.pulp)
         repo_role = ROLES.repos[0]
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, **repo_role)
+        cls.repo, cls.importer, [cls.distributor] = YumRepo.from_role(repo_role).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         response = cls.repo.associate_distributor(cls.pulp, NodeDistributor.default().data)
         cls.node_distributor = NodeDistributor.from_response(response)

@@ -1,9 +1,10 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
-from pulp_auto.repo import create_yum_repo, Repo, Importer, Distributor
+from pulp_auto.repo import Repo, Importer, Distributor
 from tests.pulp_test import (PulpTest, requires_any)
-from tests import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo as YumRepoFacade, YumImporter, YumDistributor
 
 def setUpModule():
     pass
@@ -18,8 +19,11 @@ class RegRepoCopyTest(PulpTest):
         super(RegRepoCopyTest, cls).setUpClass()
         
         # create repo
-        cls.repo1, cls.importer1, cls.distributor1 = create_yum_repo(cls.pulp, cls.__name__ + "_repo1", feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')
-        cls.repo2, cls.importer2, cls.distributor2 = create_yum_repo(cls.pulp, cls.__name__ + "_repo2", feed=None)
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0].copy()
+        repo_role.id = cls.__name__ + '_repo1'
+        cls.repo1, cls.importer1, [cls.distributor1] = YumRepoFacade.from_role(repo_role).create(cls.pulp)
+        cls.repo2, cls.importer2, [cls.distributor2] = YumRepoFacade(id=cls.__name__ + '_repo2',
+                importer=YumImporter(feed=None), distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
 
         # create consumer
         cls.consumer = Consumer(ROLES.consumers[0])

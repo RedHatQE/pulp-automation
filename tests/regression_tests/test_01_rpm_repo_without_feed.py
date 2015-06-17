@@ -2,10 +2,11 @@ from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
 from pulp_auto.upload import Upload, rpm_metadata
-from pulp_auto.repo import create_yum_repo, Repo, Importer, Distributor
+from pulp_auto.repo import Repo, Importer, Distributor
 from tests.pulp_test import (PulpTest, requires_any, deleting)
 from tests.utils.upload import upload_url_rpm, temp_url, url_basename
-from tests import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo as YumRepoFacade, YumImporter, YumDistributor
 from contextlib import closing
 
 def setUpModule():
@@ -19,14 +20,15 @@ class RegRepoNoFeedTest(PulpTest):
     @classmethod
     def setUpClass(cls):
         super(RegRepoNoFeedTest, cls).setUpClass()
-        
+
         # create repo
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, cls.__name__ + "_repo", feed=None)
+        cls.repo, cls.importer, [cls.distributor] = YumRepo(id=cls.__name__ + "_repo", importer=YumImporter(feed=None),
+                    distributors=[YumDistributor(relative_url='foo')]).create(cls.pulp)
 
         # create consumer
         cls.consumer = Consumer(ROLES.consumers[0])
         setattr(cls.consumer, 'cli', Cli.ready_instance(**ROLES.consumers[0]))
-        
+
         # rpm
         cls.rpm_url_pike = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/pike-2.2-1.noarch.rpm'
 
@@ -49,12 +51,12 @@ class RegRepoNoFeedTest(PulpTest):
     def test_01_upload_rpm(self):
         # create and perform an rpm url upload
         self.rpm_uploader(self.pulp, self.rpm_url_pike, self.repo, self.distributor)
-                      
+
     def test_02_publish_repo(self):
-        with self.pulp.asserting(True):        
+        with self.pulp.asserting(True):
             response = self.repo.publish(self.pulp, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
-            
+
     def test_03_api_registered_consumer(self):
         # assert the cli registration worked in API
         with self.pulp.asserting(True):
@@ -101,7 +103,7 @@ class RegRepoNoFeedTest(PulpTest):
         with cls.pulp.asserting(True):
             response = cls.repo.delete(cls.pulp)
         Task.wait_for_report(cls.pulp, response)
-        
+
         # delete orphans
         with cls.pulp.asserting(True):
             response = Orphans.delete(cls.pulp)
