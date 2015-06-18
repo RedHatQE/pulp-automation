@@ -8,7 +8,7 @@ class Importer(Facade):
     def __init__(self, id, importer_type_id, importer_config=dict()):
         self.id = id
         self.importer_type_id = importer_type_id
-        self.importer_config = importer_config
+        self.importer_config = importer_config.copy()
 
 
     def as_data(self, **override):
@@ -52,7 +52,7 @@ class Distributor(Facade):
                     distributor_config=dict()):
         self.distributor_id = distributor_id
         self.distributor_type_id = distributor_type_id
-        self.distributor_config = distributor_config
+        self.distributor_config = distributor_config.copy()
         self.auto_publish = auto_publish
 
     @classmethod
@@ -91,12 +91,14 @@ class WebDistributor(Distributor):
 
 class Repo(Facade):
     """base repo facade"""
-    def __init__(self, id, display_name=None, description=None, importer=None, distributors=[]):
+    def __init__(self, id, display_name=None, description=None, importer=None, distributors=[],
+                    notes={}):
         self.id = id
         self.display_name = display_name
         self.description = description
         self.importer = importer
         self.distributors = distributors
+        self.notes = notes
 
 
     def create(self, pulp):
@@ -121,7 +123,14 @@ class Repo(Facade):
         return repo, importer, distributors
 
     def as_data(self, **override):
-        ret = dict(id=self.id, display_name=self.display_name, description=self.description)
+        ret = dict(id=self.id, display_name=self.display_name, description=self.description,
+                    notes=self.notes)
         ret.update(override)
         return ret
+
+    @classmethod
+    def from_role(cls, role, importer=None, distributors=[]):
+        return cls(id=role['id'], display_name=role.get('display_name'),
+                    description=role.get('description'), importer=importer,
+                    distributors=distributors)
 
