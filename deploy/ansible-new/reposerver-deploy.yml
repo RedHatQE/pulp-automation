@@ -1,0 +1,17 @@
+---
+- name: Deploy reposerver
+  hosts: localhost
+  roles:
+    - reposerver-deploy
+
+- name: Enable root access on new machine
+  remote_user: fedora
+  hosts: launched
+  roles:
+    - enable-root
+
+- name: Upgrade all packages to latest version
+  hosts: launched
+  tasks:
+    - name: update packages
+      yum: name=* state=latest

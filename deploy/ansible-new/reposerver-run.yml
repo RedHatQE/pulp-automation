@@ -1,0 +1,9 @@
+---
+- name: Configure instance, build rpms and upload them to s3
+  hosts:
+    - "tag_Name_{{reposerver_name}}"
+  roles:
+    - s3cmd-config
+    - boto-config
+    - s3repo
+    - reposerver-config

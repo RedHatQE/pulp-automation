@@ -1,0 +1,65 @@
+---
+- name: install necessary packages
+  yum: name={{ item }} state=present
+  with_items:
+    - git
+    - tito
+    - make
+    - python-sphinx
+    - python2-devel
+    - selinux-policy-devel
+    - createrepo
+    - s3cmd
+- name: checkout git repositories 
+  git: repo=https://github.com/pulp/{{item}} dest=/tmp/{{item}} version={{tested_version}}-{{tested_branch}}
+  with_items: "{{ repos_list }}"
+
+- name: delete previously built rpms
+  file: path={{reposerver_repo_dir}} state=absent
+
+- name: create rpms from them
+  command: "{{ item[1] }} chdir=/tmp/{{ item[0] }}"
+  with_nested:
+    - "{{ repos_list }}"
+    - ['tito init', 'tito build --rpm -o {{ reposerver_repo_dir }}']
+- name: create repository from previously built rpm's
+  command: createrepo {{ reposerver_repo_dir }}/noarch
+
+- name: delete content from repo 'current'
+  command: "s3cmd rm --recursive s3://{{bucket_name}}/current/"
+
+- name: get date and time
+  command: "date '+%y-%m-%d'"
+  register: current_date
+
+- name: upload packages for archiving
+  shell: "s3cmd put --recursive /{{reposerver_repo_dir}}/noarch/ s3://{{bucket_name}}/{{current_date.stdout}}/repo/noarch/"
+
+- name: copy packages to repo 'current'
+  shell: "s3cmd cp --recursive s3://{{bucket_name}}/{{current_date.stdout}}/repo/noarch/ s3://{{bucket_name}}/current/repo/noarch/"
+
+- name: create s3 repository file
+  shell: "echo -e '[Pulp-{{tested_version}}-{{tested_branch}}]\n
+  name=Pulp-{{tested_version}} nightbuild s3 repo\n
+  baseurl=http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/repo/noarch\n
+  gpgcheck=0\n
+  enabled=1' > fedora-pulp-s3.repo"
+
+- name: get list of previously built packages
+  shell: find {{reposerver_repo_dir}}/noarch -name '*.rpm' -printf '%f\n' |sed 's/\([a-z\-]\)-[0-9].*/\1\*/'|tr '\n' ' '
+  register: excluded_packages
+
+- name: modify official pulp repository file to exclude built packages
+  shell: "echo -e '[Pulp-{{tested_version}}-beta]\n
+  name=Pulp v2 Beta Builds\n
+  baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/{{tested_version}}/fedora-$releasever/$basearch/\n
+  enabled=1\n
+  skip_if_unavailable=1\n
+  gpgcheck=0\n
+  exclude={{excluded_packages.stdout}}' > fedora-pulp.repo"
+
+- name: copy .repo files to localhost
+  fetch: src={{item}}.repo dest=./ flat=yes
+  with_items:
+  - fedora-pulp-s3
+  - fedora-pulp

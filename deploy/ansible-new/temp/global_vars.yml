@@ -1,0 +1,35 @@
+---
+# ec2 credentials used by boto and s3cmd, set as env variable 
+access_key: "{{lookup ('env', 'AWS_ACCESS_KEY_ID')}}" 
+secret_access_key: "{{lookup ('env', 'AWS_SECRET_ACCESS_KEY')}}"
+
+# put all playbooks variables here
+# names and configurations of servers 
+# do not use dash "-" in servers' name!
+reposerver_name: <name of reposerver here,, ie: pulp_automation_reposerver>
+pulp_single_node: not_implemented
+# and s3 bucket, now on: 
+bucket_name: placko-pulp-beta-repos-ewest-testing
+
+# name of the key for comunicating with instances, located in ansible_dir/keys
+key_name: <your_key_name> 
+# set true for overwriting existing key
+force_keypair: False
+
+# instance details, so far common for all machines 
+instance_type: m3.large
+security_group: ssh
+image: ami-2f73f858
+region: eu-west-1
+
+# pulp relevant variables
+tested_version: 2.7
+tested_branch: testing
+repos_list:
+  - pulp
+  - pulp_rpm
+  - pulp_puppet
+
+# reposerver relevant variables
+# repositories for rpms
+reposerver_repo_dir: /tmp/tito

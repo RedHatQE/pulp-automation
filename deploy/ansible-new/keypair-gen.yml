@@ -1,0 +1,6 @@
+---
+- name: create keypair to communicate with ec2 instances
+  hosts: localhost
+  connection: local
+  roles:
+    - keypair

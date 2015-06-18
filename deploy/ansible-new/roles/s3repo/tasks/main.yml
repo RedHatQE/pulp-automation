@@ -1,0 +1,15 @@
+---
+#- name: Make sure bucket for repos exists
+#  hosts:
+#    - localhost
+#  tasks:
+- name: Create s3 bucket
+  shell: "s3cmd mb s3://{{bucket_name}}"
+  register: bucket_res
+  failed_when: "bucket_res.rc != 0 and '409' not in bucket_res.stderr"
+- name: Create a policy file from template
+  template: src=s3-bucket-policy.j2 dest=./s3-bucket-policy.json
+- name: Update bucket policy for allowing public read
+  shell: "s3cmd setpolicy s3-bucket-policy.json s3://{{bucket_name}}"
+- name: Remove policy file
+  file: path=./s3-bucket-policy.json state=absent

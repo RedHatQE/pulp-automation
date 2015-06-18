@@ -1,0 +1,8 @@
+---
+- name: Terminate instances
+  hosts:
+    - tag_Name_{{reposerver_name}}
+  connection: local
+  gather_facts: false
+  roles:
+    - ec2-terminate

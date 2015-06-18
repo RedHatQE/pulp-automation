@@ -1,0 +1,13 @@
+---
+#- name: Terminate instances
+#  hosts:
+#    - tag_Name_{{reposerver_name}}
+#  connection: local
+#  gather_facts: false
+#  tasks:
+- name: Terminate instances that were previously launched
+  local_action:
+    module: ec2
+    state: 'absent'
+    region: '{{ ec2_region }}'
+    instance_ids: '{{ ec2_id }}'

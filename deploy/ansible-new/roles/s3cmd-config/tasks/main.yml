@@ -1,0 +1,5 @@
+---
+- name: Make sure s3cmd exists on system
+  yum: name=s3cmd state=present
+- name: Create a config file for s3cmd
+  template: src=.s3cfg.j2 dest=~/.s3cfg

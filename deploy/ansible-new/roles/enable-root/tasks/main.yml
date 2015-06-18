@@ -1,0 +1,8 @@
+---
+- name: Enable root access
+  become: yes
+  become_method: sudo
+  shell: "{{item}}"
+  with_items:
+    - sed -i s,disable_root:.*,disable_root:0, /etc/cloud/cloud.cfg
+    - cat ~fedora/.ssh/authorized_keys > /root/.ssh/authorized_keys
