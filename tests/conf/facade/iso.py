@@ -3,11 +3,14 @@ default iso pulp--role facades
 """
 
 from generic import Repo, FeedImporter, WebDistributor
+import pulp_auto
 
 
 DEFAULT_FEED = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/'
 
 class IsoDistributor(WebDistributor):
+    pulp_type = pulp_auto.repo.IsoDistributor
+
     def __init__(self, distributor_id='iso_distributor', distributor_type_id='iso_distributor',
                 **kvs):
         super(IsoDistributor, self).__init__(distributor_id=distributor_id,
