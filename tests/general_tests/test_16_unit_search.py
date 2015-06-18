@@ -2,11 +2,11 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, ResponseLike)
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo
 from pulp_auto.task import Task
 from pulp_auto.units import Orphans, UnitFactory, AbstractUnit, PuppetModuleUnit, RpmUnit, ErratumUnit, PackageGroupUnit
 from tests.conf.roles import ROLES
 from tests.conf.facade.yum import YumRepo
+from tests.conf.facade.puppet import PuppetRepo
 
 
 def setUpModule():
@@ -18,13 +18,18 @@ class UnitSearchTest(pulp_test.PulpTest):
     def setUpClass(cls):
         super(UnitSearchTest, cls).setUpClass()
         #create and sync puppet repo
-        repo_id = cls.__name__
-        queries = ['jenkins']
+        # FIXME: hardwired role details
+        repo = {
+            'id': cls.__name__,
+            'queries': ['jenkins'],
+            'feed': 'https://forge.puppetlabs.com',
+            'proxy': ROLES.get('proxy'),
+        }
         # make sure we run clean
-        response = Repo({'id': repo_id}).delete(cls.pulp)
+        response = Repo({'id': repo['id']}).delete(cls.pulp)
         if response == ResponseLike(202):
             Task.wait_for_report(cls.pulp, response)
-        cls.repo1, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
+        cls.repo1, _, _ = PuppetRepo.from_role(repo).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo1.sync(cls.pulp))
         # create and sync rpm repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]

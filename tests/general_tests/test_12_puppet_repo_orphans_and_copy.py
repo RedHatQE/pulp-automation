@@ -2,10 +2,11 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo
 from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import PuppetModuleOrphan, Orphans
+from tests.conf.roles import ROLES
 from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
+from tests.conf.facade.puppet import PuppetRepo, PuppetImporter, PuppetDistributor
 
 
 def setUpModule():
@@ -16,18 +17,29 @@ class PuppetCopyRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(PuppetCopyRepoTest, cls).setUpClass()
-        repo_id = cls.__name__
-        queries = ['tomcat']
+        # this repo role is hardwired because of the search strings
+        # refering to exact names as e.g. tomcat7_rhel
+        # The proxy role is considered
+        repo = {
+            'id': cls.__name__,
+            'feed': 'https://forge.puppetlabs.com',
+            'queries': ['tomcat'],
+            'proxy': ROLES.get('proxy'),
+        }
         # create source repo and sync it to have modules fetched
-        cls.source_repo, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
+        cls.source_repo, _, _ = PuppetRepo.from_role(repo).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
         # create two destinations repos for copy purpose
-        cls.dest_repo1, _, _ = create_puppet_repo(cls.pulp, repo_id + '1', feed=None)
-        cls.dest_repo2, _, _ = create_puppet_repo(cls.pulp, repo_id + '2', feed=None)
+        importer = PuppetImporter(feed=None, queries=[])
+        distributors = [PuppetDistributor()]
+        cls.dest_repo1, _, _ = PuppetRepo(id=cls.__name__ + '1', importer=importer,
+                    distributors=distributors).create(cls.pulp)
+        cls.dest_repo2, _, _ = PuppetRepo(id=cls.__name__ + '2', importer=importer,
+                    distributors=distributors).create(cls.pulp)
         # create data for repo
         cls.invalid_repo = Repo(data={'id': cls.__name__ + "_invalidrepo"})
         # create yum repo
-        cls.yumrepo, _, _ = YumRepo(repo_id + 'yum', importer=YumImporter(feed=None),
+        cls.yumrepo, _, _ = YumRepo(cls.__name__ + 'yum', importer=YumImporter(feed=None),
                                 distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
 
 

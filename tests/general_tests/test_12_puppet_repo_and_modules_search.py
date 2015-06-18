@@ -2,23 +2,32 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_puppet_repo
 from pulp_auto.task import Task
 from pulp_auto.units import PuppetModuleOrphan, Orphans
+from tests.conf.roles import ROLES
+from tests.conf.facade.puppet import PuppetRepo
 
 
 def setUpModule():
     pass
 
-
 class PuppetSearchRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
+        # this repo role is hardwired because of the search strings
+        # refering to exact names as e.g. tomcat7_rhel
+        # The proxy role is considered
         super(PuppetSearchRepoTest, cls).setUpClass()
-        repo_id = cls.__name__
-        queries = ['tomcat']
-        cls.repo, _, _ = create_puppet_repo(cls.pulp, repo_id, queries)
-        cls.repo1, _, _ = create_puppet_repo(cls.pulp, repo_id + '1', queries)
+        repo = {
+            'id': cls.__name__,
+            'feed': 'https://forge.puppetlabs.com',
+            'queries': ['tomcat'],
+            'proxy': ROLES.get('proxy')
+        }
+        repo1 = repo.copy()
+        repo1['id'] = cls.__name__ + '1'
+        cls.repo, _, _ = PuppetRepo.from_role(repo).create(cls.pulp)
+        cls.repo1, _, _ = PuppetRepo.from_role(repo1).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
 
 

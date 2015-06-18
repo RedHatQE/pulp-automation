@@ -43,7 +43,7 @@ class FeedImporter(Importer):
             proxy_port = proxy.get('port')
             proxy_username = proxy.get('username')
             proxy_password = proxy.get('password')
-        return cls(id=id, importer_type_id=importer_type_id, feed=repo.feed,
+        return cls(id=id, importer_type_id=importer_type_id, feed=repo['feed'],
                     proxy_host=proxy_host, proxy_port=proxy_port, proxy_username=proxy_username,
                     proxy_password=proxy_password, ssl_validation=ssl_validation)
 
