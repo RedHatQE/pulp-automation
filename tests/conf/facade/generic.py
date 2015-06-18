@@ -3,8 +3,11 @@ generic facades
 """
 
 from facade import Facade
+import pulp_auto
 
 class Importer(Facade):
+    pulp_type = pulp_auto.repo.Importer
+
     def __init__(self, id, importer_type_id, importer_config=dict()):
         self.id = id
         self.importer_type_id = importer_type_id
@@ -48,6 +51,8 @@ class FeedImporter(Importer):
                     proxy_password=proxy_password, ssl_validation=ssl_validation)
 
 class Distributor(Facade):
+    pulp_type = pulp_auto.repo.Distributor
+
     def __init__(self, distributor_id, distributor_type_id, auto_publish=False,
                     distributor_config=dict()):
         self.distributor_id = distributor_id
@@ -91,6 +96,7 @@ class WebDistributor(Distributor):
 
 class Repo(Facade):
     """base repo facade"""
+    pulp_type = pulp_auto.repo.Repo
     def __init__(self, id, display_name=None, description=None, importer=None, distributors=[],
                     notes={}):
         self.id = id
@@ -106,19 +112,16 @@ class Repo(Facade):
         do repo create procedure with pulp,
         return created pulp-repo, -importer and [-distributors*] objects
         """
-        from pulp_auto.repo import Repo as PulpRepo
-        from pulp_auto.repo import Importer as PulpImporter
-        from pulp_auto.repo import Distributor as PulpDistributor
         from pulp_auto.task import Task
-        repo = PulpRepo(self.as_data())
+        repo = self.pulp_type(self.as_data())
         with pulp.asserting(True):
-            repo = PulpRepo.from_response(repo.create(pulp))
+            repo = self.pulp_type.from_response(repo.create(pulp))
             response = repo.associate_importer(pulp, data=self.importer.as_data())
             Task.wait_for_report(pulp, response)
             importer = repo.get_importer(pulp, self.importer.id)
             distributors = []
             for distributor in self.distributors:
-                distributors.append(PulpDistributor.from_response(repo.associate_distributor(
+                distributors.append(distributor.pulp_type.from_response(repo.associate_distributor(
                                         pulp, data=distributor.as_data())))
         return repo, importer, distributors
 

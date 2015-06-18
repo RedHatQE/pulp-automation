@@ -6,6 +6,7 @@ class Facade(object):
     """
     base test configuration --- pulp_auto facade
     """
+    pulp_type = None
 
     @classmethod
     def from_role(cls, role):
