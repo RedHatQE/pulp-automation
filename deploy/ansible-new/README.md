@@ -1,8 +1,8 @@
 #### Usage
 * copy config files from temp/ directory to ansible/ dir
 * export your credentials and set variables in cofig files (see below)
-   * `export AWS_ACCESS_KEY_ID=\<your_access_key\>`
-   * `export AWS_SECRET_ACCESS_KEY=\<your_secret_access_key\>`
+   * `export AWS_ACCESS_KEY_ID=<your_access_key>`
+   * `export AWS_SECRET_ACCESS_KEY=<your_secret_access_key>`
 * copy your own private key to ./keys/ or generate new keypair using keypair-gen: 
     * `ansible-playbook keypair-gen.yml -e @global_vars.yml`
 * run:
