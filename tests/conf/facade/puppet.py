@@ -4,12 +4,13 @@ default puppet pulp--role facades
 
 from generic import Repo, FeedImporter, WebDistributor
 
+DEFAULT_FEED = 'http://forge.puppetlabs.com'
+
 class PuppetDistributor(WebDistributor):
     def __init__(self, distributor_id='puppet_distributor', distributor_type_id='puppet_distributor',
-                    auto_publish=False, http=True, https=True, relative_url=None):
+                    **kvs):
             super(PuppetDistributor, self).__init__(distributor_id=distributor_id,
-                    distributor_type_id=distributor_type_id, auto_publish=auto_publish, http=http,
-                    https=https, relative_url=relative_url)
+                    distributor_type_id=distributor_type_id, **kvs)
 
     @classmethod
     def from_role(cls, repo):
@@ -18,13 +19,10 @@ class PuppetDistributor(WebDistributor):
 
 
 class PuppetImporter(FeedImporter):
-    def __init__(self, feed='http://forge.puppetlabs.com', id='puppet_importer',
-                    importer_type_id='puppet_importer', proxy_host=None, proxy_port=None,
-                    proxy_username=None, proxy_password=None, ssl_validation=False, queries=[]):
-        super(PuppetImporter, self).__init__(feed=feed, id=id,
-                    importer_type_id=importer_type_id, proxy_host=proxy_host, proxy_port=proxy_port,
-                    proxy_username=proxy_username, proxy_password=proxy_password,
-                    ssl_validation=ssl_validation)
+    def __init__(self, feed=DEFAULT_FEED, id='puppet_importer', importer_type_id='puppet_importer',
+                    queries=[], **kvs):
+        super(PuppetImporter, self).__init__(feed=feed, id=id, importer_type_id=importer_type_id,
+                    **kvs)
         self.importer_config['queries'] = queries
 
     @classmethod
@@ -39,6 +37,9 @@ class PuppetImporter(FeedImporter):
 
 class PuppetRepo(Repo):
 
+    def __init__(self, notes={'_repo-type': 'puppet-repo'}, **kvs):
+        super(PuppetRepo, self).__init__(notes=notes, **kvs)
+
     @classmethod
     def from_role(cls, repo):
         importer = PuppetImporter.from_role(repo)
@@ -46,9 +47,3 @@ class PuppetRepo(Repo):
         return cls(id=repo['id'], display_name=repo.get('display_name'),
                     description=repo.get('description'), importer=importer,
                     distributors=distributors)
-
-    def as_data(self, **override):
-        ret = super(PuppetRepo, self).as_data()
-        ret['notes'] = {'_repo-type': 'puppet-repo'}
-        ret.update(override)
-        return ret
