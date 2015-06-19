@@ -4,7 +4,7 @@ default puppet pulp--role facades
 
 from generic import Repo, FeedImporter, WebDistributor
 
-DEFAULT_FEED = 'http://forge.puppetlabs.com'
+DEFAULT_FEED = 'https://forge.puppetlabs.com'
 
 class PuppetDistributor(WebDistributor):
     def __init__(self, distributor_id='puppet_distributor', distributor_type_id='puppet_distributor',

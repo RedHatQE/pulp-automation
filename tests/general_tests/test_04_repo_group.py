@@ -19,7 +19,6 @@ class RepoGroupTest(pulp_test.PulpTest):
         cls.repo_group1 = RepoGroup(data={'id': cls.__name__ + "_repo_group1"})
         cls.repo_group2 = RepoGroup(data={'id': cls.__name__ + "_repo_group2", 'repo_ids': [cls.repo.id]})
         cls.repo_group3 = RepoGroup(data={'id': cls.__name__ + "_repo_group3", 'repo_ids': [cls.repo2.id]})
-        cls.feed = 'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
 
 
 class SimpleRepoGroupTest(RepoGroupTest):

@@ -4,6 +4,8 @@ from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task
 from pulp_auto.units import PuppetModuleOrphan, Orphans
+from tests.conf.roles import ROLES
+from tests.conf.facade.puppet import PuppetRepo, PuppetImporter, PuppetDistributor, DEFAULT_FEED
 
 
 def setUpModule():
@@ -14,9 +16,15 @@ class PuppetRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(PuppetRepoTest, cls).setUpClass()
-        cls.repo = Repo(data={'id': cls.__name__ + "_repo", 'notes': {"_repo-type": "puppet-repo"}})
+        # FIXME: hardwired repo role
+        cls.repo_role = {
+            'id': cls.__name__,
+            'feed': DEFAULT_FEED,
+            'proxy': ROLES.get('proxy'),
+            'queries': ['stdlib', 'yum'],
+        }
+        cls.repo = Repo(data=PuppetRepo.from_role(cls.repo_role).as_data())
         #modules will be fetched from puppet Forge
-        cls.feed = 'http://forge.puppetlabs.com'
 
 
 class SimplePuppetRepoTest(PuppetRepoTest):
@@ -28,63 +36,20 @@ class SimplePuppetRepoTest(PuppetRepoTest):
     def test_02_associate_importer(self):
         '''to the importer_config query/queries can be added to specify witch
         modules have to be synced'''
-        response = self.repo.associate_importer(
-            self.pulp,
-            data={
-                'importer_type_id': 'puppet_importer',
-                'importer_config': {
-                    'feed': self.feed,
-                    'queries': ["stdlib", "yum"]
-                }
-            }
-        )
+        importer_facade = PuppetImporter.from_role(self.repo_role)
+        response = self.repo.associate_importer(self.pulp, data=importer_facade.as_data())
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
         importer = self.repo.get_importer(self.pulp, "puppet_importer")
-        self.assertEqual(
-            importer,
-            {
-                'id': 'puppet_importer',
-                'importer_type_id': 'puppet_importer',
-                'repo_id': self.repo.id,
-                'config': {
-                    'feed': self.feed,
-                    'queries': ["stdlib", "yum"]
-
-                },
-                'last_sync': None
-            }
-        )
+        self.assertEqual(importer.id, importer_facade.id)
 
     def test_03_associate_distributor(self):
-        response = self.repo.associate_distributor(
-            self.pulp,
-            data={
-                'distributor_type_id': 'puppet_distributor',
-                'distributor_config': {
-                    'http': True,
-                    'https': False
-                },
-                'distributor_id': 'dist_1',
-                'auto_publish': False
-            }
-        )
+        distributor_facade = PuppetDistributor.from_role(self.repo_role)
+        distributor_facade.distributor_id = 'dist_1'
+        response = self.repo.associate_distributor(self.pulp, data=distributor_facade.as_data())
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
-        self.assertEqual(
-            distributor,
-            {
-                'id': 'dist_1',
-                'distributor_type_id': 'puppet_distributor',
-                'repo_id': self.repo.id,
-                'config': {
-                    'http': True,
-                    'https': False
-                },
-                'last_publish': None,
-                'auto_publish': False
-            }
-        )
+        self.assertEqual(distributor.id, distributor_facade.distributor_id)
 
     def test_04_sync_repo(self):
         '''On the initial sync, all modules (matching any queries if specified)
