@@ -3,6 +3,8 @@ from tests import pulp_test
 from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task,  TaskFailure
 from pulp_auto.units import Orphans
+from tests.conf.roles import ROLES
+from tests.conf.facade.docker import DockerRepo, DockerImporter, DockerDistributor, DEFAULT_FEED
 
 
 def setUpModule():
@@ -12,8 +14,15 @@ class DockerRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(DockerRepoTest, cls).setUpClass()
-	cls.repo = Repo(data={'id': "docker-test123"})
-        cls.feed = 'https://index.docker.io/'
+        # FIXME: hardwired role
+        cls.repo_role = {
+            'id': 'docker-test123',
+            'feed': DEFAULT_FEED,
+            'upstream_name': 'hello-world',
+            'proxy': ROLES.get('proxy'),
+            'relative_url': '/library/hello-world'
+        }
+	cls.repo = Repo(data=DockerRepo.from_role(cls.repo_role).as_data())
 
 
 class SimpleDockerRepoTest(DockerRepoTest):
@@ -40,64 +49,36 @@ class SimpleDockerRepoTest(DockerRepoTest):
         self.assertEqual(Repo.get(self.pulp, self.repo.id).data['display_name'], display_name)
 
     def test_05_associate_importer(self):
-        response = self.repo.associate_importer(
-            self.pulp,
-            data={
-                'importer_type_id': 'docker_importer',
-                'importer_config': {
-                    'feed': self.feed,
-                     "upstream_name": "busybox"
-                                     }
-            }
-        )
+        importer_facade = DockerImporter.from_role(self.repo_role)
+        response = self.repo.associate_importer(self.pulp, data=importer_facade.as_data())
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
-        importer = self.repo.get_importer(self.pulp, "docker_importer")
+        importer = self.repo.get_importer(self.pulp, importer_facade.id)
         self.assertEqual(
             importer,
             {
-                'id': 'docker_importer',
-                'importer_type_id': 'docker_importer',
+                'id': importer_facade.id,
+                'importer_type_id': importer_facade.importer_type_id,
                 'repo_id': self.repo.id,
-                'config': {
-                    'feed': self.feed,
-                    "upstream_name": "busybox"
-                },
+                'config': importer_facade.importer_config,
                 'last_sync': None
             }
         )
 
     def test_06_associate_distributor(self):
-        response = self.repo.associate_distributor(
-            self.pulp,
-            data={
-		'distributor_type_id': 'docker_distributor_web',
-		'distributor_id': 'dist-1',
-		'distributor_config': {
-                    'http': True,
-                    'https': True,
-                    'relative_url': '/library/busybox'
-                },
-                'last_publish': None,
-                'auto_publish': False
-            }
-        )
-
+        distributor_facade = DockerDistributor.from_role(self.repo_role)
+        response = self.repo.associate_distributor(self.pulp, data=distributor_facade.as_data())
         self.assertPulp(code=201)
         distributor = Distributor.from_response(response)
         self.assertEqual(
             distributor,
             {
-                'id': "dist-1",
-                'distributor_type_id': 'docker_distributor_web',
+                'id': distributor_facade.distributor_id,
+                'distributor_type_id': distributor_facade.distributor_type_id,
                 'repo_id': self.repo.id,
-                'config': {
-                    'http': True,
-                    'https': True,
-                    'relative_url': '/library/busybox'
-                },
+                'config': distributor_facade.distributor_config,
                 'last_publish': None,
-                'auto_publish': False
+                'auto_publish': distributor_facade.auto_publish,
             }
         )
 
@@ -108,9 +89,10 @@ class SimpleDockerRepoTest(DockerRepoTest):
         Task.wait_for_report(self.pulp, response)
 
     def test_08_publish_repo(self):
+        distributor_facade = DockerDistributor.from_role(self.repo_role)
         response = self.repo.publish(
             self.pulp,
-            'dist-1'
+            distributor_facade.distributor_id
         )
         self.assertPulp(code=202)
         Task.wait_for_report(self.pulp, response)
