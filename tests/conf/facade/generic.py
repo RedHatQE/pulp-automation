@@ -36,7 +36,7 @@ class FeedImporter(Importer):
                             proxy_password=proxy_password))
 
     @classmethod
-    def from_role(cls, repo, id, importer_type_id):
+    def from_role(cls, repo, id, importer_type_id, **kvs):
         # create FeedImporter; feed is mandatory attr of repo_role; proxy is optional
         ssl_validation = repo.get('ssl_validation', False)
         proxy_host, proxy_port, proxy_username, proxy_password = None, None, None, None
@@ -48,7 +48,7 @@ class FeedImporter(Importer):
             proxy_password = proxy.get('password')
         return cls(id=id, importer_type_id=importer_type_id, feed=repo['feed'],
                     proxy_host=proxy_host, proxy_port=proxy_port, proxy_username=proxy_username,
-                    proxy_password=proxy_password, ssl_validation=ssl_validation)
+                    proxy_password=proxy_password, ssl_validation=ssl_validation, **kvs)
 
 class Distributor(Facade):
     pulp_type = pulp_auto.repo.Distributor
