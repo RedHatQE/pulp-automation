@@ -9,6 +9,7 @@
     * `ansible-playbook -i ec2.py reposerver-deploy.yml -e @global_vars.yml`
     * `ansible-playbook -i ec2.py reposerver-run.yml -e @global_vars.yml`
 * two *.repo files should be present after, containing repositories for installing desired pulp version
+* file link.txt contains link to currently built documentation (http://s3-region-name.amazonaws.com/bucket_name/current/docs/index.html) and also links to repo files mentioned above
 * if needed, terminate instance(s) with (s3 bucket will not be deleted)
     * `ansible-playbook -i ec2.py ec2-terminate-all.yml -e @global_vars.yml`
   

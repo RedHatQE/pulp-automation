@@ -29,7 +29,7 @@
   command: "s3cmd rm --recursive s3://{{bucket_name}}/current/"
 
 - name: get date and time
-  command: "date '+%y-%m-%d'"
+  command: "date '+%y-%m-%d-%H-%M'"
   register: current_date
 
 - name: upload packages for archiving
@@ -58,8 +58,55 @@
   gpgcheck=0\n
   exclude={{excluded_packages.stdout}}' > fedora-pulp.repo"
 
-- name: copy .repo files to localhost
-  fetch: src={{item}}.repo dest=./ flat=yes
+
+
+- name: build documentation 
+  command: "chdir=/tmp/{{item[0]}}/docs {{item[1]}}"
+  with_nested:
+    - "{{ repos_list }}"
+    - ['make clean', 'make html']
+- name: Create a index file for documentation
+  template: src=index.j2 dest=./index.html
+  
+
+
+- name: copy docs to s3
+  shell: "s3cmd put --recursive /tmp/{{item}}/docs/_build/html/ s3://{{bucket_name}}/{{current_date.stdout}}/docs/{{item}}/"
   with_items:
-  - fedora-pulp-s3
-  - fedora-pulp
+    - "{{ repos_list }}"
+- name: copy index file to s3 bucket
+  shell: "s3cmd put ./index.html s3://{{bucket_name}}/{{current_date.stdout}}/docs/" 
+- name: copy repo files to s3 as well
+  shell: "s3cmd put {{item}} s3://{{bucket_name}}/{{current_date.stdout}}/data/"
+  with_items:
+    - fedora-pulp-s3.repo
+    - fedora-pulp.repo
+
+
+
+- name: copy documents also to 'current'
+  shell: "s3cmd cp --recursive s3://{{bucket_name}}/{{current_date.stdout}}/docs/ s3://{{bucket_name}}/current/docs/"
+- name: copy index file to current
+  shell: "s3cmd cp s3://{{bucket_name}}/{{current_date.stdout}}/docs/index.html s3://{{bucket_name}}/current/docs/index.html"
+- name: and copy repo files to current
+  shell: "s3cmd cp s3://{{bucket_name}}/{{current_date.stdout}}/data/{{item}} s3://{{bucket_name}}/current/data/{{item}}"
+  with_items:
+    - fedora-pulp-s3.repo
+    - fedora-pulp.repo
+
+
+
+- name: save link to documents to links.txt
+  shell: "echo 'http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/docs/index.html' >> links.txt"
+- name: save link to repos also
+  shell: "echo 'http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/{{item}}' >> links.txt"
+  with_items:
+    - fedora-pulp-s3.repo
+    - fedora-pulp.repo
+
+- name: copy files to localhost
+  fetch: src={{item}} dest=./ flat=yes
+  with_items:
+  - fedora-pulp-s3.repo
+  - fedora-pulp.repo
+  - links.txt

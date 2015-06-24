@@ -1,5 +1,5 @@
 ---
-- name: Launch ec2 instance
+- name: Launch ec2 repository instance
   ec2:
     key_name: "{{ key_name }}"
     group: "{{ security_group }}"
