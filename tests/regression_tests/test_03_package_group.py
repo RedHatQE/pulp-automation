@@ -63,7 +63,7 @@ class PackageGroupTest(PulpTest):
         #create metadata for package group import
         data = package_group_metadata(self.repo1.id+"_group1", self.repo1.id, rpmlist)
         #actually upload group
-        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as upload:
+        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as (upload,):
             Task.wait_for_report(self.pulp, upload.import_to(self.pulp, self.repo1))
         self.assertPulp(code=200)
         #check that group is there and contains specified packages
@@ -83,7 +83,7 @@ class PackageGroupTest(PulpTest):
         #create metadata for package group import
         data = package_group_metadata(self.repo1.id+"_group2", self.repo1.id, rpmlist)
         #actually upload group
-        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as upload:
+        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as (upload,):
             Task.wait_for_report(self.pulp, upload.import_to(self.pulp, self.repo1))
         self.assertPulp(code=200)
 
@@ -116,7 +116,7 @@ class PackageGroupTest(PulpTest):
         #create metadata for package group import
         data = package_group_metadata(self.repo1.id+"_group3", self.repo1.id, rpmlist)
         #actually upload group
-        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as upload:
+        with deleting(self.pulp, Upload.create(self.pulp, data=data)) as (upload,):
             Task.wait_for_report(self.pulp, upload.import_to(self.pulp, self.repo1))
         self.assertPulp(code=200)
 
