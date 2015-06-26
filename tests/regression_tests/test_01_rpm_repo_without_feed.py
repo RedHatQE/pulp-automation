@@ -22,7 +22,8 @@ class RegRepoNoFeedTest(PulpTest):
         super(RegRepoNoFeedTest, cls).setUpClass()
 
         # create repo
-        cls.repo, cls.importer, [cls.distributor] = YumRepo(id=cls.__name__ + "_repo", importer=YumImporter(feed=None),
+        cls.repo, cls.importer, [cls.distributor] = YumRepoFacade(id=cls.__name__ + "_repo",
+                    importer=YumImporter(feed=None),
                     distributors=[YumDistributor(relative_url='foo')]).create(cls.pulp)
 
         # create consumer
@@ -37,7 +38,7 @@ class RegRepoNoFeedTest(PulpTest):
     def rpm_uploader(pulp, url, repo, distributor):
         '''perform an upload'''
         # create an already fed upload object
-        with deleting(pulp, upload_url_rpm(pulp, url)) as upload:
+        with deleting(pulp, upload_url_rpm(pulp, url)) as (upload,):
             # assing upload to repo
             Task.wait_for_report(pulp, upload.import_to(pulp, repo))
             # publish the content
