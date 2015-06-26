@@ -230,7 +230,7 @@ class IsoDistributor(Distributor):
     def content_url(self, pulp, path='/'):
         '''assemblel url of the content being served'''
         return path_join(pulp.url, content_iso_path,
-                self.data['config']['relative_url'], path).strip('/')
+                self.data['repo_id'], path).strip('/')
 
 class NodeDistributor(Distributor):
     '''a node distributor'''

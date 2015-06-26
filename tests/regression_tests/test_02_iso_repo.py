@@ -1,10 +1,11 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
-from pulp_auto.repo import create_iso_repo, Repo, Importer, Distributor
+from pulp_auto.repo import Repo, Importer, Distributor
 from tests.pulp_test import PulpTest, requires_any, deleting
 from tests.utils.upload import upload_url_iso,iso_metadata, temp_url, url_basename
-from tests import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.iso import IsoRepo, IsoImporter, IsoDistributor, DEFAULT_FEED
 from contextlib import closing
 
 
@@ -16,17 +17,25 @@ def tearDownModule():
 
 class IsoRepoTest(PulpTest):
     
-    iso_url_test = "https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/test.iso"
+    iso_url_test = DEFAULT_FEED + 'test.iso'
 
     @classmethod
     def setUpClass(cls):
         super(IsoRepoTest, cls).setUpClass()
-
-        cls.repo, cls.importer1, cls.distributor1 = create_iso_repo(cls.pulp, cls.__name__ + "_repo", feed='https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/')
-
-        cls.repo_copy, cls.importer_copy, cls.distributor_copy = create_iso_repo(cls.pulp, cls.__name__ + "_repo_copy", feed=None)
-
-        cls.repo_upload, cls.importer_upload, cls.distributor_upload = create_iso_repo(cls.pulp, cls.__name__ + "_repo_upload", feed=None)
+        # FIXME hardwired repo role
+        repo = {
+            'id': cls.__name__ + '_repo',
+            'feed': DEFAULT_FEED,
+            'proxy': ROLES.get('proxy'),
+        }
+        cls.repo, cls.importer1, [cls.distributor1] = IsoRepo.from_role(repo).create(cls.pulp)
+        importer = IsoImporter(feed=None)
+        distributors1 = [IsoDistributor(relative_url='xyz')]
+        distributors2 = [IsoDistributor(relative_url='zyx')]
+        cls.repo_copy, cls.importer_copy, [cls.distributor_copy] = IsoRepo(id=cls.__name__ + "_repo_copy",
+                            importer=importer, distributors=distributors1).create(cls.pulp)
+        cls.repo_upload, cls.importer_upload, [cls.distributor_upload] = IsoRepo(id=cls.__name__ + "_repo_upload",
+                            importer=importer, distributors=distributors2).create(cls.pulp)
 
 
     @classmethod
@@ -75,7 +84,7 @@ class IsoRepoTest(PulpTest):
         def iso_uploader(pulp, url, repo, distributor):
             '''perform an upload'''
             # create an already fed upload object
-            with deleting(pulp, upload_url_iso(pulp, url)) as upload:
+            with deleting(pulp, upload_url_iso(pulp, url)) as (upload,):
                 # assing upload to repo
                 Task.wait_for_report(pulp, upload.import_to(pulp, repo))
                 # publish the content

@@ -2,9 +2,10 @@ import json, pulp_auto, unittest
 from tests import pulp_test
 from pulp_auto import (Request, )
 from pulp_auto.repo import Repo, Importer, Distributor, Association
-from pulp_auto.repo import create_iso_repo
 from pulp_auto.task import Task, TaskFailure
 from pulp_auto.units import IsoOrphan, Orphans
+from tests.conf.roles import ROLES
+from tests.conf.facade.iso import IsoRepo, IsoImporter, IsoDistributor, DEFAULT_FEED
 
 
 def setUpModule():
@@ -15,14 +16,22 @@ class IsoCopyRepoTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(IsoCopyRepoTest, cls).setUpClass()
-        repo_id = cls.__name__
-        feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_file_repo/'
+        # FIXME: hardwired role
+        repo = {
+            'id': cls.__name__,
+            'feed': DEFAULT_FEED,
+            'proxy': ROLES.get('proxy'),
+        }
         # create source repo and sync it to have modules fetched
-        cls.source_repo, _, _ = create_iso_repo(cls.pulp, repo_id,feed)
+        cls.source_repo, _, _ = IsoRepo.from_role(repo).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
         # create two destinations repos for copy purpose
-        cls.dest_repo1, _, _ = create_iso_repo(cls.pulp, repo_id + '1', feed=None)
-        cls.dest_repo2, _, _ = create_iso_repo(cls.pulp, repo_id + '2', feed=None)
+        importer = IsoImporter(feed=None)
+        distributors = [IsoDistributor(relative_url='xyz')]
+        cls.dest_repo1, _, _ = IsoRepo(id=cls.__name__ + '1', importer=importer,
+                                distributors=distributors).create(cls.pulp)
+        cls.dest_repo2, _, _ = IsoRepo(id=cls.__name__ + '2', importer=importer,
+                                distributors=distributors).create(cls.pulp)
 
 
 class SimpleIsocopyRepoTest(IsoCopyRepoTest):

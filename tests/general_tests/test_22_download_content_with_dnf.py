@@ -1,9 +1,9 @@
 from tests.pulp_test import PulpTest, deleting
 from pulp_auto.upload import Upload, rpm_metadata
-from pulp_auto.repo import create_yum_repo
 from pulp_auto.task import Task
 from contextlib import closing
 from tests.utils.upload import temp_url, url_basename, upload_url_rpm, download_package_with_dnf
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 
 # We want this test to download using dnf, no point to continue if there is no dnf
 try:
@@ -16,9 +16,11 @@ class DownloadContentTest(PulpTest):
     rpm_url = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/bear-4.1-1.noarch.rpm'
     def testcase_01_upload_and_download_using_dnf_rpm(self):
         # create yum-repo, -importer, -distributor
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'test_22_rpm_repo_for_dnf')) as (repo, (importer, (distributor))):
+        repo, importer, [distributor] = YumRepo(id='test_22_rpm_repo_for_dnf', importer=YumImporter(feed=None),
+                                            distributors=[YumDistributor(relative_url='xyz')]).create(self.pulp)
+        with deleting(self.pulp, repo, importer, distributor):
             # create and perform an rpm url upload
-            with deleting(self.pulp, upload_url_rpm(self.pulp, self.rpm_url)) as upload:
+            with deleting(self.pulp, upload_url_rpm(self.pulp, self.rpm_url)) as (upload,):
                 # assign the upload to the repo
                 response = upload.import_to(self.pulp, repo)
                 self.assertPulpOK()

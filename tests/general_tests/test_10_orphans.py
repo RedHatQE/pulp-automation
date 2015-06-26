@@ -1,6 +1,6 @@
 import json, pprint, pulp_auto, unittest
 from tests import pulp_test
-from pulp_auto.repo import create_yum_repo, Repo
+from pulp_auto.repo import Repo
 from pulp_auto.task import Task
 from pulp_auto.pulp import Request
 from pulp_auto import path_join
@@ -8,7 +8,8 @@ from pulp_auto.units import Orphans, UnitFactory, RpmOrphan, PackageGroupOrphan,
         PackageCategoryOrphan, ErratumOrphan, DistributionOrphan, DrpmOrphan, \
         SrpmOrphan, YumRepoMetadataFileOrphan,PuppetModuleOrphan, IsoOrphan, \
         DockerOrphan, PythonPackageOrphan
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo
 
 def setUpModule():
     pass
@@ -25,7 +26,7 @@ class SimpleOrphanTest(pulp_test.PulpTest):
         repo = Repo(repo_config)
         repo.delete(cls.pulp)
         # create and sync repo
-        cls.repo, _, _ = create_yum_repo(cls.pulp, **repo_config)
+        cls.repo, _, _ = YumRepo.from_role(repo_config).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
         # this is where orphans appear
         Task.wait_for_report(cls.pulp, cls.repo.delete(cls.pulp))

@@ -1,8 +1,8 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
-from pulp_auto.repo import create_yum_repo
 from tests.pulp_test import (PulpTest, requires_any)
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo as FacadeYumRepo
 
 def setUpModule():
     pass
@@ -22,7 +22,7 @@ class CliConsumerTest(PulpTest):
         # filter&uniq repo configs
         repo_configs = {repo.id: repo for repo in repo_configs if repo.type == 'rpm'}.values()
         with cls.pulp.asserting(True):
-            cls.repos = [ create_yum_repo(cls.pulp, **repo_config) for repo_config in repo_configs ]
+            cls.repos = [ FacadeYumRepo.from_role(repo_config).create(cls.pulp) for repo_config in repo_configs ]
 
         # sync&publish all repos
         with cls.pulp.asserting(True):
@@ -30,7 +30,7 @@ class CliConsumerTest(PulpTest):
         Task.wait_for_reports(cls.pulp, task_reports)
 
         with cls.pulp.asserting(True):
-            task_reports = [ repo.publish(cls.pulp, distributor.id) for repo, _, distributor in cls.repos]
+            task_reports = [ repo.publish(cls.pulp, distributor.id) for repo, _, [distributor] in cls.repos]
         Task.wait_for_reports(cls.pulp, task_reports)
 
         # create all consumers
@@ -46,7 +46,7 @@ class CliConsumerTest(PulpTest):
                 consumer,
                 'repos',
                 filter(
-                    lambda (repo, importer, distributor): any(repo.id == repo_config.id for repo_config in consumer_configs[consumer.id].repos),
+                    lambda (repo, importer, distributors): any(repo.id == repo_config.id for repo_config in consumer_configs[consumer.id].repos),
                     cls.repos
                 )
             )
@@ -62,7 +62,7 @@ class CliConsumerTest(PulpTest):
         # bind all repos
         with self.pulp.asserting(True):
            task_reports = [consumer.bind_distributor(self.pulp, repo.id, distributor.id) \
-                            for consumer in self.consumers for repo, _, distributor in consumer.repos]
+                            for consumer in self.consumers for repo, _, [distributor] in consumer.repos]
 
         Task.wait_for_reports(self.pulp, task_reports)
 
@@ -131,7 +131,7 @@ class CliConsumerTest(PulpTest):
         # assert unbinding distributors works
         with self.pulp.asserting(True):
             task_reports = [consumer.unbind_distributor(self.pulp, repo.id, distributor.id) \
-                            for consumer in self.consumers for repo, _, distributor in consumer.repos]
+                            for consumer in self.consumers for repo, _, [distributor] in consumer.repos]
         Task.wait_for_reports(self.pulp, task_reports)
 
     @classmethod

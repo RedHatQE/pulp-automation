@@ -2,9 +2,10 @@ import unittest, json
 from tests import pulp_test
 from pulp_auto.repo_group import RepoGroup, GroupDistributor
 from pulp_auto.task import Task
-from pulp_auto.repo import create_yum_repo, Repo
+from pulp_auto.repo import Repo
+from tests.conf.facade.yum import YumRepo
 from pulp_auto.units import Orphans
-from .. import ROLES
+from tests.conf.roles import ROLES
 
 
 def setUpModule():
@@ -37,7 +38,7 @@ class PublishGroupTest(pulp_test.PulpTest):
         cls.distributor = GroupDistributor.from_response(response)
         #create repo
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
-        cls.repo, _, _ = create_yum_repo(cls.pulp, **repo_config)
+        cls.repo, importer, [distributor] = YumRepo.from_role(repo_config).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.repo.sync(cls.pulp))
 
 

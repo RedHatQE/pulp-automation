@@ -1,8 +1,9 @@
 import json, unittest
 from tests import pulp_test
-from pulp_auto.repo import Repo, Importer, Distributor, create_yum_repo
+from pulp_auto.repo import Repo, Importer, Distributor
 from pulp_auto.task import Task, TaskFailure
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo
 from pulp_auto import path_join
 
 
@@ -16,7 +17,7 @@ class ImporterDistributorTest(pulp_test.PulpTest):
         super(ImporterDistributorTest, cls).setUpClass()
         #create repo with inporter/distributer associated
         repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
-        cls.repo, _, cls.distributor = create_yum_repo(cls.pulp, **repo_config)
+        cls.repo, _, [cls.distributor] = YumRepo.from_role(repo_config).create(cls.pulp)
         cls.importer = cls.repo.get_importer(cls.pulp, "yum_importer")
         cls.repo1 = Repo(data={'id': cls.__name__ + "_repo1"})
 

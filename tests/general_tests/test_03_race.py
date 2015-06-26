@@ -1,11 +1,11 @@
 import json
 from tests import pulp_test
 from tests.pulp_test import PulpTest
-from pulp_auto.repo import Repo, create_yum_repo
+from pulp_auto.repo import Repo
 from pulp_auto.task import Task
 from pulp_auto import ResponseLike, login, format_response
-from .. import ROLES
 from pulp_auto.task import TaskFailure
+from tests.conf.roles import ROLES
 
 @pulp_test.requires_any('repos', lambda repo: repo.type == 'rpm')
 class RaceRepoTest(PulpTest):

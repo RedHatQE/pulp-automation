@@ -1,9 +1,10 @@
 import json, pulp_auto
 from tests import pulp_test
-from pulp_auto.repo import Repo, Importer, Distributor,Association, create_yum_repo
+from pulp_auto.repo import Repo, Importer, Distributor, Association
 from pulp_auto.task import Task
 from pulp_auto.units import Orphans
-from .. import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 
 
 def setUpModule():
@@ -18,24 +19,22 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
         #Destination repo
         # make sure repos don't exist
         # no need to wait for repos.delete to happen
-        feed = None
         dest_repo_name = cls.__name__ + '_copy'
         dest_repo1 = Repo({'id': dest_repo_name})
         dest_repo1.delete(cls.pulp)
-        cls.dest_repo1, _, _ = create_yum_repo(cls.pulp, dest_repo_name, feed)
+        cls.dest_repo1, _, _ = YumRepo(id=dest_repo_name, importer=YumImporter(None),
+                                distributors=[YumDistributor(relative_url='abc')]).create(cls.pulp)
 
         #2nd Destination Repo
         dest_repo_name = cls.__name__ + '_copy1'
         dest_repo2 = Repo({'id': dest_repo_name})
         dest_repo2.delete(cls.pulp)
-        cls.dest_repo2, _, _ = create_yum_repo(cls.pulp, dest_repo_name, feed)
+        cls.dest_repo2, _, _ = YumRepo(id=dest_repo_name, importer=YumImporter(None),
+                                distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
 
         # Source repo
         default_repo_config = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
-        source_repo_name = cls.__name__ + '_repo'
-        source_repo = Repo({'id': source_repo_name})
-        source_repo.delete(cls.pulp)
-        cls.source_repo, _, _ = create_yum_repo(cls.pulp, source_repo_name, default_repo_config.feed)
+        cls.source_repo, _, _ = YumRepo.from_role(default_repo_config).create(cls.pulp)
         Task.wait_for_report(cls.pulp, cls.source_repo.sync(cls.pulp))
 
     def test_01_copy_repo_all(self):
@@ -173,8 +172,9 @@ class SimpleRepoCopyTest(pulp_test.PulpTest):
     @classmethod
     def tearDownClass(cls):
         with cls.pulp.async():
-            for repo_id in ['SimpleRepoCopyTest_repo', 'SimpleRepoCopyTest_copy', 'SimpleRepoCopyTest_copy1']:
-                Repo({'id': repo_id}).delete(cls.pulp)
+            cls.source_repo.delete(cls.pulp)
+            cls.dest_repo1.delete(cls.pulp)
+            cls.dest_repo2.delete(cls.pulp)
         for response in list(cls.pulp.last_response):
             Task.wait_for_report(cls.pulp, response)
         #orphans also should be deleted in cleanup

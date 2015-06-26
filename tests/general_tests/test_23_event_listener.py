@@ -1,9 +1,10 @@
+import json
 from pulp_auto.event_listener import EventListener
 from pulp_auto.task import Task, TASK_RUNNING_STATE, TASK_FINISHED_STATE, TASK_ERROR_STATE, \
     TaskFailure
-from pulp_auto.repo import create_yum_repo
 from tests.pulp_test import PulpTest, deleting
-import json
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 
 try:
     from requestbin.bin import Bin
@@ -17,10 +18,9 @@ class EventListenerTest(PulpTest):
     def setUpClass(cls):
         # set up a repo for the test cases
         super(EventListenerTest, cls).setUpClass()
-
-        cls.repo_feed = 'https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/'
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, 'EventListenerRepo',
-                                                        feed=cls.repo_feed)
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0].copy()
+        repo_role.id = 'EventListenerRepo'
+        cls.repo, cls.importer, [cls.distributor] = YumRepo.from_role(repo_role).create(cls.pulp)
 
     @classmethod
     def tearDownClass(cls):
@@ -251,8 +251,11 @@ class EventListenerErrorTest(PulpTest):
     def test_01_repo_sync_finish(self):
         self.el.update(self.pulp, {'event_types': ['repo.sync.finish']})
         self.el.reload(self.pulp)
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'sync_error_repo',
-                    feed='http://example.com/repos/none')) as (repo, (importer, distributor)):
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
+        repo, importer, [distributor] = YumRepo(id='sync_error_repo',
+                        importer=YumImporter(feed='http://example.com/repos/none'),
+                        distributors=[YumDistributor(relative_url='/repos/none')]).create(self.pulp)
+        with deleting(self.pulp, repo, importer, distributor):
             response = repo.sync(self.pulp)
             self.assertPulpOK()
             with self.assertRaises(TaskFailure):
@@ -273,8 +276,10 @@ class EventListenerErrorTest(PulpTest):
     def _test_02_repo_publish_finish(self):
         self.el.update(self.pulp, {'event_listener': ['repo.publish.finish']})
         self.el.reload(self.pulp)
-        with deleting(self.pulp, *create_yum_repo(self.pulp, 'publish_error_repo',
-                    feed='https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')) as (repo, (importer, distributor)):
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0]
+        repo, importer, [distributor] = YumRepo(id='publish_error_repo', importer=Importer.from_role(repo_role),
+                                distributors=[YumDistributor(distributor_type_id='invalid_distributor_id', relative_url='xyz')]).create(self.pulp)
+        with deleting(self.pulp, repo, importer, distributor):
             response = repo.publish(self.pulp, 'invalid_distributor_id')
             self.assertPulpOK()
             with self.assertRaises(TaskFailure):

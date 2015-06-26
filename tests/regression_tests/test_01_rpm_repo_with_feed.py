@@ -1,9 +1,10 @@
 from pulp_auto.consumer import (Cli, RpmUnit, YumRepo, RpmRepo, Consumer)
 from pulp_auto.task import (Task, TaskFailure)
 from pulp_auto.units import Orphans
-from pulp_auto.repo import create_yum_repo, Repo, Importer, Distributor
+from pulp_auto.repo import Repo, Importer, Distributor
 from tests.pulp_test import (PulpTest, requires_any)
-from tests import ROLES
+from tests.conf.roles import ROLES
+from tests.conf.facade.yum import YumRepo as YumRepoFacade
 
 def setUpModule():
     pass
@@ -16,9 +17,11 @@ class RegRepoFeedTest(PulpTest):
     @classmethod
     def setUpClass(cls):
         super(RegRepoFeedTest, cls).setUpClass()
-        
+
+        repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0].copy()
+        repo_role.id = cls.__name__ + '_repo'
         # create repo
-        cls.repo, cls.importer, cls.distributor = create_yum_repo(cls.pulp, cls.__name__ + "_repo", feed='http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/')
+        cls.repo, cls.importer, [cls.distributor] = YumRepoFacade.from_role(repo_role).create(cls.pulp)
 
         # create consumer
         cls.consumer = Consumer(ROLES.consumers[0])
@@ -35,13 +38,13 @@ class RegRepoFeedTest(PulpTest):
         with self.pulp.asserting(True):
             response = self.repo.sync(self.pulp)
         Task.wait_for_report(self.pulp, response)
-                      
+
     def test_03_publish_repo(self):
-        with self.pulp.asserting(True):        
+        with self.pulp.asserting(True):
             response = self.repo.publish(self.pulp, self.distributor.id)
         Task.wait_for_report(self.pulp, response)
-            
-    
+
+
     def test_04_api_registered_consumer(self):
         # assert the cli registration worked in API
         with self.pulp.asserting(True):
@@ -88,7 +91,7 @@ class RegRepoFeedTest(PulpTest):
         with cls.pulp.asserting(True):
             response = cls.repo.delete(cls.pulp)
         Task.wait_for_report(cls.pulp, response)
-        
+
         # delete orphans
         with cls.pulp.asserting(True):
             response = Orphans.delete(cls.pulp)
