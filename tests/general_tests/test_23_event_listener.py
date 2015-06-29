@@ -1,17 +1,26 @@
 import json
+import unittest
 from pulp_auto.event_listener import EventListener
 from pulp_auto.task import Task, TASK_RUNNING_STATE, TASK_FINISHED_STATE, TASK_ERROR_STATE, \
     TaskFailure
-from tests.pulp_test import PulpTest, deleting
+from tests.pulp_test import PulpTest, deleting, requires_any
 from tests.conf.roles import ROLES
 from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
+from distutils.version import LooseVersion
 
 try:
     from requestbin.bin import Bin
 except ImportError as e:
-        import unittest
         raise unittest.SkipTest(e)
 
+try:
+    # the test case used to work in 2.5
+    # with newer Pulp, HTTP event listeners are deprecated
+    version = ROLES.pulp.version
+except AttributeError:
+        raise unittest.SkipTest('this test module requires pulp.version information')
+if LooseVersion(version) >= '2.6':
+    raise unittest.SkipTest('this test module requires pulp.version < 2.6, %s found' % ROLES.pulp.version)
 
 class EventListenerTest(PulpTest):
     @classmethod
