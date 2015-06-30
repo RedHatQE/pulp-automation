@@ -8,19 +8,21 @@ from tests.conf.roles import ROLES
 from tests.conf.facade.yum import YumRepo, YumImporter, YumDistributor
 from distutils.version import LooseVersion
 
+# with newer Pulp, HTTP event listeners are deprecated
+MAX_PULP_VERSION = '2.7'
+
 try:
     from requestbin.bin import Bin
 except ImportError as e:
         raise unittest.SkipTest(e)
 
 try:
-    # the test case used to work in 2.5
-    # with newer Pulp, HTTP event listeners are deprecated
     version = ROLES.pulp.version
 except AttributeError:
         raise unittest.SkipTest('this test module requires pulp.version information')
-if LooseVersion(version) >= '2.6':
-    raise unittest.SkipTest('this test module requires pulp.version < 2.6, %s found' % ROLES.pulp.version)
+if LooseVersion(version) >= MAX_PULP_VERSION:
+    raise unittest.SkipTest('this test module requires pulp.version < %s, %s found' % \
+                            (MAX_PULP_VERSION, ROLES.pulp.version))
 
 class EventListenerTest(PulpTest):
     @classmethod
@@ -29,6 +31,9 @@ class EventListenerTest(PulpTest):
         super(EventListenerTest, cls).setUpClass()
         repo_role = [repo for repo in ROLES.repos if repo.type == 'rpm'][0].copy()
         repo_role.id = 'EventListenerRepo'
+        # this test case relies on exact events counts
+        # auto_publish would mess things up
+        repo_role.auto_publish = False
         cls.repo, cls.importer, [cls.distributor] = YumRepo.from_role(repo_role).create(cls.pulp)
 
     @classmethod
