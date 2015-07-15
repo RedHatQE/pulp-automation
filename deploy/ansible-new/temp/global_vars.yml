@@ -1,35 +1,67 @@
 ---
-# name of current automation: ie. single_node_testing, proxy_testing, etc
-automation_name: <automation name>
-# ec2 credentials used by boto and s3cmd, set as env variable 
-access_key: "{{lookup ('env', 'AWS_ACCESS_KEY_ID')}}" 
-secret_access_key: "{{lookup ('env', 'AWS_SECRET_ACCESS_KEY')}}"
+# !!!! DO NOT USE '-' IN NAME OF AUTOMATION (OR ANY SERVER NAME) !!!!
+# !!!! can cause problems with discovering hosts in dynamic inventory !!!!
 
-# put all playbooks variables here
-# names and configurations of servers 
-# do not use dash "-" in servers' name!
-reposerver_name: <name of reposerver here,, ie: pulp_automation_reposerver>
-# and s3 bucket, now on: 
-bucket_name: placko-pulp-beta-repos-ewest-testing
+# set True when you want to test latest stable versions of pulp
+# otherwise s3 bucket will be used as pulp repo
+test_stable: False
 
 # name of the key for comunicating with instances, located in ansible_dir/keys
-key_name: <your_key_name> 
+key_name: <your key name>
 # set true for overwriting existing key
 force_keypair: False
 
-# instance details, so far common for all machines 
-instance_type: m3.large
-security_group: ssh
-image: ami-2f73f858
+# instance details 
 region: eu-west-1
+instance_type: m3.large
+# fedora 22:  ami-55146222 -- all roles (including auto runner, reposerver)
+# rhel 7.1:   ami-25158352 --
+# rhel 6.7:   ami-2591fe52 -- only testing nodes
+# something else...
+ami_reposerver: ami-55146222
+ami_auto_runner: ami-55146222
+ami_single_node: ami-25158352
+# remote user: fedora or ec2-user -- set according to chosen ami
+# TODO: set automatically based on provisioned OS
+rem_user_reposerver: fedora
+rem_user_auto_runner: fedora
+rem_user_single_node: ec2-user
 
-# pulp relevant variables
-tested_version: 2.7
+# security groups names: default simply ssh and pulp
+ssh_sg: <ssh security group, ie. for automation>
+pulp_sg: <pulp sec. group> 
+
+# put all playbooks variables here
+# names and configurations of servers and s3 bucket
+reposerver_name: <name of server cor building rpms>
+bucket_name: <your bucket name, ie placko-pulp27-testing>
+
+# tested pulp relevant variables
+# versions: 2.5 2.6 2.7 2.8
+# branches: testing, dev, release(only 2.5 & 2.6)
+tested_version: 2.6
 tested_branch: testing
 repos_list:
   - pulp
   - pulp_rpm
   - pulp_puppet
+
+
+#####################################################################
+# Select test case for which you want to run automation 
+# only single node supported now
+tc_single_node: yes
+tc_multi_node: no
+tc_proxy: no
+
+# name of current automation: ie. single_node_testing, proxy_testing, etc
+automation_name: <name of automation, ie. placko-pulp27-automation> 
+
+##########################################################################
+# Do not modify this section unless necessary
+# ec2 credentials used by boto and s3cmd, set as env variable 
+access_key: "{{lookup ('env', 'AWS_ACCESS_KEY_ID')}}" 
+secret_access_key: "{{lookup ('env', 'AWS_SECRET_ACCESS_KEY')}}"
 
 # reposerver relevant variables
 # repositories for rpms
@@ -37,3 +69,4 @@ reposerver_repo_dir: /tmp/tito
 
 # automation-runner variables
 automation_dir: /root/pulp-automation
+##########################################################################

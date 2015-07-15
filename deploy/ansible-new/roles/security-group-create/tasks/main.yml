@@ -1,0 +1,42 @@
+---
+- name: create ssh security group - {{ssh_sg}}
+  ec2_group:
+    name: "{{ssh_sg}}"
+    description: basic security group for manipulating with instances
+    region: "{{region}}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: icmp
+        from_port: 7
+        to_port: 7
+        cidr_ip: 0.0.0.0/0
+
+- name: "create pulp security group - {{pulp_sg}}"
+  ec2_group:
+    name: "{{pulp_sg}}"
+    description: basic security group for manipulating with instances
+    region: "{{region}}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 5671
+        to_port: 5671
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 5672
+        to_port: 5672
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0

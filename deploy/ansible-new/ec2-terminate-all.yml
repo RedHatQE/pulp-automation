@@ -1,11 +1,10 @@
 ---
 - name: Terminate instances, if some not present, will be skipped
   hosts:
-    - "tag_Name_{{reposerver_name}}"
     # for deleting single node
-    - "tag_Name_{{automation_name}}_node"
+    - "tag_Name_{{automation_name}}_single_node"
     # terminate automation runner
-    - "tag_Name_{{automation_name}}_automation_runner"
+    #- "tag_Name_{{automation_name}}_automation_runner"
   connection: local
   gather_facts: false
   roles:

@@ -1,11 +1,11 @@
 ---
-- name: Deploy reposerver
+- name: Deploy automation runner
   hosts: localhost
   roles:
-    - reposerver-deploy
+    - automation-runner-deploy
 
 - name: Enable root access on new machine
-  remote_user: "{{rem_user_reposerver}}"
+  remote_user: "{{rem_user_auto_runner}}"
   hosts: launched
   tasks:
     - name: Enable root access
@@ -14,9 +14,9 @@
       shell: "{{item}}"
       with_items:
         - "sed -i s,disable_root:.*,disable_root:0, /etc/cloud/cloud.cfg"
-        - "cat ~{{rem_user_reposerver}}/.ssh/authorized_keys > /root/.ssh/authorized_keys"
+        - "cat ~{{rem_user_auto_runner}}/.ssh/authorized_keys > /root/.ssh/authorized_keys"
 
-- name: Update packages
+- name: Upgrade all packages to latest version
   hosts: launched
   roles:
     - set-package-manager

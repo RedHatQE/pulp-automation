@@ -1,0 +1,6 @@
+---
+- name: Checkout latest automation
+  hosts:
+    - "tag_Name_{{automation_name}}_automation_runner"
+  roles:
+    - automation-runner-config

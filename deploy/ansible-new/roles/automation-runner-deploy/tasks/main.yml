@@ -1,18 +1,18 @@
 ---
-- name: Launch ec2 repository instance
+- name: Launch ec2 automation_runner instance
   ec2:
     key_name: "{{ key_name }}"
-    group: "{{ ssh_sg }}"
+    group: "{{ pulp_sg }}"
     instance_type: "{{ instance_type }}"
-    image: "{{ ami_reposerver }}"
+    image: "{{ ami_auto_runner }}"
     wait: true
     region: "{{ region }}"
     monitoring: no
     assign_public_ip: no
     instance_tags:
-      Name: "{{ reposerver_name }}" 
+      Name: "{{ automation_name }}_automation_runner" 
     count_tag:
-      Name: "{{ reposerver_name }}" 
+      Name: "{{ automation_name }}_automation_runner" 
     exact_count: 1
   register: ec2
 - name: Add new instance to host group

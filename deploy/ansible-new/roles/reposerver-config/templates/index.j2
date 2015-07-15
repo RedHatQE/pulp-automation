@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pulp {{tested_version}}-{{tested_branch}} documentation</title>
+</head>
+<body>
+<h2>Pulp {{tested_version}}-{{tested_branch}} documentation</h2>
+{% for item in repos_list %}
+    <a href=http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/docs/{{item}}/index.html>{{item}} docs</a>
+     <br>
+{% endfor %}
+
+</body>
+</html>

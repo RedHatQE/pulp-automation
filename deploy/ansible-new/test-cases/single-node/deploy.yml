@@ -1,11 +1,11 @@
 ---
-- name: Deploy reposerver
+- name: Deploy a machine for single node testing
   hosts: localhost
   roles:
-    - reposerver-deploy
+    - single-node-deploy
 
-- name: Enable root access on new machine
-  remote_user: "{{rem_user_reposerver}}"
+- name: Enable root access and
+  remote_user: "{{rem_user_single_node}}"
   hosts: launched
   tasks:
     - name: Enable root access
@@ -14,12 +14,12 @@
       shell: "{{item}}"
       with_items:
         - "sed -i s,disable_root:.*,disable_root:0, /etc/cloud/cloud.cfg"
-        - "cat ~{{rem_user_reposerver}}/.ssh/authorized_keys > /root/.ssh/authorized_keys"
+        - "cat ~{{rem_user_single_node}}/.ssh/authorized_keys > /root/.ssh/authorized_keys"
 
 - name: Update packages
   hosts: launched
   roles:
     - set-package-manager
   tasks:
-    - name: update packages
-      action: "{{package_manager}} name=* state=latest"
+    - name: update all packages
+      action: "{{package_manager}} state=latest name=*"
