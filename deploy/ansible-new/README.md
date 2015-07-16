@@ -5,7 +5,7 @@
 * as testing nodes are currently supported Fedora 20, 22, RedHat 7.1, as automation runner and reposerver Fedora only
 
 Following test scenarios are currently supported:
-    * single-node: everything is running on single node. Upon each run pulp and pulp automation is updated to newest version and tests are running. This is simplest deployment, run it first.
+* single-node: everything is running on single node. Upon each run pulp and pulp automation is updated to newest version and tests are running. This is simplest deployment, run it first.
 
 ### Usage
 * copy templates of config files from temp/ directory to ansible/ dir
@@ -20,27 +20,27 @@ Following test scenarios are currently supported:
 #### S3 repositories deploy, config & run
 Setup node for building pulp rpms and create & configure S3 bucket as a pulp repo
 run:
-    * `ansible-playbook -i ec2.py reposerver-deploy.yml -e @global_vars.yml`
-    * `ansible-playbook -i ec2.py reposerver-run.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py reposerver-deploy.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py reposerver-run.yml -e @global_vars.yml`
 * file link.txt contains link to currently built documentation (http://s3-region-name.amazonaws.com/bucket_name/current/docs/index.html) and also link to repo file
 
 #### Automation runner deploy and configure
 Setup node from which automation is running
 run:
-    * `ansible-playbook -i ec2.py automation-runner-deploy.yml -e @global_vars.yml`
-    * `ansible-playbook -i ec2.py automation-runner-configure.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py automation-runner-deploy.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py automation-runner-configure.yml -e @global_vars.yml`
 
 #### Setup servers for testing scenarios contained in test-cases directory and run automation on them
 One automation-runner server is used for all scenarios.
 run
-    * `ansible-playbook -i ec2.py automation-deploy.yml -e @global_vars.yml`
-    * `ansible-playbook -i ec2.py automation-configure.yml -e @global_vars.yml`
-    * `ansible-playbook -i ec2.py automation-run.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py automation-deploy.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py automation-configure.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py automation-run.yml -e @global_vars.yml`
 
 
 #### Terminate selected instances
 if needed, terminate instance(s) with (s3 bucket will not be deleted)
-    * `ansible-playbook -i ec2.py ec2-terminate-all.yml -e @global_vars.yml`
+* `ansible-playbook -i ec2.py ec2-terminate-all.yml -e @global_vars.yml`
 
 ### Config files
 * ansible.cfg -- main ansible config file
