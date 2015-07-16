@@ -1,3 +1,2 @@
 ---
 - include: test-cases/single-node/configure.yml
-  when: "{{single_node}} = true"

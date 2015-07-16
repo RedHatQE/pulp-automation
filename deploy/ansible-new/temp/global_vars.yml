@@ -21,11 +21,13 @@ instance_type: m3.large
 ami_reposerver: ami-55146222
 ami_auto_runner: ami-55146222
 ami_single_node: ami-25158352
+ami_single_stable_to_latest: ami-25158352
 # remote user: fedora or ec2-user -- set according to chosen ami
 # TODO: set automatically based on provisioned OS
 rem_user_reposerver: fedora
 rem_user_auto_runner: fedora
 rem_user_single_node: ec2-user
+rem_user_single_stable_to_latest: ec2-user
 
 # security groups names: default simply ssh and pulp
 ssh_sg: <ssh security group, ie. for automation>
@@ -46,13 +48,6 @@ repos_list:
   - pulp_rpm
   - pulp_puppet
 
-
-#####################################################################
-# Select test case for which you want to run automation 
-# only single node supported now
-tc_single_node: yes
-tc_multi_node: no
-tc_proxy: no
 
 # name of current automation: ie. single_node_testing, proxy_testing, etc
 automation_name: <name of automation, ie. placko-pulp27-automation> 

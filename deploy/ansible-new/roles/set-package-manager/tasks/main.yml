@@ -1,0 +1,10 @@
+---
+- name: set package manager (yum or dnf), default yum
+  set_fact:
+    package_manager: "dnf"
+  when: "{{ansible_distribution=='Fedora'}} and {{ansible_distribution_version|int}}==22"
+
+- name: set package manager (yum or dnf), default yum
+  set_fact:
+    package_manager: "yum"
+  when: "not ({{ansible_distribution=='Fedora'}} and {{ansible_distribution_version|int}}==22)"

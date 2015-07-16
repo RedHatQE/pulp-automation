@@ -30,13 +30,12 @@ run:
     * `ansible-playbook -i ec2.py automation-runner-deploy.yml -e @global_vars.yml`
     * `ansible-playbook -i ec2.py automation-runner-configure.yml -e @global_vars.yml`
 
-#### Setup servers for testing scenarios contained in test-cases directory nad run automation on them
-One automation-runner server is used for all scenarios. Which testing scenarios will run is specified in global_vars.yml file
+#### Setup servers for testing scenarios contained in test-cases directory and run automation on them
+One automation-runner server is used for all scenarios.
 run
     * `ansible-playbook -i ec2.py automation-deploy.yml -e @global_vars.yml`
     * `ansible-playbook -i ec2.py automation-configure.yml -e @global_vars.yml`
     * `ansible-playbook -i ec2.py automation-run.yml -e @global_vars.yml`
-
 
 
 #### Terminate selected instances
