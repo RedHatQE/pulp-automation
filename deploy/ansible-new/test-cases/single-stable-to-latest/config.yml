@@ -1,0 +1,6 @@
+---
+- name: Configure node - install and enable pulp 
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  roles:
+    - single-stable-to-latest-config

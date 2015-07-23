@@ -1,0 +1,25 @@
+---
+- name: Deploy a machine for single node stable-to-latest testing
+  hosts: localhost
+  roles:
+    - single-stable-to-latest-deploy
+
+- name: Enable root access
+  remote_user: "{{rem_user_single_stable_to_latest}}"
+  hosts: launched
+  tasks:
+    - name: Enable root access
+      become: yes
+      become_method: sudo
+      shell: "{{item}}"
+      with_items:
+        - "sed -i s,disable_root:.*,disable_root:0, /etc/cloud/cloud.cfg"
+        - "cat ~{{rem_user_single_stable_to_latest}}/.ssh/authorized_keys > /root/.ssh/authorized_keys"
+
+- name: Update packages
+  hosts: launched
+  roles:
+    - set-package-manager
+  tasks:
+    - name: update all packages
+      action: "{{package_manager}} state=latest name=*"

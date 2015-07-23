@@ -1,0 +1,5 @@
+---
+- name: make sure setup file is executable
+  file: "path={{automation_dir}}-{{path}}/setup.py mode=744"
+- name: run setup
+  shell: "python setup.py install chdir={{automation_dir}}-{{path}}"

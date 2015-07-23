@@ -1,2 +1,3 @@
 ---
 - include: test-cases/single-node/configure.yml
+- include: test-cases/single-stable-to-latest/config.yml

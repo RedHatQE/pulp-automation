@@ -41,7 +41,8 @@ bucket_name: <your bucket name, ie placko-pulp27-testing>
 # tested pulp relevant variables
 # versions: 2.5 2.6 2.7 2.8
 # branches: testing, dev, release(only 2.5 & 2.6)
-tested_version: 2.6
+tested_version: 2.7
+upgrading_from: 2.6
 tested_branch: testing
 repos_list:
   - pulp

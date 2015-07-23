@@ -24,23 +24,10 @@
     line='{{ipv4addr.stdout}} {{hostname.stdout}}'
 
 # configure repos
-- name: download repo file from s3repos/current for fedora systems
-  command: "curl -o /etc/yum.repos.d/fedora-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/fedora-pulp-s3.repo"
-  when: "ansible_distribution=='Fedora' and test_stable==False"
-- name: download repo file from s3repos/current for redhat systems
-  command: "curl -o /etc/yum.repos.d/rhel-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/rhel-pulp-s3.repo"
-  when: "ansible_distribution=='RedHat' and test_stable==False"
+# set up latest stable pulp
 - name: install epel repo
   action: "{{package_manager}} name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ansible_distribution_version|int}}.noarch.rpm state=present"
   when: "ansible_distribution=='RedHat'"
-- name: setup repos for stable pulp in Fedora 22
-  shell: "echo -e '[pulp-stable]\n
-  name=Pulp Production Releases\n
-  baseurl=https://repos.fedorapeople.org/repos/pulp/pulp/stable/latest/fedora-21/$basearch/\n
-  enabled=1\n
-  skip_if_unavailable=1\n
-  gpgcheck=0' > /etc/yum.repos.d/fedora-pulp.repo"
-  when: "ansible_distribution=='Fedora' and ansible_distribution_version|int==22 and test_stable==True"
 - name: setup repos for stable pulp in Fedora < 22
   shell: "echo -e '[pulp-stable]\n
   name=Pulp Production Releases\n
@@ -48,7 +35,15 @@
   enabled=1\n
   skip_if_unavailable=1\n
   gpgcheck=0' > /etc/yum.repos.d/fedora-pulp.repo"
-  when: "ansible_distribution=='Fedora' and ansible_distribution_version|int<22  and test_stable==True"
+  when: "ansible_distribution=='Fedora' and ansible_distribution_version|int<22"
+- name: setup repos for stable pulp in Fedora 22
+  shell: "echo -e '[pulp-stable]\n
+  name=Pulp Production Releases\n
+  baseurl=https://repos.fedorapeople.org/repos/pulp/pulp/stable/latest/fedora-21/$basearch/\n
+  enabled=1\n
+  skip_if_unavailable=1\n
+  gpgcheck=0' > /etc/yum.repos.d/fedora-pulp.repo"
+  when: "ansible_distribution=='Fedora' and ansible_distribution_version|int==22"
 - name: setup repos for stable pulp in redhat
   shell: "echo -e '[pulp-stable]\n
   name=Pulp Production Releases\n
@@ -56,7 +51,7 @@
   enabled=1\n
   skip_if_unavailable=1\n
   gpgcheck=0' > /etc/yum.repos.d/rhel-pulp.repo"
-  when: "ansible_distribution=='RedHat' and test_stable==True"
+  when: "ansible_distribution=='RedHat'"
 
 - name: install extras packages for redhat
   action: "{{package_manager}} name=ftp{{':'}}//ftp.muug.mb.ca/mirror/centos/7.1.1503/extras/x86_64/Packages/python-blinker-1.3-2.el7.noarch.rpm state=present"

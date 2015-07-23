@@ -1,0 +1,57 @@
+---
+- name: Checkout and setup automation for latest pulp
+  hosts:
+    - "tag_Name_{{automation_name}}_automation_runner"
+  tasks:
+    - name: remove previous automation
+      file: path={{automation_dir}}-single-stable-to-latest-latest state=absent
+    - name: checkout automation repositories
+      git: "repo=https://github.com/RedHatQE/pulp-automation dest={{automation_dir}}-single-stable-to-latest-latest force=yes"
+
+- name: Configure inventory
+  hosts:
+    - "tag_Name_{{automation_name}}_automation_runner"
+  roles:
+    - {role: single-inventory-config, path: single-stable-to-latest-latest, producer_node: single_stable_to_latest, consumer_node: single_stable_to_latest}
+    - {role: pulp-run-setup, path: single-stable-to-latest-latest}
+
+- name: Set package manager first
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  roles:
+    - set-package-manager
+
+- name: Update pulp
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  tasks:
+    - name: remove previous repo file
+      file: path=/etc/yum.repos.d/fedora-pulp.repo state=absent
+      when: "ansible_distribution=='Fedora'"
+    - name: remove previous repo file
+      file: path=/etc/yum.repos.d/rhel-pulp.repo state=absent
+      when: "ansible_distribution=='RedHat'"
+    - name: download repo file from s3repos/current for fedora systems
+      command: "curl -o /etc/yum.repos.d/fedora-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/fedora-pulp-s3.repo"
+      when: "ansible_distribution=='Fedora'"
+    - name: download repo file from s3repos/current for redhat systems
+      command: "curl -o /etc/yum.repos.d/rhel-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/rhel-pulp-s3.repo"
+      when: "ansible_distribution=='RedHat'"
+    - name: update all packages
+      action: "{{package_manager}} name=* state=latest"
+    - name: temporarily disable SE linux on feodra 22
+      selinux: policy=targeted state=permissive
+      when: "ansible_distribution=='Fedora' and ansible_distribution_version|int==22"
+   
+- name: Cleanup pulp
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  roles:
+    - cleanup-pulp
+
+- name: Run automation from automation runner
+  hosts:
+    - "tag_Name_{{automation_name}}_automation_runner"
+  tasks:
+    - name: run all tests on single node
+      command: "chdir={{automation_dir}}-single-stable-to-latest-latest nosetests -vs --with-xunit"

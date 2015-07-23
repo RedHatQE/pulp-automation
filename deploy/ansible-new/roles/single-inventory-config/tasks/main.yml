@@ -1,0 +1,28 @@
+---
+- name: copy inventory file for yaml
+  command: "cp {{automation_dir}}-{{path}}/tests/inventory.yml {{automation_dir}}-{{path}}/"
+- name: configure inventory file
+  replace:
+    dest="{{automation_dir}}-{{path}}/inventory.yml"
+    regexp='pulp\.example\.com'
+    replace="{{hostvars[groups['tag_Name_'+automation_name+'_'+producer_node][0]]['ec2_public_dns_name']}}"
+- name: set consumer in file
+  replace:
+    dest="{{automation_dir}}-{{path}}/inventory.yml"
+    regexp='consumer\.example\.com'
+    replace="{{hostvars[groups['tag_Name_'+automation_name+'_'+consumer_node][0]]['ec2_public_dns_name']}}"
+- name: set path to certificate
+  replace:
+    dest="{{automation_dir}}-{{path}}/inventory.yml"
+    regexp='False/Ca-path'
+    replace='/etc/pki/tls/certs/myca.crt'
+- name: disable verify 
+  replace:
+    dest="{{automation_dir}}-{{path}}/inventory.yml"
+    regexp='True/False or can be left empty'
+    replace=''
+- name: set path to key
+  replace:
+    dest="{{automation_dir}}-{{path}}/inventory.yml"
+    regexp='ssh_key:.*'
+    replace='ssh_key{{':'}} /root/.ssh/test_rsa'
