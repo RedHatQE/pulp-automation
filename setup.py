@@ -37,4 +37,5 @@ setup(name='pulp_auto',
       ],
       packages=find_packages(exclude=['tests*']),
       data_files=data_files
+      zip_safe=False
       )
