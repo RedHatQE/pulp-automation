@@ -4,7 +4,7 @@
   with_items:
     - httpd
     - pulp_workers
-    - pulp_worker-0
+    #    - pulp_worker-0
     - pulp_celerybeat
     - pulp_resource_manager
     - qpidd
@@ -21,6 +21,6 @@
   with_items:
     - httpd
     - pulp_workers
-    - pulp_worker-0
+    #    - pulp_worker-0
     - pulp_celerybeat
     - pulp_resource_manager

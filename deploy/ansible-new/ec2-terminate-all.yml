@@ -2,8 +2,8 @@
 - name: Terminate instances, if some not present, will be skipped
   hosts:
     # for deleting single node
-    #- "tag_Name_{{automation_name}}_single_node"
-    #- "tag_Name_{{automation_name}}_single_stable_to_latest"
+    - "tag_Name_{{automation_name}}_single_node"
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
     # terminate automation runner
     #- "tag_Name_{{automation_name}}_automation_runner"
   connection: local

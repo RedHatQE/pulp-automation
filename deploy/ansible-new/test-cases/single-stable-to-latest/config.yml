@@ -1,6 +1,201 @@
 ---
-- name: Configure node - install and enable pulp 
+# vim:ft=ansible:
+- name: Configure node - configure package manager
   hosts:
     - "tag_Name_{{automation_name}}_single_stable_to_latest"
   roles:
-    - single-stable-to-latest-config
+    - set-package-manager
+
+- name: Configure node - configure node
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  tasks:
+    - name: get hostname 
+      shell: curl -# http://169.254.169.254/latest/meta-data/public-hostname
+      register: hostname
+
+    - name: set hostname
+      shell: "hostname {{hostname.stdout}}"
+
+    - name: edit /etc/sysconfig/network file
+      lineinfile:
+        dest=/etc/sysconfig/network
+        state=present
+        regexp='^HOSTNAME='
+        line=HOSTNAME={{hostname.stdout}}
+
+    - name: get public ipv4 address
+      shell: curl -# http://169.254.169.254/latest/meta-data/public-ipv4
+      register: ipv4addr
+
+    - name: add it to hosts file
+      lineinfile:
+        dest=/etc/hosts
+        state=present
+        line='{{ipv4addr.stdout}} {{hostname.stdout}}'
+
+    # configure repos
+    # set up latest stable pulp
+
+- name: Configure node - setup repositories 
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  roles:
+    - epel-repo-setup 
+    - stable-repos-setup
+
+- name: Configure node - install and enable pulp 
+  hosts:
+    - "tag_Name_{{automation_name}}_single_stable_to_latest"
+  tasks:
+    - name: install extras packages for redhat
+      action: "{{package_manager}} name=ftp{{':'}}//ftp.muug.mb.ca/mirror/centos/7.1.1503/extras/x86_64/Packages/python-blinker-1.3-2.el7.noarch.rpm state=present"
+      when: "ansible_distribution=='RedHat' and ansible_distribution_version|int==7"
+
+    # install pulp
+    - name: install necessary packages
+      action: "{{package_manager}} name={{item}} state=latest"
+      with_items:
+        - mongodb-server
+        - qpid-cpp-server
+        - qpid-cpp-server-store
+        - python-devel
+        - git
+        - tito
+        - createrepo
+        - ruby
+        - wget
+        - checkpolicy
+        - selinux-policy-devel
+        - qpid-tools
+        - libxml2-devel
+        - libxslt-devel
+        - mongodb
+        - python-nose
+        - pulp-docker-admin-extensions
+        - pulp-docker-plugins
+        - python-pulp-docker-common
+
+    - name: install necessary groups
+      action: "{{package_manager}} name={{item}} state=present"
+      with_items:
+        - '@pulp-server-qpid'
+        - '@"development tools"'
+        - '@pulp-admin'
+        - '@pulp-consumer-qpid'
+
+
+    - name: modify broker's url for pulp
+      replace:
+        dest=/etc/pulp/server.conf
+        regexp='(?sm)(^\[messaging\][^\[]*?)^#\s*url:\s*tcp://.*?:5672'
+        replace='\1url:tcp://{{hostname.stdout}}:5672'
+    - name: url to broker for celery 
+      replace:
+        dest=/etc/pulp/server.conf
+        regexp='(?sm)(^\[tasks\][^\[]*?)^#\s*broker_url:\s*qpid://.*?/'
+        replace='\1broker_url:qpid://{{hostname.stdout}}:5672'
+    - name: configure local admin and consumer 
+      replace:
+        dest="{{ item }}"
+        regexp='(?sm)(^\[server\][^\[]*?)^#\s*host:\s*$'
+        replace='\1host{{':'}} {{hostname.stdout}}'
+      with_items:
+        - /etc/pulp/admin/admin.conf
+        - /etc/pulp/consumer/consumer.conf
+
+    # configure SSL
+    - name: Create the index.txt file
+      file:
+        path=/etc/pki/CA/index.txt
+        state=touch
+    - name: Create a serial file to label the CA and all subsequent certificates
+      lineinfile:
+        dest=/etc/pki/CA/serial
+        create=yes
+        line=01
+    # generate certificates
+    - name: generate cert for use with pulp
+      command:
+        'openssl req -new -x509 -nodes -out certs/myca.crt -keyout private/myca.key -subj "/C=US/ST=NC/L=Raleigh/O=Ltd/CN={{hostname.stdout}}"
+        chdir=/etc/pki/CA
+        creates=certs/myca.crt'
+    - name: set file permissions
+      file:
+        path=/etc/pki/CA/certs/myca.crt
+        mode=0400
+
+    - name: generate apache Certificate Signing Request
+      command:
+        'openssl req -new -nodes -keyout private/apache.key -out apache.csr -subj "/C=US/ST=NC/L=Raleigh/O=Ltd/CN={{hostname.stdout}}"
+        chdir=/etc/pki/CA
+        creates=apache.csr'
+    - name: change owner and permissions
+      file:
+        path=/etc/pki/CA/apache.csr 
+        mode=0440
+        owner=root
+        group=apache
+    - name: sign apache
+      command:
+        openssl ca -batch -cert certs/myca.crt -keyfile private/myca.key -out certs/apache.crt -in apache.csr
+        creates=certs/apache.crt
+        chdir=/etc/pki/CA
+
+    # modify configuration files
+    - name: copy remote to remote
+      command:
+        cp /etc/pki/CA/certs/myca.crt /etc/pki/tls/certs/
+    - name: set apache certificate file
+      replace: 
+        dest=/etc/httpd/conf.d/ssl.conf
+        regexp='^#?\s*SSLCertificateFile.*$'
+        replace='SSLCertificateFile /etc/pki/CA/certs/apache.crt'
+    - name: set apache key file
+      replace: 
+        dest=/etc/httpd/conf.d/ssl.conf
+        regexp='^#?\s*SSLCertificateKeyFile.*$'
+        replace='SSLCertificateKeyFile /etc/pki/CA/private/apache.key'
+    - name: configure local admin and consumer 
+      replace:
+        dest={{item}}
+        regexp='(?sm)(^\[server\][^\[]*?)^#\s*ca_path[^\n\r]*'
+        replace='\1ca_path = /etc/pki/tls/certs/myca.crt'
+      with_items:
+        - /etc/pulp/consumer/consumer.conf
+        - /etc/pulp/admin/admin.conf
+    - name: configure qpidd
+      command: 
+        "echo -e 'ssl-require-client-authentication=no\n
+        auth=no\n
+        log-to-syslog=yes\n
+        log-enable=info+\n
+        log-time=yes\n
+        log-source=yes\n
+        log-function=yes\n' > /etc/qpid/qpidd.conf"
+
+    - name: enable services
+      service: name={{item}} enabled=yes 
+      with_items:
+        - mongod
+        - qpidd
+        - httpd
+        - goferd
+        - pulp_workers
+        - pulp_celerybeat
+        - pulp_resource_manager
+    - name: start  qpid, mongo
+      service: name={{item}} state=started
+      with_items:
+        - qpidd
+        - mongod
+    - name: update mongo db
+      command: su - apache -s /bin/sh -c pulp-manage-db
+    - name: start rest of services
+      service: name={{item}} state=started
+      with_items:
+        - httpd
+        - goferd
+        - pulp_workers
+        - pulp_celerybeat
+        - pulp_resource_manager

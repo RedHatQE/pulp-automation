@@ -1,4 +1,5 @@
 ---
+# vim:ft=ansible:
 - name: Checkout and setup automation for stable pulp testing
   hosts:
     - "tag_Name_{{automation_name}}_automation_runner"

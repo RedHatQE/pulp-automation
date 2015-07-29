@@ -1,5 +1,7 @@
 ---
 - name: make sure setup file is executable
   file: "path={{automation_dir}}-{{path}}/setup.py mode=744"
+- name: clean cache to prevent "bad local file header" error
+  file: path=/usr/lib/python2.7/site-packages/pulp_auto-0.1-py2.7.egg state=absent
 - name: run setup
   shell: "python setup.py install chdir={{automation_dir}}-{{path}}"

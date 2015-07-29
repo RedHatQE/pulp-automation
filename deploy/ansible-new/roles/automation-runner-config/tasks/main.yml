@@ -1,4 +1,7 @@
 ---
+- name: install epel repo
+  action: "{{package_manager}} name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ansible_distribution_version|int}}.noarch.rpm state=present"
+  when: "ansible_distribution=='RedHat'"
 - name: install necessarry packages
   action: "{{package_manager}} name={{ item }} state=present"
   with_items:

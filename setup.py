@@ -36,6 +36,5 @@ setup(name='pulp_auto',
           'Development Status :: 4 - Beta'
       ],
       packages=find_packages(exclude=['tests*']),
-      data_files=data_files,
-      zip_safe=False
+      data_files=data_files
       )
