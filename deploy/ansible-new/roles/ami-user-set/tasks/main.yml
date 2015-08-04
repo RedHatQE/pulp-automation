@@ -1,0 +1,61 @@
+---
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_reposerver: "{{ami_fedora22}}"
+    rem_user_reposerer: fedora
+  when: reposerver_os =="fedora22"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_reposerver: "{{ami_rhel7}}"
+    rem_user_reposerer: ec2-user
+  when: reposerver_os =="rhel7"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_reposerver: "{{ami_rhel6}}"
+    rem_user_reposerer: ec2-user
+  when: reposerver_os =="rhel6"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_auto_runner: "{{ami_fedora22}}"
+    rem_user_auto_runner: fedora
+  when: auto_runner_os =="fedora22"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_auto_runner: "{{ami_rhel7}}"
+    rem_user_auto_runner: ec2-user
+  when: auto_runner_os =="rhel7"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_auto_runner: "{{ami_rhel6}}"
+    rem_user_auto_runner: ec2-user
+  when: auto_runner_os =="rhel6"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_node: "{{ami_fedora22}}"
+    rem_user_single_node: fedora
+  when: single_node_os =="fedora22"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_node: "{{ami_rhel7}}"
+    rem_user_single_node: ec2-user
+  when: single_node_os =="rhel7"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_node: "{{ami_rhel6}}"
+    rem_user_single_node: ec2-user
+  when: single_node_os =="rhel6"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_stable_to_latest: "{{ami_fedora22}}"
+    rem_user_single_stable_to_latest: fedora
+  when: single_stable_to_latest_os =="fedora22"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_stable_to_latest: "{{ami_rhel7}}"
+    rem_user_single_stable_to_latest: ec2-user
+  when: single_stable_to_latest_os =="rhel7"
+- name: set ami and user based on Operating System
+  set_fact:
+    ami_single_stable_to_latest: "{{ami_rhel6}}"
+    rem_user_single_stable_to_latest: ec2-user
+  when: single_stable_to_latest_os =="rhel6"

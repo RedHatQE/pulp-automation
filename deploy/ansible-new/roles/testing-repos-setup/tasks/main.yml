@@ -1,0 +1,23 @@
+---
+#- name: download repo file from s3repos/current for fedora systems
+#  command: "curl -o /etc/yum.repos.d/fedora-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/fedora-pulp-s3.repo"
+#  when: "ansible_distribution=='Fedora' and test_stable==False"
+#- name: download repo file from s3repos/current for redhat systems
+#  command: "curl -o /etc/yum.repos.d/rhel-pulp-s3.repo http://s3-{{region}}.amazonaws.com/{{bucket_name}}/current/data/rhel-pulp-s3.repo"
+#  when: "ansible_distribution=='RedHat' and test_stable==False"
+- name: setup testing repo for fedora
+  shell: "echo -e '[pulp-{{my_tested_version}}-{{my_tested_branch}}]\n
+  name=Pulp {{my_tested_version}}-{{my_tested_branch}}\n
+  baseurl=https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/{{my_tested_version}}/{{my_tested_branch}}/fedora-$releasever/$basearch/\n
+  enabled=1\n
+  skip_if_unavailable=1\n
+  gpgcheck=0' > /etc/yum.repos.d/fedora-pulp.repo"
+  when: "ansible_distribution=='Fedora'"
+- name: setup testing repo for RedHat 
+  shell: "echo -e '[pulp-{{my_tested_version}}-{{my_tested_branch}}]\n
+  name=Pulp {{my_tested_version}}-{{my_tested_branch}}\n
+  baseurl=https://repos.fedorapeople.org/repos/pulp/pulp/testing/automation/{{my_tested_version}}/{{my_tested_branch}}/$releasever/$basearch/\n
+  enabled=1\n
+  skip_if_unavailable=1\n
+  gpgcheck=0' > /etc/yum.repos.d/rhel-pulp.repo"
+  when: "ansible_distribution=='RedHat'"

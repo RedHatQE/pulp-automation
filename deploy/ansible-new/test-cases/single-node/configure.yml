@@ -40,8 +40,8 @@
     - "tag_Name_{{automation_name}}_single_node"
   roles:
     - epel-repo-setup
-    - { role: stable-repos-setup, when: test_stable==True}
-    - { role: testing-repos-setup, my_tested_version: "{{tested_version}}", my_tested_branch: "{{tested_branch}}", when: test_stable==False}
+    - { role: stable-repos-setup, when: test_stable|bool==True}
+    - { role: testing-repos-setup, my_tested_version: "{{tested_version}}", my_tested_branch: "{{tested_branch}}", when: test_stable|bool==False}
 
 - name: Configure node - install and enable pulp 
   hosts:

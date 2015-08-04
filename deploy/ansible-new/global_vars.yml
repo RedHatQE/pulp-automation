@@ -1,0 +1,60 @@
+---
+# !!!! DO NOT USE '-' IN NAME OF AUTOMATION (OR ANY SERVER NAME) !!!!
+# !!!! can cause problems with discovering hosts in dynamic inventory !!!!
+# set test_stable to true when you want to test latest stable versions of pulp
+# TODO: split variables into groups: global, per test-case, etc
+test_stable: False
+
+# name of the key for comunicating with instances, located in ansible_dir/keys
+key_name:   "{{lookup ('env', 'EC2_KEY_NAME')}}"
+# set true for overwriting existing key
+force_keypair: "{{lookup ('env', 'FORCE_KEYPAIR')}}"
+
+# instance details 
+region: "{{lookup ('env', 'EC2_REGION')}}"
+instance_type: "{{lookup ('env', 'EC2_INSTANCE_TYPE')}}"
+
+# set os to: fedora20 / fedora22 / rhel6 / rhel7, keep auto_runner on rhel7
+reposerver_os: fedora22
+auto_runner_os: rhel7
+single_node_os: "{{lookup ('env', 'EC2_PULP_OS')}}"
+single_stable_to_latest_os:  "{{lookup ('env', 'EC2_PULP_OS')}}"
+
+# security groups names: default simply ssh and pulp
+ssh_sg: "{{lookup ('env', 'EC2_SSH_SG')}}"
+pulp_sg: "{{lookup ('env', 'EC2_PULP_SG')}}"
+
+# put all playbooks variables here
+# names and configurations of servers and s3 bucket, pulp_automation_pulp_beta_repos/placko-pulp-beta-repos-ewest-testing
+reposerver_name:  "{{lookup ('env', 'REPOSERVER_NAME')}}"
+bucket_name:  "{{lookup ('env', 'BUCKET_NAME')}}"
+
+# tested pulp relevant variables, upgrading_from can't be lower than tested_version
+tested_version: "{{lookup ('env', 'TESTED_VERSION')}}"
+upgrading_from: "{{lookup ('env', 'UPGRADING_FROM')}}"
+tested_branch: "{{lookup ('env', 'TESTED_BRANCH')}}"
+repos_list:
+  - pulp
+  - pulp_rpm
+  - pulp_puppet
+
+# name of current automation: ie. single_node_testing, proxy_testing, etc
+automation_name:  "{{lookup ('env', 'AUTOMATION_NAME')}}"
+
+##########################################################################
+# Do not modify this section unless necessary
+# ec2 credentials used by boto and s3cmd, set as env variable 
+access_key: "{{lookup ('env', 'AWS_ACCESS_KEY_ID')}}" 
+secret_access_key: "{{lookup ('env', 'AWS_SECRET_ACCESS_KEY')}}"
+
+# reposerver relevant variables
+# repositories for rpms
+reposerver_repo_dir: /tmp/tito
+
+# automation-runner variables
+automation_dir: /root/pulp-automation
+
+ami_fedora22: ami-55146222
+ami_rhel7: ami-25158352 
+ami_rhel6: ami-2591fe52
+##########################################################################
