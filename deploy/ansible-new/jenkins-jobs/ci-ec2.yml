@@ -13,10 +13,10 @@
     builders:
       - inject:
           properties-file: /var/lib/jenkins/secrets/ec2-properties.prop
-          properties-content: TESTED_VERSION={version}
+          properties-content: TESTED_VERSION = {version}
           properties-content: EC2_PULP_OS = {os}
       - shell: |
-          ls -l
+          git clone 
     triggers:
       - timed: '@daily'
           
