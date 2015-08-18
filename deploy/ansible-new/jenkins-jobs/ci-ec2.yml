@@ -16,7 +16,10 @@
           properties-content: TESTED_VERSION = {version}
           properties-content: EC2_PULP_OS = {os}
       - shell: |
-          git clone 
+          rm -rf pulp-automation
+          git clone https://github.com/RedHatQE/pulp-automation
+          cd pulp-automation/deploy/ansible-new/
+          ansible-playbook -i ec2.py automation-deploy.yml --extra-vars @global_vars.yml -vvvv
     triggers:
       - timed: '@daily'
           
