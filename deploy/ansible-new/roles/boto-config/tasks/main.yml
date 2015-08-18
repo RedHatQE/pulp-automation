@@ -1,5 +1,0 @@
----
-- name: Make sure boto exists on system
-  action: "{{package_manager}} name=python-boto state=present"
-- name: Create boto config from template 
-  template: src=boto.j2 dest=~/boto.cfg

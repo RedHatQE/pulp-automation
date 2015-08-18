@@ -1,5 +1,0 @@
----
-- name: ensure desired security groups exists
-  hosts: localhost
-  roles:
-    - security-group-create

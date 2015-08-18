@@ -1,3 +1,0 @@
----
-- include: test-cases/single-node/deploy.yml
-- include: test-cases/single-stable-to-latest/deploy.yml

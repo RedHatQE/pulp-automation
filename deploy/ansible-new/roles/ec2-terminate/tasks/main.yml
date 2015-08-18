@@ -1,7 +1,0 @@
----
-- name: Terminate instances specified in playbook
-  local_action:
-    module: ec2
-    state: 'absent'
-    region: '{{ region }}'
-    instance_ids: '{{ ec2_id }}'
