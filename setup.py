@@ -25,8 +25,12 @@ setup(name='pulp_auto',
       author_email='vetrisko@gmail.com',
       url='https://github.com/RedHatQE/pulp-automation',
       license='GPLv3+',
-      install_requires=['nose>=1.3.0', 'requests>=1.2.3', 'PyYAML', 'qpid-python>=0.27',
+      install_requires=['nose>=1.3.0', 'requests>=1.2.3', 'PyYAML',
             'gevent>=1.0.1', 'stitches', 'M2Crypto', 'requestbin>0.1'],
+      dependency_links = [
+          "svn+http://svn.apache.org/repos/asf/qpid/trunk/qpid/python/"
+          ],
+      )
       classifiers=[
           'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
           'Programming Language :: Python',
