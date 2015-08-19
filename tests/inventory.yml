@@ -93,10 +93,10 @@ ROLES:
   qpid: &QPID
     url: pulp.example.com
   proxy: &SQUID
-    host: "https://proxy.example.com"
-    port: 3128
-    username: squid
-    password: squid
+    host: 
+    port: 
+    username: 
+    password: 
   repos:
     - &ZOO
       id: zoo
@@ -121,11 +121,11 @@ ROLES:
     tags: ['default']
   nodes:
     - &node_01
-      auth: [admin, admin]
-      hostname: pulp-node-01.example.com
-      url: 'https://pulp-node-01.example.com'
-      verify_api_ssl: false
-      display_name: pulp-node-01
-      description: 'the pulp node 01 of the example.com domain'
+      auth:
+      hostname:
+      url:
+      verify_api_ssl:
+      display_name:
+      description:
       pulp: *PULP
       QPID: *QPID
