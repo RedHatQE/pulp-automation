@@ -101,7 +101,7 @@ ROLES:
     - &ZOO
       id: zoo
       type: rpm
-      feed: "http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
+      feed: "https://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/zoo/"
       display_name: ZOo rEPO
       proxy: *SQUID
       tags: ['default', 'small', 'demo']
