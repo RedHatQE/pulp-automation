@@ -6,8 +6,8 @@ Some pulp API/CLI testing automation
 Contents:
 ---------
 /deploy - thereis an ~~ansible and~~ ec2 pulp deployment
-ansible deployment (temporarily) moved to https://github.com/peterlacko/pulp-automation-ci
 
+ansible deployment (temporarily) moved to https://github.com/peterlacko/pulp-automation-ci
 
 /tests  - pulp api/cli testcases
 
