@@ -210,6 +210,7 @@ class ConsumerApplicabilityTest(ConsumerAgentPulpTest):
     def test_05_query_applicability_invalid_param(self):
         #Query Content Applicability
         #if one or more of the parameters is invalid
+        # bug 797
         ConsumersApplicability.query(self.pulp, data={
                                                             "invalid_param": {"filters": {"id": {"$in": ["sunflower", "voyager"]}}},
                                                             "content_types": ["type_1", "type_2"]

@@ -40,7 +40,7 @@ class PuppetCopyRepoTest(pulp_test.PulpTest):
         cls.invalid_repo = Repo(data={'id': cls.__name__ + "_invalidrepo"})
         # create yum repo
         cls.yumrepo, _, _ = YumRepo(id=cls.__name__ + 'yum', importer=YumImporter(feed=None),
-                                distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
+        distributors=[YumDistributor(relative_url='xyz')]).create(cls.pulp)
 
 
 class SimplePuppetcopyRepoTest(PuppetCopyRepoTest):

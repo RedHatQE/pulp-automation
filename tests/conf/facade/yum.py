@@ -18,7 +18,7 @@ class YumDistributor(WebDistributor):
 
 
 class YumImporter(FeedImporter):
-    def __init__(self, feed=DEFAULT_FEED, id='yum_reporter', importer_type_id='yum_importer', **kvs):
+    def __init__(self, feed=DEFAULT_FEED, id='yum_importer', importer_type_id='yum_importer', **kvs):
         super(YumImporter, self).__init__(id=id, importer_type_id=importer_type_id, feed=feed, **kvs)
 
     @classmethod
