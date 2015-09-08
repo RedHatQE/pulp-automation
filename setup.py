@@ -28,7 +28,7 @@ setup(name='pulp_auto',
       install_requires=['nose>=1.3.0', 'requests>=1.2.3', 'PyYAML',
             'gevent>=1.0.1', 'stitches', 'M2Crypto', 'requestbin>0.1', 'qpid-python'],
       dependency_links=[
-            "svn+http://svn.apache.org/repos/asf/qpid/branches/0.32/qpid/python/"
+            "svn+http://svn.apache.org/repos/asf/qpid/trunk/qpid/python/"
       ],
       classifiers=[
           'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',

@@ -16,14 +16,9 @@ try:
 except ImportError as e:
         raise unittest.SkipTest(e)
 
-try:
-    version = ROLES.pulp.version
-except AttributeError:
-        raise unittest.SkipTest('this test module requires pulp.version information')
-if LooseVersion(version) >= MAX_PULP_VERSION:
-    raise unittest.SkipTest('this test module requires pulp.version < %s, %s found' % \
-                            (MAX_PULP_VERSION, ROLES.pulp.version))
-
+@unittest.skipIf(LooseVersion(ROLES.pulp.version) >= MAX_PULP_VERSION, \
+                'this test module requires pulp.version < %s, %s found' \
+                % (MAX_PULP_VERSION, ROLES.pulp.version))
 class EventListenerTest(PulpTest):
     @classmethod
     def setUpClass(cls):
@@ -247,6 +242,9 @@ class EventListenerTest(PulpTest):
         assert el_publish_start_task.id == el_publish_finish_task.id, 'publish start and finish events refer to different tasks respectively'
 
 
+@unittest.skipIf(LooseVersion(ROLES.pulp.version) >= MAX_PULP_VERSION, \
+                'this test module requires pulp.version < %s, %s found' \
+                % (MAX_PULP_VERSION, ROLES.pulp.version))
 class EventListenerErrorTest(PulpTest):
     def setUp(self):
         super(EventListenerErrorTest, self).setUp()
