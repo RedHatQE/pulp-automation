@@ -77,7 +77,6 @@ class SimpleScheduledUpdate(ConsumerScheduledUpdate):
         self.action.delete(self.pulp)
         self.assertPulpOK()
 
-    @unittest.expectedFailure
     def test_06_list_scheduled_update_bz1094634(self):
         schedules = self.consumer.list_scheduled_action(self.pulp, '/content/update/')
         self.assertEqual([], schedules)
