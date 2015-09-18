@@ -77,6 +77,7 @@ class SimpleScheduledUninstall(ConsumerScheduledUninstall):
         self.action.delete(self.pulp)
         self.assertPulpOK()
 
+    @expectedFailure
     def test_06_list_scheduled_uninstall_bz1094634(self):
         schedules = self.consumer.list_scheduled_action(self.pulp, '/content/uninstall/')
         self.assertEqual([], schedules)

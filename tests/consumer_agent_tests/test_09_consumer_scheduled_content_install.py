@@ -78,6 +78,7 @@ class SimpleScheduledInstall(ConsumerScheduledInstall):
         self.action.delete(self.pulp)
         self.assertPulpOK()
 
+    @expectedFailure
     def test_06_list_scheduled_install_bz1094634(self):
         schedules = self.consumer.list_scheduled_action(self.pulp, '/content/install/')
         self.assertEqual([], schedules)
