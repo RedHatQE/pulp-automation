@@ -17,6 +17,11 @@ class UserTest(pulp_test.PulpTest):
         cls.user2 = User(data={"login": 'testuser', "name": 'testuser', "password": 'testuser', 'roles': []})
         cls.user3 = User(data={"login": 'super', "name": 'user', "password": 'user', 'roles': []})
         cls.user4 = User(data={"login": 'admin', "name": 'admin', "password": 'admin', 'roles': []})
+        cls.user.relevant_data_keys = ['login', 'name']
+        cls.user1.relevant_data_keys = ['login', 'name']
+        cls.user2.relevant_data_keys = ['login', 'name']
+        cls.user3.relevant_data_keys = ['login', 'name']
+        cls.user4.relevant_data_keys = ['login', 'name']
         # a new session has to be created for the user as auth credeantials of admin are used by default
         cls.user_pulp = Pulp(cls.pulp.url, auth=(cls.user.data['login'], cls.user.data['password']))
 
@@ -63,6 +68,7 @@ class SimpleUserTest(UserTest):
         self.user3.create(self.pulp)
         self.assertPulpOK()
         self.user3 |= {"roles": ['super-users']}
+        self.user3.relevant_data_keys.append("roles")
         self.user3.delta_update(self.pulp)
         self.assertPulp(code=200)
 
