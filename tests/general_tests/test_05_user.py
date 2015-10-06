@@ -12,11 +12,11 @@ class UserTest(pulp_test.PulpTest):
     @classmethod
     def setUpClass(cls):
         super(UserTest, cls).setUpClass()
-        cls.user = User(data={"login": cls.__name__ + "_user", "name": cls.__name__, "password": cls.__name__, 'roles': []})
-        cls.user1 = User(data={"login": cls.__name__ + "_user", "name": 'myuser', "password": 'myuser', 'roles': []})
-        cls.user2 = User(data={"login": 'testuser', "name": 'testuser', "password": 'testuser', 'roles': []})
-        cls.user3 = User(data={"login": 'super', "name": 'user', "password": 'user', 'roles': []})
-        cls.user4 = User(data={"login": 'admin', "name": 'admin', "password": 'admin', 'roles': []})
+        cls.user = User(data={"login": cls.__name__ + "_user", "name": cls.__name__, "password": cls.__name__})
+        cls.user1 = User(data={"login": cls.__name__ + "_user", "name": 'myuser', "password": 'myuser'})
+        cls.user2 = User(data={"login": 'testuser', "name": 'testuser', "password": 'testuser'})
+        cls.user3 = User(data={"login": 'super', "name": 'user', "password": 'user'})
+        cls.user4 = User(data={"login": 'admin', "name": 'admin', "password": 'admin'})
         cls.user.relevant_data_keys = ['login', 'name']
         cls.user1.relevant_data_keys = ['login', 'name']
         cls.user2.relevant_data_keys = ['login', 'name']
